@@ -1,0 +1,30 @@
+
+=head1 NAME
+
+storenif - Handy routines for creating NIFF lists, chunks, and tags.
+
+=head1 SYNOPSIS
+
+=over 4
+
+=item *
+
+NIFFIOStartXXX()
+
+=item *
+
+NIFFIOEndXXX()
+
+=item *
+
+NIFFIOchunkXXX()
+
+=item *
+
+NIFFIOtagXXX()
+
+=back
+
+=head1 DESCRIPTION
+
+Need a description here.

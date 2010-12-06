@@ -1,0 +1,82 @@
+<!-- $Id$ -->
+<HTML><HEAD>
+<CENTER><TITLE>error</TITLE>
+</HEAD>
+<BODY></CENTER><p><hr>
+
+<H1> 
+<A NAME="error_name_0">
+NAME</A>
+</H1>
+error - handle RIFFIO errors
+<p><p><hr>
+
+<H1> 
+<A NAME="error_synopsis_0">
+SYNOPSIS</A>
+</H1>
+<p>
+<UL>
+<LI>
+<A HREF="error.htm#error_riffioerror_0">RIFFIOError()</A>
+
+<p>
+<LI>
+<A HREF="error.htm#error_riffioinstallerrorhandler_0">RIFFIOInstallErrorHandler()</A>
+
+<p>
+</UL>
+If RIFFIO_NO_ERROR is defined then disable the default error processing.Otherwise use DefaultErrorHandler.
+<p><p><hr>
+
+<H1> 
+<A NAME="error_riffioinstallerrorhandler_0">
+RIFFIOInstallErrorHandler</A>
+</H1>
+Override RIFFIO error handling.
+<p>
+<XMP>
+     RIFFIOErrorHandler 
+     RIFFIOInstallErrorHandler(RIFFIOErrorHandler ehNew)
+
+</XMP>
+<p><ehNew&gt; is a function to handle errors.  Null to disable error
+handling.
+<p>
+<H2> 
+<A NAME="error_returns_0">
+RETURNS</A>
+</H2>
+the current error handling function.
+<p><p><hr>
+
+<H1> 
+<A NAME="error_riffioerror_0">
+RIFFIOError</A>
+</H1>
+Post an error message
+<p>
+<H2> 
+<A NAME="error__0">
+| void</A>
+</H2>
+| RIFFIOError(const char *strModule, const char *strFormat, ...)
+PARAMETERS
+<p>
+<DL COMPACT>
+<DT><STRONG>
+<EM>*strModule</EM>
+</STRONG>
+<DD>
+string nameing the module reporting the error
+<p>
+<DT><STRONG>
+<EM>*strFormat</EM>
+</STRONG>
+<DD>
+printf compatible string corresponding to the remaining arguments
+<p>
+</DL>
+
+</BODY>
+</HTML>

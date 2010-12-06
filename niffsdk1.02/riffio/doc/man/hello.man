@@ -1,0 +1,284 @@
+.rn '' }`
+''' $RCSfile$$Revision$$Date$
+'''
+''' $Log$
+'''
+.de Sh
+.br
+.if t .Sp
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.de Sp
+.if t .sp .5v
+.if n .sp
+..
+.de Ip
+.br
+.ie \\n(.$>=3 .ne \\$3
+.el .ne 3
+.IP "\\$1" \\$2
+..
+.de Vb
+.ft CW
+.nf
+.ne \\$1
+..
+.de Ve
+.ft R
+
+.fi
+..
+'''
+'''
+'''     Set up \*(-- to give an unbreakable dash;
+'''     string Tr holds user defined translation string.
+'''     Bell System Logo is used as a dummy character.
+'''
+.tr \(*W-|\(bv\*(Tr
+.ie n \{\
+.ds -- \(*W-
+.ds PI pi
+.if (\n(.H=4u)&(1m=24u) .ds -- \(*W\h'-12u'\(*W\h'-12u'-\" diablo 10 pitch
+.if (\n(.H=4u)&(1m=20u) .ds -- \(*W\h'-12u'\(*W\h'-8u'-\" diablo 12 pitch
+.ds L" ""
+.ds R" ""
+.ds L' '
+.ds R' '
+'br\}
+.el\{\
+.ds -- \(em\|
+.tr \*(Tr
+.ds L" ``
+.ds R" ''
+.ds L' `
+.ds R' '
+.ds PI \(*p
+'br\}
+.\"	If the F register is turned on, we'll generate
+.\"	index entries out stderr for the following things:
+.\"		TH	Title 
+.\"		SH	Header
+.\"		Sh	Subsection 
+.\"		Ip	Item
+.\"		X<>	Xref  (embedded
+.\"	Of course, you have to process the output yourself
+.\"	in some meaninful fashion.
+.if \nF \{
+.de IX
+.tm Index:\\$1\t\\n%\t"\\$2"
+..
+.nr % 0
+.rr F
+.\}
+.TH hello 3 "riffio" "14/Jun/96" "RIFFIO Documentation"
+.IX Title "hello 3"
+.UC
+.IX Name "hello - the "hello world" program written using RIFFIO."
+.if n .hy 0
+.if n .na
+.ds C+ C\v'-.1v'\h'-1p'\s-2+\h'-1p'+\s0\v'.1v'\h'-1p'
+.de CQ          \" put $1 in typewriter font
+.ft CW
+'if n "\c
+'if t \\&\\$1\c
+'if n \\&\\$1\c
+'if n \&"
+\\&\\$2 \\$3 \\$4 \\$5 \\$6 \\$7
+'.ft R
+..
+.\" @(#)ms.acc 1.5 88/02/08 SMI; from UCB 4.2
+.	\" AM - accent mark definitions
+.bd B 3
+.	\" fudge factors for nroff and troff
+.if n \{\
+.	ds #H 0
+.	ds #V .8m
+.	ds #F .3m
+.	ds #[ \f1
+.	ds #] \fP
+.\}
+.if t \{\
+.	ds #H ((1u-(\\\\n(.fu%2u))*.13m)
+.	ds #V .6m
+.	ds #F 0
+.	ds #[ \&
+.	ds #] \&
+.\}
+.	\" simple accents for nroff and troff
+.if n \{\
+.	ds ' \&
+.	ds ` \&
+.	ds ^ \&
+.	ds , \&
+.	ds ~ ~
+.	ds ? ?
+.	ds ! !
+.	ds /
+.	ds q
+.\}
+.if t \{\
+.	ds ' \\k:\h'-(\\n(.wu*8/10-\*(#H)'\'\h"|\\n:u"
+.	ds ` \\k:\h'-(\\n(.wu*8/10-\*(#H)'\`\h'|\\n:u'
+.	ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'^\h'|\\n:u'
+.	ds , \\k:\h'-(\\n(.wu*8/10)',\h'|\\n:u'
+.	ds ~ \\k:\h'-(\\n(.wu-\*(#H-.1m)'~\h'|\\n:u'
+.	ds ? \s-2c\h'-\w'c'u*7/10'\u\h'\*(#H'\zi\d\s+2\h'\w'c'u*8/10'
+.	ds ! \s-2\(or\s+2\h'-\w'\(or'u'\v'-.8m'.\v'.8m'
+.	ds / \\k:\h'-(\\n(.wu*8/10-\*(#H)'\z\(sl\h'|\\n:u'
+.	ds q o\h'-\w'o'u*8/10'\s-4\v'.4m'\z\(*i\v'-.4m'\s+4\h'\w'o'u*8/10'
+.\}
+.	\" troff and (daisy-wheel) nroff accents
+.ds : \\k:\h'-(\\n(.wu*8/10-\*(#H+.1m+\*(#F)'\v'-\*(#V'\z.\h'.2m+\*(#F'.\h'|\\n:u'\v'\*(#V'
+.ds 8 \h'\*(#H'\(*b\h'-\*(#H'
+.ds v \\k:\h'-(\\n(.wu*9/10-\*(#H)'\v'-\*(#V'\*(#[\s-4v\s0\v'\*(#V'\h'|\\n:u'\*(#]
+.ds _ \\k:\h'-(\\n(.wu*9/10-\*(#H+(\*(#F*2/3))'\v'-.4m'\z\(hy\v'.4m'\h'|\\n:u'
+.ds . \\k:\h'-(\\n(.wu*8/10)'\v'\*(#V*4/10'\z.\v'-\*(#V*4/10'\h'|\\n:u'
+.ds 3 \*(#[\v'.2m'\s-2\&3\s0\v'-.2m'\*(#]
+.ds o \\k:\h'-(\\n(.wu+\w'\(de'u-\*(#H)/2u'\v'-.3n'\*(#[\z\(de\v'.3n'\h'|\\n:u'\*(#]
+.ds d- \h'\*(#H'\(pd\h'-\w'~'u'\v'-.25m'\f2\(hy\fP\v'.25m'\h'-\*(#H'
+.ds D- D\\k:\h'-\w'D'u'\v'-.11m'\z\(hy\v'.11m'\h'|\\n:u'
+.ds th \*(#[\v'.3m'\s+1I\s-1\v'-.3m'\h'-(\w'I'u*2/3)'\s-1o\s+1\*(#]
+.ds Th \*(#[\s+2I\s-2\h'-\w'I'u*3/5'\v'-.3m'o\v'.3m'\*(#]
+.ds ae a\h'-(\w'a'u*4/10)'e
+.ds Ae A\h'-(\w'A'u*4/10)'E
+.ds oe o\h'-(\w'o'u*4/10)'e
+.ds Oe O\h'-(\w'O'u*4/10)'E
+.	\" corrections for vroff
+.if v .ds ~ \\k:\h'-(\\n(.wu*9/10-\*(#H)'\s-2\u~\d\s+2\h'|\\n:u'
+.if v .ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'\v'-.4m'^\v'.4m'\h'|\\n:u'
+.	\" for low resolution devices (crt and lpr)
+.if \n(.H>23 .if \n(.V>19 \
+\{\
+.	ds : e
+.	ds 8 ss
+.	ds v \h'-1'\o'\(aa\(ga'
+.	ds _ \h'-1'^
+.	ds . \h'-1'.
+.	ds 3 3
+.	ds o a
+.	ds d- d\h'-1'\(ga
+.	ds D- D\h'-1'\(hy
+.	ds th \o'bp'
+.	ds Th \o'LP'
+.	ds ae ae
+.	ds Ae AE
+.	ds oe oe
+.	ds Oe OE
+.\}
+.rm #[ #] #H #V #F C
+.SH "NAME"
+.IX Header "NAME"
+hello \- the \*(L"hello world\*(R" program written using RIFFIO.
+.SH "SYNOPSIS"
+.IX Header "SYNOPSIS"
+hello
+.SH "DESCRIPTION"
+.IX Header "DESCRIPTION"
+Write the message \*(L"hello world\*(R" to its standard
+output.  We won't be creating a RIFF file but we will demonstrate the
+RIFFIO interface.
+.SH "BUGS"
+.IX Header "BUGS"
+Many RIFFIO functions return a zero RIFFIOSuccess value on failure.
+The following examples ignore this result value for brevity.
+Any real program does so at its own risk.
+.PP
+We will be linking to the RIFFIO and STDCRIFF libraries,
+so include their header files.
+.PP
+.Vb 8
+\&     
+\&     #include "riffio.h"
+\&     #include "stdcriff.h"
+\&     
+\&     int  
+\&     main()
+\&     {
+\&     
+.Ve
+We need a variable to represent our output file.
+RIFFIO uses pointers to RIFFIOFile structures.
+.PP
+.Vb 2
+\&         RIFFIOFile *prf;     /* File to write to    */
+\&     
+.Ve
+<prf> doesn't point to anything yet so we need to create
+a new RIFFIOFile and initialize it.
+.PP
+.Vb 2
+\&         prf = RIFFIOFileNew();
+\&     
+.Ve
+RIFFIOFileNew allocates memory for a new RIFFIOFile so we must
+remember to free it later.
+.PP
+.Vb 14
+\&         /*
+\&          * Initialize the RIFFIOFile with I/O routines from the STDCRIFF library
+\&          * In turn, the STDCRIFF library uses the Standard C library.
+\&          *
+\&          * Normally, we would have to open a FILE for writing with fopen().
+\&          * In this case we will write to stdout, which is already open.
+\&          */
+\&         RIFFIOFileInit(prf,
+\&                        stdout, 
+\&                        STDCRIFFRead, 
+\&                        STDCRIFFWrite, 
+\&                        STDCRIFFSeek, 
+\&                        STDCRIFFTell);
+\&         
+.Ve
+When we initialize a RIFFIOFile we supply it with a pointer to an open
+file object and the names of functions that perform read, write, seek,
+and tell operations on that file.  In this case <stdout> is the pointer
+to a Standard C FILE structure and <STDCRIFFRead>, <STDCRIFFWrite>,
+<STDCRIFFSeek>, and <STDCRIFFTell> are library functions that operate on
+Standard C FILE pointers.
+.PP
+STDCRIFFRead is an address of a function; also known as a \*(L"callback\*(R".
+RIFFIO remembers the function's address so it can call the function back
+when RIFFIO needs to read from the file. Callbacks appear in other places
+withing the RIFFIO API.
+.PP
+If all of this seems convoluted, consider this.  The callback mechanism
+allows you to use RIFFIO with any object that looks like a file.  In other
+words, if you can supply a pointer to an object along with read, write,
+seek, and tell operations on that object, then you can use RIFFIO on it.
+.PP
+.Vb 5
+\&         /*
+\&          * Hello World
+\&          */
+\&         RIFFIOWrite(prf, "hello world\en", 12);
+\&     
+.Ve
+Finally we write the 12 bytes of our message to the RIFFIOFile.
+Now we have to clean up after ourselves.
+.PP
+.Vb 1
+\&     
+.Ve
+Virtually every time you create a RIFFIO object \*(L"xxx\*(R" with RIFFIOxxxNew you
+will need a matching call to RIFFIOxxxDelete to free the memory allocated
+to that object.
+.PP
+.Vb 5
+\&         /*
+\&          * Don't forget to free memory for the RIFFIOFile
+\&          */
+\&         RIFFIOFileDelete(prf);
+\&     
+.Ve
+Typically we would have to close our FILE here with \fIfclose()\fR.
+.PP
+.Vb 3
+\&     
+\&     }
+\&     
+.Ve
+
+.rn }` ''

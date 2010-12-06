@@ -1,0 +1,50 @@
+all::
+
+INSTALLDIRS= $(includedir) $(libdir) $(bindir)
+
+PKGDIRS =\
+    niff\
+    riffio\
+    niffio
+	
+PKGTARGETS=\
+depend \
+all \
+install \
+uninstall \
+clean \
+mostlyclean \
+distclean \
+maintainer-clean  \
+doc \
+check
+
+#BADTARGETS=\
+#all\
+#depend
+#
+#$(BADTARGETS)::
+#	@echo ""
+#	@echo "The target <$@> can only be made within a single package."
+#	@echo "The only targets that are allowed at this level are:"
+#	@echo ""
+#	@echo $(PKGTARGETS)
+#	@echo ""
+
+$(PKGTARGETS)::
+		@for i in $(PKGDIRS);\
+		do (\
+			echo Making $@ in $$i ...;\
+			cd $$i;\
+			$(MAKE) $@ \
+		); done
+
+doc::
+	cd doc/txt; make doc
+
+dist:
+	pkgcrate niffsdk
+
+distclean maintainer-clean::
+	rm -f Makefile config.cache config.log config.status
+

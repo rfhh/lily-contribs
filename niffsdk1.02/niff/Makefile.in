@@ -1,0 +1,12 @@
+pkg_topdir=.
+
+include $(pkg_topdir)/mk/top.mk
+
+INSTALLDIRS= $(includedir)
+
+MAKEDIRS =\
+
+include $(pkg_mkdir)/pkg.mk
+
+check::
+

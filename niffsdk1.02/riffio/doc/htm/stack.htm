@@ -1,0 +1,155 @@
+<!-- $Id$ -->
+<HTML><HEAD>
+<CENTER><TITLE>stack</TITLE>
+</HEAD>
+<BODY></CENTER><p><hr>
+
+<H1> 
+<A NAME="stack_name_0">
+NAME</A>
+</H1>
+stack - maintain a stack of chunks.
+<p><p><hr>
+
+<H1> 
+<A NAME="stack_synopsis_0">
+SYNOPSIS</A>
+</H1>
+<p>
+<UL>
+<LI>
+<A HREF="stack.htm#stack_riffiochunkstacknew_0">RIFFIOChunkStackNew()</A>
+
+<p>
+<LI>
+<A HREF="stack.htm#stack_riffiochunkstackdelete_0">RIFFIOChunkStackDelete()</A>
+
+<p>
+<LI>
+<A HREF="stack.htm#stack_riffiochunkstackpush_0">RIFFIOChunkStackPush()</A>
+
+<p>
+<LI>
+<A HREF="stack.htm#stack_riffiochunkstackpop_0">RIFFIOChunkStackPop()</A>
+
+<p>
+<LI>
+<A HREF="stack.htm#stack_riffiochunkstacktop_0">RIFFIOChunkStackTop()</A>
+
+<p>
+<LI>
+<A HREF="stack.htm#stack_riffiochunkstackisempty_0">RIFFIOChunkStackIsEmpty()</A>
+
+<p>
+</UL>
+.
+<p><p><hr>
+
+<H1> 
+<A NAME="stack_riffiochunkstacknew_0">
+RIFFIOChunkStackNew</A>
+</H1>
+Return an empty RIFFIOChunkStack.
+<p>
+<XMP>
+     RIFFIOChunkStack *
+     RIFFIOChunkStackNew(void)
+
+</XMP>
+<p>
+<H2> 
+<A NAME="stack_return_0">
+RETURN</A>
+</H2>
+NULL on failure
+<p>
+<H2> 
+<A NAME="stack_obligations_0">
+OBLIGATIONS</A>
+</H2>
+The newly created RIFFIOChunkStack must be freed with
+
+<A HREF="stack.htm#stack_riffiochunkstackdelete_0">RIFFIOChunkStackDelete()</A>
+.
+<p><p><hr>
+
+<H1> 
+<A NAME="stack_riffiochunkstackdelete_0">
+RIFFIOChunkStackDelete</A>
+</H1>
+Free memory allocated to a RIFFIOChunkStack.
+<p>
+<XMP>
+     void
+     RIFFIOChunkStackDelete(RIFFIOChunkStack *pstack)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="stack_riffiochunkstackisempty_0">
+RIFFIOChunkStackIsEmpty</A>
+</H1>
+Return true if a RIFFIOChunkStack is empty.
+<p>
+<XMP>
+     int
+     RIFFIOChunkStackIsEmpty(RIFFIOChunkStack *pstack)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="stack_riffiochunkstacktop_0">
+RIFFIOChunkStackTop</A>
+</H1>
+Peek at top of the stack without popping.
+<p>
+<XMP>
+     RIFFIOChunk *
+     RIFFIOChunkStackTop(RIFFIOChunkStack *pstack)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="stack_riffiochunkstackpop_0">
+RIFFIOChunkStackPop</A>
+</H1>
+Pop the top item of the RIFFIOChunkStack.
+<p>
+<XMP>
+     void
+     RIFFIOChunkStackPop(RIFFIOChunkStack *pstack)
+
+</XMP>
+<p>
+<H2> 
+<A NAME="stack_entry_0">
+ENTRY</A>
+</H2>
+T &lt;*pstack&gt; must not be empty.
+<p><p><hr>
+
+<H1> 
+<A NAME="stack_riffiochunkstackpush_0">
+RIFFIOChunkStackPush</A>
+</H1>
+Push a chunk on the top of the stack
+<p>
+<XMP>
+     RIFFIOSuccess
+     RIFFIOChunkStackPush(RIFFIOChunkStack *pstack,
+                          RIFFIOChunk *pchunk)
+
+</XMP>
+<p>
+<H2> 
+<A NAME="stack_obligations_0">
+OBLIGATIONS</A>
+</H2>
+You must still keep track of the memory occupied by &lt;*pchunk&gt;.
+The RIFFIOChunkStack will make its own copy of &lt;*pchunk&gt;.
+<p>
+</BODY>
+</HTML>

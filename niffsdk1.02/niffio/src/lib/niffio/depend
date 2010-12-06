@@ -1,0 +1,31 @@
+
+clt.o: ../../../include/niffio.h ../../../../riffio/include/riffio.h
+clt.o: ../../../../niff/include/niff.h
+inherit.o: ../../../include/niffio.h ../../../../riffio/include/riffio.h
+inherit.o: ../../../../niff/include/niff.h
+nfile.o: ../../../include/niffio.h
+nfile.o: ../../../../riffio/include/riffio.h
+nfile.o: ../../../../niff/include/niff.h
+parse.o: ../../../include/niffio.h
+parse.o: ../../../../riffio/include/riffio.h ../../../../niff/include/niff.h
+parse.o: niffiop.h
+register.o: ../../../include/niffio.h ../../../../riffio/include/riffio.h
+register.o: ../../../../niff/include/niff.h
+register.o: niffiop.h
+rwniff.o: ../../../include/niffio.h ../../../../riffio/include/riffio.h
+rwniff.o: ../../../../niff/include/niff.h
+rwtypes.o: ../../../include/niffio.h ../../../../riffio/include/riffio.h
+rwtypes.o: ../../../../niff/include/niff.h
+stbl.o: ../../../include/niffio.h
+stbl.o: ../../../../riffio/include/riffio.h
+stbl.o: ../../../../niff/include/niff.h
+store.o: ../../../../riffio/include/stdcriff.h
+store.o: ../../../../riffio/include/riffio.h
+store.o: ../../../include/niffio.h ../../../../niff/include/niff.h niffiop.h
+storenif.o: ../../../../niff/include/niff.h ../../../include/niffio.h
+storenif.o: ../../../../riffio/include/riffio.h
+tags.o: ../../../include/niffio.h ../../../../riffio/include/riffio.h
+tags.o: ../../../../niff/include/niff.h
+tcbtable.o: ../../../include/niffio.h ../../../../riffio/include/riffio.h
+tcbtable.o: ../../../../niff/include/niff.h
+tcbtable.o: niffiop.h

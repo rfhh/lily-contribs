@@ -1,0 +1,30 @@
+#!/usr/bin/perl
+
+require "getopt.pl";
+
+&Getopt('');
+
+while ( <> )
+{
+		chop($list = $_);
+		
+		print <<"END";
+
+RIFFIOSuccess
+NIFFIOStoreList$list(void)
+{
+    
+	RIFFIOChunk chunkList;
+
+	chunkList.fccId = RIFFIO_FOURCC_LIST;
+	chunkList.fccType = nifflist$list;
+
+	if (! NIFFIOStoreListStart(&chunkList))
+		return RIFFIO_FAIL;
+
+	return RIFFIO_OK;
+
+}
+END
+
+} # while

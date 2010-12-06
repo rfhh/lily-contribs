@@ -1,0 +1,23 @@
+
+ NAME
+ ====
+ rwniff - Read and Write structures defined in "niff.h"
+
+ SYNOPSIS
+ ========
+ 
+ - NIFFIOWriteniffXXX()
+ - NIFFIOReadniffXXX()
+
+ Where XXX is the name of a structure defined in "niff.h"
+
+ EXAMPLES
+ ========
+
+| NIFFIOFile *pnf1, *pnf1;
+| niffPart   part;
+|
+| NIFFIOReadniffPart(pnf1, &part);
+| NIFFIOWriteniffPart(pnf2, &part);
+|
+

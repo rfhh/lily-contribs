@@ -1,0 +1,175 @@
+<!-- $Id$ -->
+<HTML><HEAD>
+<CENTER><TITLE>rwbytes</TITLE>
+</HEAD>
+<BODY></CENTER><p><hr>
+
+<H1> 
+<A NAME="rwbytes_name_0">
+NAME</A>
+</H1>
+rwbytes - Read and write FOURCCs and unsigned 8, 16, and 32-bit integers
+<p><p><hr>
+
+<H1> 
+<A NAME="rwbytes_synopsis_0">
+SYNOPSIS</A>
+</H1>
+<p>
+<UL>
+<LI>
+<A HREF="rwbytes.htm#rwbytes_riffioread_0">RIFFIORead8()</A>
+
+<p>
+<LI>
+<A HREF="rwbytes.htm#rwbytes_riffioread_1">RIFFIORead16()</A>
+
+<p>
+<LI>
+<A HREF="rwbytes.htm#rwbytes_riffioread_2">RIFFIORead32()</A>
+
+<p>
+<LI>
+<A HREF="rwbytes.htm#rwbytes_riffioreadfourcc_0">RIFFIOReadFOURCC()</A>
+
+<p>
+<LI>
+<A HREF="rwbytes.htm#rwbytes_riffiowrite_0">RIFFIOWrite8()</A>
+
+<p>
+<LI>
+<A HREF="rwbytes.htm#rwbytes_riffiowrite_1">RIFFIOWrite16()</A>
+
+<p>
+<LI>
+<A HREF="rwbytes.htm#rwbytes_riffiowrite_2">RIFFIOWrite32()</A>
+
+<p>
+<LI>
+<A HREF="rwbytes.htm#rwbytes_riffiowritefourcc_0">RIFFIOWriteFOURCC()</A>
+
+<p>
+</UL>
+.
+<p><p><hr>
+
+<H1> 
+<A NAME="rwbytes_return_0">
+RETURN</A>
+</H1>
+All of these routines return a zero RIFFIOSuccess on failure.
+<p><p><hr>
+
+<H1> 
+<A NAME="rwbytes_errors_0">
+ERRORS</A>
+</H1>
+On failure, the RIFFIOFile position is undefined.
+None of these functions call RIFFIOError.
+<p><p><hr>
+
+<H1> 
+<A NAME="rwbytes_riffioread_0">
+RIFFIORead8</A>
+</H1>
+Read an unsigned 8-bit integer from a RIFF file.
+<p>
+<XMP>
+     RIFFIOSuccess
+     RIFFIORead8(RIFFIOFile *prf, unsigned char *ucp)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="rwbytes_riffioread_1">
+RIFFIORead16</A>
+</H1>
+Read an unsigned 16-bit integer from a RIFF file.
+<p>
+<XMP>
+     RIFFIOSuccess
+     RIFFIORead16(RIFFIOFile *prf, unsigned short *usp)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="rwbytes_riffioread_2">
+RIFFIORead32</A>
+</H1>
+Read an unsigned 32-bit integer from a RIFF file.
+<p>
+<XMP>
+     RIFFIOSuccess
+     RIFFIORead32(RIFFIOFile *prf, unsigned long *ulp)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="rwbytes_riffioreadfourcc_0">
+RIFFIOReadFOURCC</A>
+</H1>
+Read a four-character code from a RIFF file.
+<p>
+<XMP>
+     RIFFIOSuccess
+     RIFFIOReadFOURCC(RIFFIOFile *prf, RIFFIOFOURCC *fccp)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="rwbytes_riffiowrite_0">
+RIFFIOWrite8</A>
+</H1>
+Write an unsigned 8-bit integer to a RIFF file.
+<p>
+<XMP>
+     RIFFIOSuccess
+     RIFFIOWrite8(RIFFIOFile *prf, unsigned char uc)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="rwbytes_riffiowrite_1">
+RIFFIOWrite16</A>
+</H1>
+Write an unsigned 16-bit integer to a RIFF file.
+<p>
+<XMP>
+     RIFFIOSuccess
+     RIFFIOWrite16(RIFFIOFile *prf, unsigned short us)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="rwbytes_riffiowrite_2">
+RIFFIOWrite32</A>
+</H1>
+Write an unsigned 32-bit integer to a RIFF file.
+<p>
+<XMP>
+     RIFFIOSuccess
+     RIFFIOWrite32(RIFFIOFile *prf, unsigned long ul)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="rwbytes_riffiowritefourcc_0">
+RIFFIOWriteFOURCC</A>
+</H1>
+Write a four-character code to a RIFF file.
+<p>
+<XMP>
+     RIFFIOSuccess
+     RIFFIOWriteFOURCC(RIFFIOFile *prf, RIFFIOFOURCC fcc)
+
+</XMP>
+<p>
+</BODY>
+</HTML>

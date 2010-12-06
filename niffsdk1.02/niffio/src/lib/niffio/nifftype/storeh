@@ -1,0 +1,614 @@
+/***************************
+ * Form
+ ****************************/
+extern RIFFIOSuccess
+NIFFIOStartNiff(void);
+extern RIFFIOSuccess
+NIFFIOEndNiff(void);
+
+/***************************
+ * Lists
+ ****************************/
+extern RIFFIOSuccess
+NIFFIOStartCustomGraphics(void);
+extern RIFFIOSuccess
+NIFFIOEndCustomGraphics(void);
+
+extern RIFFIOSuccess
+NIFFIOStartDataSection(void);
+extern RIFFIOSuccess
+NIFFIOEndDataSection(void);
+
+extern RIFFIOSuccess
+NIFFIOStartFontDescs(void);
+extern RIFFIOSuccess
+NIFFIOEndFontDescs(void);
+
+extern RIFFIOSuccess
+NIFFIOStartGroupings(void);
+extern RIFFIOSuccess
+NIFFIOEndGroupings(void);
+
+extern RIFFIOSuccess
+NIFFIOStartPage(void);
+extern RIFFIOSuccess
+NIFFIOEndPage(void);
+
+extern RIFFIOSuccess
+NIFFIOStartParts(void);
+extern RIFFIOSuccess
+NIFFIOEndParts(void);
+
+extern RIFFIOSuccess
+NIFFIOStartRiffInfo(void);
+extern RIFFIOSuccess
+NIFFIOEndRiffInfo(void);
+
+extern RIFFIOSuccess
+NIFFIOStartSetupSection(void);
+extern RIFFIOSuccess
+NIFFIOEndSetupSection(void);
+
+extern RIFFIOSuccess
+NIFFIOStartStaff(void);
+extern RIFFIOSuccess
+NIFFIOEndStaff(void);
+
+extern RIFFIOSuccess
+NIFFIOStartSystem(void);
+extern RIFFIOSuccess
+NIFFIOEndSystem(void);
+
+/***************************
+ * Raw chunks
+ ****************************/
+extern RIFFIOSuccess
+NIFFIOchunkAugDot(void);
+
+extern RIFFIOSuccess
+NIFFIOchunkChnkLenTable(void);
+
+extern RIFFIOSuccess
+NIFFIOchunkEpsGraphic(void);
+
+extern RIFFIOSuccess
+NIFFIOchunkGlissando(void);
+
+extern RIFFIOSuccess
+NIFFIOchunkPageHeader(void);
+
+extern RIFFIOSuccess
+NIFFIOchunkPortamento(void);
+
+extern RIFFIOSuccess
+NIFFIOchunkPsType1Font(void);
+
+extern RIFFIOSuccess
+NIFFIOchunkPsType3Font(void);
+
+extern RIFFIOSuccess
+NIFFIOchunkSlur(void);
+
+extern RIFFIOSuccess
+NIFFIOchunkStaffHeader(void);
+
+extern RIFFIOSuccess
+NIFFIOchunkStem(void);
+
+extern RIFFIOSuccess
+NIFFIOchunkStringTable(void);
+
+extern RIFFIOSuccess
+NIFFIOchunkSystemHeader(void);
+
+extern RIFFIOSuccess
+NIFFIOchunkTagActivate(void);
+
+extern RIFFIOSuccess
+NIFFIOchunkTagInactivate(void);
+
+extern RIFFIOSuccess
+NIFFIOchunkTie(void);
+
+extern RIFFIOSuccess
+NIFFIOchunkTuplet(void);
+
+/***************************
+ * Cooked chunks
+ ****************************/
+extern
+RIFFIOSuccess
+NIFFIOchunkAccidental(
+    BYTE shape);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkAltEndingGraphic(
+    BYTE bracketShape  ,
+    STROFFSET textString);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkArpeggio(
+    BYTE shape);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkArticulation(
+    SHORT shape);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkBarline(
+    BYTE type  ,
+    BYTE extendsTo  ,
+    SHORT numberOfStaves);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkBeam(
+    BYTE beamPartsToLeft  ,
+    BYTE beamPartsToRight);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkChordSymbol(
+    STROFFSET textDescription);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkClef(
+    BYTE shape  ,
+    SIGNEDBYTE staffStep  ,
+    BYTE octaveNumber);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkCustomGraphicChk(
+    SHORT value);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkDefaultValues(
+    FONTIDX musicFont  ,
+    FONTIDX partNameFont  ,
+    FONTIDX lyricFont  ,
+    FONTIDX chordSymbolFont  ,
+    FONTIDX measureNumberFont  ,
+    FONTIDX rehearsalMarkFont  ,
+    BYTE tupletGroupingSymbol  ,
+    BYTE tupletNumberStyle);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkDynamic(
+    BYTE code);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkFiguredBass(
+    STROFFSET textDescription);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkFingering(
+    BYTE shape);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkFontDescription(
+    STROFFSET fontNamePtr  ,
+    SHORT size  ,
+    SHORT spaceHeight  ,
+    SHORT where  ,
+    BYTE style);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkFontSymbol(
+    FOURCC chunkType  ,
+    SHORT spaceHeight  ,
+    BYTE shape);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkGuitarGrid(
+    BYTE numberOfFrets  ,
+    BYTE numberOfStrings  ,
+    STROFFSET textDescription);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkGuitarTabNum(
+    BYTE number  ,
+    SIGNEDBYTE staffStep);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkHairpin(
+    BYTE direction);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkHarpPedal(
+    STROFFSET pedalPositions);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkKeySignNonstandard(
+    BYTE numberOfChunks);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkKeySignature(
+    SIGNEDBYTE standardCode);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkLine(
+    BYTE shape);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkLyric(
+    STROFFSET text  ,
+    BYTE lyricVerseID);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkMeasureNumbering(
+    BYTE numberWhichMeasures  ,
+    BYTE numberFrequency  ,
+    SHORT startingNumber  ,
+    FONTIDX fontID  ,
+    BYTE aboveOrBelow  ,
+    BYTE horizontalCentering  ,
+    BYTE enclosure);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkMidiDataStream(
+    BYTE startTime);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkNiffInfo(
+    CHAR NIFFVersion [8] ,
+    BYTE programType  ,
+    BYTE standardUnits  ,
+    SHORT absoluteUnits  ,
+    SHORT midiClocksPerQuarter);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkNotehead(
+    BYTE shape  ,
+    SIGNEDBYTE staffStep  ,
+    RATIONAL duration);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkOctaveSign(
+    BYTE numberOfOctaves  ,
+    BYTE aboveOrBelow  ,
+    BYTE type  ,
+    STROFFSET textString);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkOrnament(
+    SHORT shape);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkParenthesis(
+    BYTE shape);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkPart(
+    SHORT partID  ,
+    STROFFSET name  ,
+    STROFFSET abbreviation  ,
+    BYTE numberOfStaves  ,
+    SIGNEDBYTE midiChannel  ,
+    SIGNEDBYTE midiCable  ,
+    SIGNEDBYTE transpose);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkPedalOrgan(
+    BYTE shape);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkPedalPiano(
+    BYTE shape);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkRehearsalMark(
+    STROFFSET textString  ,
+    BYTE enclosure);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkRepeatSign(
+    SHORT graphicalCode  ,
+    BYTE logicalCode);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkRest(
+    BYTE shape  ,
+    SIGNEDBYTE staffStep  ,
+    RATIONAL duration);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkStaffGrouping(
+    BYTE groupingType  ,
+    SHORT firstStaff  ,
+    SHORT lastStaff);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkSystemSeparation(
+    BYTE where);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkTempoMarkNonstandard(
+    BYTE numberOfChunks);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkTempoMarking(
+    STROFFSET textString  ,
+    RATIONAL noteValue  ,
+    SHORT beatsPerMinute);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkText(
+    STROFFSET value);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkTimeSigNonstandard(
+    BYTE numberOfChunks);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkTimeSignature(
+    SIGNEDBYTE topNumber  ,
+    BYTE bottomNumber);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkTimeSlice(
+    BYTE type  ,
+    RATIONAL startTime);
+
+extern
+RIFFIOSuccess
+NIFFIOchunkTremolo(
+    BYTE attachedBeamParts  ,
+    BYTE unattachedBeamParts);
+
+/***************************
+ * Raw tags
+ ****************************/
+extern RIFFIOSuccess
+NIFFIOtagEndOfSystem(void);
+
+extern RIFFIOSuccess
+NIFFIOtagGuitarTabTag(void);
+
+extern RIFFIOSuccess
+NIFFIOtagInvisible(void);
+
+extern RIFFIOSuccess
+NIFFIOtagLargeSize(void);
+
+extern RIFFIOSuccess
+NIFFIOtagMultiNodeEndOfSyst(void);
+
+extern RIFFIOSuccess
+NIFFIOtagMultiNodeStartOfSyst(void);
+
+extern RIFFIOSuccess
+NIFFIOtagSilent(void);
+
+extern RIFFIOSuccess
+NIFFIOtagSlashedStem(void);
+
+extern RIFFIOSuccess
+NIFFIOtagSmallSize(void);
+
+extern RIFFIOSuccess
+NIFFIOtagSpacingByPart(void);
+
+extern RIFFIOSuccess
+NIFFIOtagSplitStem(void);
+
+extern RIFFIOSuccess
+NIFFIOtagStaffName(void);
+
+/***************************
+ * Cooked composite tags
+ ****************************/
+extern
+RIFFIOSuccess
+NIFFIOtagAbsPlacement(
+    SHORT horizontal  ,
+    SHORT vertical);
+
+extern
+RIFFIOSuccess
+NIFFIOtagBezierIncoming(
+    SHORT horizontal  ,
+    SHORT vertical);
+
+extern
+RIFFIOSuccess
+NIFFIOtagBezierOutgoing(
+    SHORT horizontal  ,
+    SHORT vertical);
+
+extern
+RIFFIOSuccess
+NIFFIOtagCustomFontChar(
+    FONTIDX fontID  ,
+    CHAR characterCode [2]);
+
+extern
+RIFFIOSuccess
+NIFFIOtagLogicalPlacement(
+    BYTE horizontal  ,
+    BYTE vertical  ,
+    BYTE proximity);
+
+extern
+RIFFIOSuccess
+NIFFIOtagLyricVerseOffset(
+    SHORT lyricLineOffset  ,
+    BYTE lyricVerseID);
+
+extern
+RIFFIOSuccess
+NIFFIOtagMidiPerformance(
+    LONG startTime  ,
+    LONG duration  ,
+    BYTE pitch  ,
+    BYTE velocity);
+
+extern
+RIFFIOSuccess
+NIFFIOtagPartDescOverride(
+    SIGNEDBYTE MIDIchannel  ,
+    SIGNEDBYTE MIDIcable  ,
+    SIGNEDBYTE transpose);
+
+extern
+RIFFIOSuccess
+NIFFIOtagRefPtOverride(
+    BYTE anchor_h  ,
+    BYTE dependent_h  ,
+    BYTE anchor_v  ,
+    BYTE dependent_v);
+
+extern
+RIFFIOSuccess
+NIFFIOtagTupletDesc(
+    RATIONAL transformRatioAB  ,
+    RATIONAL transformRatioCD  ,
+    BYTE groupingSymbol);
+
+/***************************
+ * Cooked primitive tags
+ ****************************/
+extern
+RIFFIOSuccess
+NIFFIOtagAltEnding(niffAltEnding AltEnding);
+
+extern
+RIFFIOSuccess
+NIFFIOtagAnchorOverride(niffAnchorOverride AnchorOverride);
+
+extern
+RIFFIOSuccess
+NIFFIOtagArticDirection(niffArticDirection ArticDirection);
+
+extern
+RIFFIOSuccess
+NIFFIOtagChordSymbolsOffset(niffChordSymbolsOffset ChordSymbolsOffset);
+
+extern
+RIFFIOSuccess
+NIFFIOtagCustomGraphicTag(niffCustomGraphicTag CustomGraphicTag);
+
+extern
+RIFFIOSuccess
+NIFFIOtagFannedBeam(niffFannedBeam FannedBeam);
+
+extern
+RIFFIOSuccess
+NIFFIOtagFigBassOffset(niffFigBassOffset FigBassOffset);
+
+extern
+RIFFIOSuccess
+NIFFIOtagFontID(niffFontID FontID);
+
+extern
+RIFFIOSuccess
+NIFFIOtagGraceNote(niffGraceNote GraceNote);
+
+extern
+RIFFIOSuccess
+NIFFIOtagGuitarGridOffset(niffGuitarGridOffset GuitarGridOffset);
+
+extern
+RIFFIOSuccess
+NIFFIOtagHeight(niffHeight Height);
+
+extern
+RIFFIOSuccess
+NIFFIOtagID(niffID ID);
+
+extern
+RIFFIOSuccess
+NIFFIOtagLineQuality(niffLineQuality LineQuality);
+
+extern
+RIFFIOSuccess
+NIFFIOtagNumStaffLines(niffNumStaffLines NumStaffLines);
+
+extern
+RIFFIOSuccess
+NIFFIOtagNumberOfFlags(niffNumberOfFlags NumberOfFlags);
+
+extern
+RIFFIOSuccess
+NIFFIOtagNumberOfNodes(niffNumberOfNodes NumberOfNodes);
+
+extern
+RIFFIOSuccess
+NIFFIOtagNumberStyle(niffNumberStyle NumberStyle);
+
+extern
+RIFFIOSuccess
+NIFFIOtagOssia(niffOssia Ossia);
+
+extern
+RIFFIOSuccess
+NIFFIOtagPartID(niffPartID PartID);
+
+extern
+RIFFIOSuccess
+NIFFIOtagRehearsalOffset(niffRehearsalOffset RehearsalOffset);
+
+extern
+RIFFIOSuccess
+NIFFIOtagRestNumeral(niffRestNumeral RestNumeral);
+
+extern
+RIFFIOSuccess
+NIFFIOtagStaffStep(niffStaffStep StaffStep);
+
+extern
+RIFFIOSuccess
+NIFFIOtagThickness(niffThickness Thickness);
+
+extern
+RIFFIOSuccess
+NIFFIOtagTieDirection(niffTieDirection TieDirection);
+
+extern
+RIFFIOSuccess
+NIFFIOtagVoiceID(niffVoiceID VoiceID);
+
+extern
+RIFFIOSuccess
+NIFFIOtagWidth(niffWidth Width);
+

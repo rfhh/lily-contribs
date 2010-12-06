@@ -1,0 +1,167 @@
+
+ NAME
+ ====
+ inherit - RIFFIO-style file operations on NIFFIOFiles
+
+ SYNOPSIS
+ ========
+ All of these routines behave just like their RIFFIO counterparts.
+
+ - NIFFIOFileGetFormType()
+
+ - NIFFIORead()
+ - NIFFIOWrite()
+ - NIFFIOSeek()
+ - NIFFIOTell()
+
+ - NIFFIOChunkCreate()
+ - NIFFIOChunkFinalize()
+ - NIFFIOChunkDescend()
+ - NIFFIOChunkAscend()
+ 
+ - NIFFIOChunkDataSeek()
+ 
+ - NIFFIOChunkDataEnd()
+ - NIFFIOChunkEnd()
+
+ - NIFFIOWrite8()
+ - NIFFIOWrite16()
+ - NIFFIOWrite32()
+ - NIFFIOWriteFOURCC()
+ - NIFFIORead8()
+ - NIFFIORead16()
+ - NIFFIORead32()
+ - NIFFIOReadFOURCC() 
+ 
+
+ NIFFIOFileGetFormType
+ =====================
+ See RIFFIOFileGetFormType()
+
+| RIFFIOFormType
+| NIFFIOFileGetFormType(NIFFIOFile *pnf)
+
+ NIFFIORead
+ ==========
+ See RIFFIORead()
+
+| long
+| NIFFIORead(NIFFIOFile *pnf, void *bufferp, long n)
+
+ NIFFIOWrite
+ ===========
+ See RIFFIOWrite()
+
+| long
+| NIFFIOWrite(NIFFIOFile *pnf, void *bufferp, long n)
+
+ NIFFIOSeek
+ ==========
+ See RIFFIOSeek()
+
+| RIFFIOSuccess
+| NIFFIOSeek(NIFFIOFile *pnf, RIFFIOOffset offset, RIFFIOSeekOrigin origin)
+
+ NIFFIOTell
+ ==========
+ See RIFFIOTell()
+
+| long
+| NIFFIOTell(NIFFIOFile *pnf)
+
+ NIFFIOChunkCreate
+ =================
+ See RIFFIOChunkCreate()
+
+| RIFFIOSuccess
+| NIFFIOChunkCreate(NIFFIOFile *pnf, RIFFIOChunk *pchunk)
+
+ NIFFIOChunkFinalize
+ ===================
+ See RIFFIOChunkFinalize()
+
+| RIFFIOSuccess
+| NIFFIOChunkFinalize(NIFFIOFile *pnf, RIFFIOChunk *pchunk)
+
+ NIFFIOChunkAscend
+ =================
+ See RIFFIOChunkAscend()
+
+| RIFFIOSuccess
+| NIFFIOChunkAscend(NIFFIOFile *pnf, RIFFIOChunk *pchunk)
+
+ NIFFIOChunkDescend
+ ==================
+ See RIFFIOChunkDescend()
+
+| RIFFIOSuccess
+| NIFFIOChunkDescend(NIFFIOFile *pnf, RIFFIOChunk *pchunk)
+
+ NIFFIOChunkDataSeek
+ ===================
+ See RIFFIOChunkDataSeek()
+
+| RIFFIOSuccess
+| NIFFIOChunkSeekData(NIFFIOFile *pnf, const RIFFIOChunk *pchunk)
+
+ NIFFIOChunkDataEnd
+ ==================
+ See RIFFIOChunkDataEnd()
+
+| int
+| NIFFIOChunkDataEnd(NIFFIOFile *pnf, RIFFIOChunk *pchunk)
+
+ NIFFIOChunkEnd
+ ==============
+ See RIFFIOChunkEnd()
+
+| int
+| NIFFIOChunkEnd(NIFFIOFile *pnf, RIFFIOChunk *pchunk)
+
+ NIFFIOWrite8
+ ============
+ See RIFFIOWrite8()
+
+| RIFFIOSuccess NIFFIOWrite8(NIFFIOFile *pnf, unsigned char uc)
+
+ NIFFIOWrite16
+ =============
+ See RIFFIOWrite16()
+
+| RIFFIOSuccess NIFFIOWrite16(NIFFIOFile *pnf, unsigned short us)
+
+ NIFFIOWrite32
+ =============
+ See RIFFIOWrite32()
+
+| RIFFIOSuccess NIFFIOWrite32(NIFFIOFile *pnf, unsigned long ul)
+
+ NIFFIOWriteFOURCC
+ =================
+ See RIFFIOWriteFOURCC()
+
+| RIFFIOSuccess NIFFIOWriteFOURCC(NIFFIOFile *pnf, FOURCC fcc)
+
+ NIFFIORead8
+ ===========
+ See RIFFIORead8()
+
+| RIFFIOSuccess NIFFIORead8(NIFFIOFile *pnf, unsigned char *puc)
+
+ NIFFIORead16
+ ============
+ See RIFFIORead16()
+
+| RIFFIOSuccess NIFFIORead16(NIFFIOFile *pnf, unsigned short *pus)
+
+ NIFFIORead32
+ ============
+ See RIFFIORead32()
+
+| RIFFIOSuccess NIFFIORead32(NIFFIOFile *pnf, unsigned long *pul)
+
+ NIFFIOReadFOURCC
+ ================
+ See RIFFIOReadFOURCC()
+
+| RIFFIOSuccess NIFFIOReadFOURCC(NIFFIOFile *pnf, FOURCC *pfcc)

@@ -1,0 +1,112 @@
+
+ NAME
+ ====
+ table - Maintain a table of FOURCC/value pairs
+
+ SYNOPSIS
+ ========
+ 
+ - RIFFIOFCCTableNew()
+ - RIFFIOFCCTableDelete()
+ - RIFFIOFCCTableMakeEntry()
+ - RIFFIOFCCTableLookup()
+ - RIFFIOFCCTableCount()
+ - RIFFIOFCCTableCreateArray()
+ - RIFFIOFCCTableFreeEntries()
+ - RIFFIOFCCTableForEachEntry()
+ - RIFFIOFCCTableDump()
+
+
+ RIFFIOFCCTableNew
+ =================
+ Return a newly created table.
+
+| RIFFIOFCCTable *
+| RIFFIOFCCTableNew(void)
+ OBLIGATIONS
+ -----------
+ Use RIFFIOFCCTableDelete to free the table.
+ 
+ RETURNS
+ -------
+ The new table or null on failure.
+
+
+ RIFFIOFCCTableDelete
+ ====================
+ Free all memory allocated for a table.
+
+| void
+| RIFFIOFCCTableDelete(RIFFIOFCCTable *ptable)
+ 
+ WARNING
+ -------
+ Orphans all table entry values if they happen to be pointers.
+
+ ENTRY
+ -----
+ <*ptable> must have been created by RIFFIOFCCTableCreate.
+
+
+ RIFFIOFCCTableMakeEntry
+ =======================
+ Make a new entry in a table.
+
+| RIFFIOSuccess
+| RIFFIOFCCTableMakeEntry(RIFFIOFCCTable *ptable, RIFFIOFCCTableEntry newEntry)
+
+ Replaces any existing entry with the value of the new entry.
+ 
+ RETURN
+ ------
+ Return the success status of the operation.
+
+
+ RIFFIOFCCTableLookup
+ ====================
+ Lookup a value in a RIFFIOFCCTable given a FOURCC.
+
+| RIFFIOSuccess
+| RIFFIOFCCTableLookup(RIFFIOFCCTable *ptable, RIFFIOFCCTableEntry *entryp)
+
+ RIFFIOFCCTableCount
+ ===================
+ Return the number of entries in a table
+
+| unsigned
+| RIFFIOFCCTableCount(RIFFIOFCCTable *ptable)
+
+ RIFFIOFCCTableCreateArray
+ =========================
+ Return a newly allocated array of all the entries in a table.
+
+| RIFFIOFCCTableEntry *
+| RIFFIOFCCTableCreateArray(RIFFIOFCCTable *ptable)
+
+ EXIT
+ ----
+ The new array is NOT sorted in any particular order.
+
+ OBLIGATIONS
+ -----------
+ The new array must be freed by the caller. 
+
+
+ RIFFIOFCCTableForEachEntry
+ ===========================
+ Apply a function over every entry in a table.
+
+| void
+| RIFFIOFCCTableForEachEntry(RIFFIOFCCTable *ptable, void f(RIFFIOFCCTableEntry))
+
+ ENTRY
+ -----
+ <f> must not modify, add or delete any entries
+
+
+ RIFFIOFCCTableDump
+ ==================
+ Print the contents of a RIFFIOFCCTable for debugging
+
+| void
+| RIFFIOFCCTableDump(FILE *fp, RIFFIOFCCTable *ptable)

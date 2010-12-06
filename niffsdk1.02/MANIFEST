@@ -1,0 +1,26 @@
+MANIFEST
+Makefile.in	      Template for Makefile, Used by configure
+NIFFSDK		      Info about this package.
+README
+configure	      Run this to configure the NIFFSDK
+configure.in	      Don't worry about this. Source for configure.
+doc/htm/niffsdk.htm
+doc/htm/snapshot.htm
+doc/man/niffsdk.man
+doc/man/snapshot.man
+doc/pod/niffsdk.pod
+doc/pod/snapshot.pod
+doc/txt/Makefile    
+doc/txt/niffsdk.txt   Frequently asked questions about NIFFSDK. Start Here.	
+doc/txt/snapshot.txt  What is the state of the NIFF SDK?
+local.mk
+mk/bin.mk
+mk/dir.mk
+mk/doc.mk
+mk/inc.mk
+mk/install.sh
+mk/lib.mk
+mk/mkdep.in
+mk/mkinsdir
+mk/pkg.mk
+mk/top.in

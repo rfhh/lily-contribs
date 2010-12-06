@@ -1,0 +1,17 @@
+MANIFEST
+Makefile.in
+NIFF
+configure
+configure.in
+include/niff.h
+local.mk
+mk/bin.mk
+mk/dir.mk
+mk/doc.mk
+mk/inc.mk
+mk/install.sh
+mk/lib.mk
+mk/mkdep.in
+mk/mkinsdir
+mk/pkg.mk
+mk/top.in

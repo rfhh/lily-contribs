@@ -1,0 +1,268 @@
+<!-- $Id$ -->
+<HTML><HEAD>
+<CENTER><TITLE>niffio</TITLE>
+</HEAD>
+<BODY></CENTER><p><hr>
+
+<H1> 
+<A NAME="niffio_name_0">
+NAME</A>
+</H1>
+niffio - Data types of the NIFFIO API
+<p>NIFFIO provides data types and functions to manipulate NIFF-specific
+features of NIFF files (eg. tags, chunk length tables).
+Because NIFF files are also RIFF files, NIFFIO makes heavy use
+of the RIFFIO API for ordinary RIFF features (eg. chunks).
+<p><p><hr>
+
+<H1> 
+<A NAME="niffio_niff_0">
+NIFF Specification</A>
+</H1>
+Where is NIFF described?
+<p>The NIFF file format is described in the NIFF specification.
+<p>Notation Interchange File Format
+URL <A HREF="ftp://blackbox.cartah.washington.edu">ftp://blackbox.cartah.washington.edu</A>
+<p><p><hr>
+
+<H1> 
+<A NAME="niffio_niff_1">
+NIFF Version</A>
+</H1>
+Which version of NIFF does NIFFIO support?
+<p>NIFFIO supports NIFF 6b.
+<p><p><hr>
+
+<H1> 
+<A NAME="niffio_niffiochunklengthtable_0">
+NIFFIOChunkLengthTable</A>
+</H1>
+How are chunk length tables represented?
+<p>NIFFIO provides chunk length table routines that operate on
+a pointer to a NIFFIOChunkLengthTable structure.
+<p>A NIFFIOChunkLengthTable is not necessarily stored in memory
+the same way as a chunk length table is stored in a NIFF file.
+<p>All of the members of a NIFFIOChunkLengthTable are private.
+<p><p><hr>
+
+<H1> 
+<A NAME="niffio_niffiotag_0">
+NIFFIOTag</A>
+</H1>
+How are tags supported?
+<p>A NIFFIOTag holds tag id, size, and file location information about
+a tag in a NIFF file.
+<p>
+<XMP>
+       
+     typedef struct 
+     {
+         /* Public - users need to read and set these members */
+         BYTE         tagid;       /* type of tag */
+         BYTE         tagsizeData; /* size of tag's data
+                                    * (does not include possible pad byte)
+                                    */
+         
+         /* Other Private members - not for NIFFIO users */
+      
+     } NIFFIOTag;
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="niffio_niffiofile_0">
+NIFFIOFile</A>
+</H1>
+How are NIFF files represented?
+<p>Operations on NIFF files take pointers to a NIFFIOFile structure.
+<p>Represents a NIFF file, including I/O operations and its chunk
+length table.
+<p>There are no public members of a NIFFIOFile.
+<p>Because NIFF files are also RIFF files,
+all of the I/O operations defined for RIFFIO files have
+RIFFIO equivalents. (see *&lt;NIFFIO Inherit&gt;*)
+<p><p><hr>
+
+<H1> 
+<A NAME="niffio_niffiostbl_0">
+NIFFIOStbl</A>
+</H1>
+How is the NIFF String Table (stbl) represented?
+<p>Operations on the String Table take a pointer to a NIFFIOStbl structure.
+<p>This structure represents a single string item, including a pointer to its
+value and its offset into the NIFF file's string table. It is used by the
+NIFF writing program.
+<p>When writing a NIFF file, the user supplies an array of type
+NIFFIOStbl, with the pointers to each of the strings placed into
+the &lt;*str&gt; fields.  The user then calls NIFFIOchunkStringTable with
+this array and the number of strings supplied.
+
+<A HREF="store.htm#store_niffiostorestbl_0">NIFFIOStoreStbl()</A>
+ puts the strings into string table format,
+calculating the offsets and storing each offset into the matching
+position for its string, and then stores the whole string table
+into the file.  The string offsets can be thus be obtained and used
+by the writing program when writing out chunks which refer to the
+string later in the file.
+<p>
+<XMP>
+     
+     typedef struct 
+     {
+         STROFFSET offset;  /* Offset of string relative to chunk data start */
+         char      *str;    
+     } NIFFIOStbl;
+     
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="niffio_niffioparser_0">
+NIFFIOParser</A>
+</H1>
+How does NIFFIO know how to parse a NIFF file?
+<p>NIFFIO uses a NIFFIOParser structure to store parsing information
+for NIFF files.  A NIFFIOParser remembers user-supplied callbacks
+to process selected NIFF chunks and tags.
+<p>See Also:
+- *&lt;NIFFIO Parse&gt;*
+<p>
+<UL>
+<LI>*&lt;NIFFIO Register&gt;*
+<p>
+</UL>
+A user may choose to trace the operation of a NIFFIOParser..The default tracer uses the Standard C Library to print to &lt;stderr&gt;.
+Alternatively, the user may supply their own routine to handle
+tracing output.
+<p>
+<H2> 
+<A NAME="niffio_niffioparsertracer_0">
+NIFFIOParserTracer</A>
+</H2>
+Callback to handle parser tracing output.
+<p>
+<XMP>
+     typedef void (*NIFFIOParserTracer)(const char *strParser,
+                                        const unsigned nLevel, 
+                                        const char *strFormat, 
+                                        ...);
+
+</XMP>
+<p>PARAMETERS:
+<strParser&gt; is a string that identifies a parser in case there
+is more than one parser in a program.
+<p><nLevel&gt; is the nesting depth of the current chunk or tag.
+It is the number of chunks above the current object. For example, the
+the NIFF form chunk has an &lt;nLevel&gt; == 0.
+<p><strFormat&gt; is a vprintf compatible format string that reflects the
+following variable argument list to the NIFFIOParserTracer.
+<p>
+<XMP>
+     
+
+</XMP>
+<p>
+<H2> 
+<A NAME="niffio_niffiousercontext_0">
+NIFFIOUserContext</A>
+</H2>
+User-defined parser state information provided by parent chunk callbacks.
+<p>
+<XMP>
+     typedef void *NIFFIOUserContext;
+
+</XMP>
+<p>While parsing a NIFF file, users may keep track of their own
+parsing information by supplying pointers to custom, user-defined data
+structures.  In turn, the NIFFIO parser will pass chunk and tag callbacks
+the ``context'' of their enclosing (parent) chunk.
+<p>NIFFIOUserContexts are solely for the user's use.
+NIFFIO will never dereference any NIFFIOUserContext.
+User contexts may be safely ignored by any user who does not wish to
+use them.  It is safe to assign a null pointer to a NIFFIOUserContext.
+<p>
+<XMP>
+     
+
+</XMP>
+<p>In addition to the NIFFIOUserContext of its parent chunk, a
+chunk callback routine also gets information about the chunk it
+is processing through a NIFFIOChunkContext structure.
+<p>
+<H2> 
+<A NAME="niffio_niffiochunkcontext_0">
+NIFFIOChunkContext</A>
+</H2>
+Parser state information provided to chunk callbacks.
+<p>
+<XMP>
+      
+     typedef struct
+     {
+       unsigned          nLevel;        /* chunk depth */
+       NIFFIOFile        *pnf;          /* NIFF file that contains the chunk   */
+       RIFFIOChunk       *pchunk;       /* Chunk information from file         */
+       NIFFIOUserContext ctxParent;     /* Parent chunk user context           */
+       NIFFIOUserContext ctxMe;         /* Child user context, to be filled in
+                                         * by chunk start callback
+                                         */
+     } NIFFIOChunkContext;
+     
+
+</XMP>
+<p>
+<H2> 
+<A NAME="niffio_niffiotagcontext_0">
+NIFFIOTagContext</A>
+</H2>
+Parser state information provided to tag callbacks.
+<p>
+<XMP>
+     typedef struct
+     {
+       unsigned          nLevel;        /* tag depth */
+       NIFFIOFile        *pnf;          /* NIFF file that contains the chunk  */
+       NIFFIOTag         *ptag;         /* Tag information from file          */
+       RIFFIOChunk       *pchunkParent; /* Parent chunk information from file */
+       NIFFIOUserContext ctxParent;     /* Parent chunk user context          */
+     } NIFFIOTagContext;
+     
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="niffio_parser_0">
+Parser Callbacks</A>
+</H1>
+Here are the types of functions that the user needs to define to
+use as callbacks.
+<p>
+<H2> 
+<A NAME="niffio_niffiochunkcallback_0">
+NIFFIOChunkCallback</A>
+</H2>
+Process a chunk encountered by the parser.
+<p>
+<XMP>
+     typedef RIFFIOSuccess (*NIFFIOChunkCallback)(NIFFIOChunkContext *pchunkctx);
+     
+
+</XMP>
+<p>
+<H2> 
+<A NAME="niffio_niffiotagcallback_0">
+NIFFIOTagCallback</A>
+</H2>
+Process a tag encountered by the parser.
+<p>
+<XMP>
+     typedef RIFFIOSuccess (*NIFFIOTagCallback)(NIFFIOTagContext *ptagctx); 
+     
+
+</XMP>
+<p>
+</BODY>
+</HTML>

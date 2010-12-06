@@ -1,0 +1,206 @@
+
+=head1 NAME
+
+snapshot - What is the state of the NIFF SDK?
+
+=head1 SYNOPSIS
+
+=over 4
+
+=item *
+
+VERSION
+
+=item *
+
+WHAT'S NEW
+
+=item *
+
+BUG FIXES
+
+=item *
+
+TODO
+
+=back
+
+I made some significant progress before I got 1.01 out so here is 1.02
+instead. niffdump is _much_ improved.
+
+=head1 VERSION
+
+1.02
+
+=head1 WHAT'S NEW
+
+=over 4
+
+=item *
+
+Removed sample RIFF files
+
+=item *
+
+Reorganized NIFFSDK into RIFFIO, NIFFIO, and NIFF components.
+
+=item *
+
+Changed build system.
+
+=item *
+
+Autoconfiguration under UNIX
+
+=item *
+
+Everything under CVS
+
+=item *
+
+Documentation in text, man, pod, and HTML
+
+=item *
+
+A few simple regression tests.
+
+=item *
+
+Ran a few checks for memory leaks - looks good.
+
+=item *
+
+Replaced some functions added in 1.0 by Cindy Grande with similar ones.
+NIFFIOFilePrepare() and NIFFIOFileWriteCLT().
+
+=item *
+
+NIFFIOStorageNewSTDC(), NIFFIOFileNewSTDC() for simple initialization.
+
+=item *
+
+NIFFIOStoreStbl(), NIFFIOStoreCLT(), NIFFIOStoreDefaultCLT() for
+NIFFIOStorage operations on special objects.
+
+=item *
+
+NIFFIOStorage now OWNS its NIFFIOFile. Don't call NIFFIOFileDelete()!
+
+=item *
+
+Slightly modified niff.h
+
+=item *
+
+No more tabs in source
+
+=item *
+
+fcc.c: Created macro RIFFIO_FOURCC_MIN for string lengths that will
+hold a FOURCC. Don't use the constant "5" anymore.
+
+=item *
+
+Added INFO chunks to NIFFIOCLTMakeDefaultEntries().
+
+=item *
+
+Improved niffdump considerably. Check it out! It decodes many more
+chunks and a few tags.
+
+=item *
+
+niffio/names.c: functions to convert between NIFF Ids/enumerated types and
+strings. (Still need many more)
+
+=item *
+
+niffio/clt.c: don't store length of default CLT array anymore, used sentinel.
+
+=item *
+
+niffio/clt.c: added RIFF INFO chunks to default chunk length table.
+
+=back
+
+=head1 BUG FIXES
+
+=over 4
+
+=item *
+
+RIFFIOChunkStackPush() used wrong expression to check for a full stack.
+
+=item *
+
+STDCRIFFRead() had if statements without parenthesis
+
+=item *
+
+Made sure CPP line continuations had whitespace in front of them.
+
+=back
+
+=head1 TODO
+
+=over 4
+
+=item *
+
+Find out what developers _really_ need this thing to do.
+
+=item *
+
+Steve might want a function that reads a String Table into an array
+of strings. Sort of the inverse of NIFFIOStoreStbl().
+
+=item *
+
+Need code that writes standard, example  NIFF files for
+regression tests.
+
+=item *
+
+Keep adding chunks and tags to niffdump.
+
+=item *
+
+Write a real user's guide.
+
+=item *
+
+Write more example code.
+
+=item *
+
+Implement more regression tests.
+
+=item *
+
+Automate memory leak checks.
+
+=item *
+
+Be explicit about what happens during parsing errors.
+
+=item *
+
+write functions to convert between NIFF enumerated types and strings.
+
+=item *
+
+niffdump should handle all niff objects
+
+=item *
+
+Add parser callback registration functions for RIFF INFO chunks.
+
+=item *
+
+niffdump should generate output in a standard format for a future
+niff compiler (useful for more regression tests).
+
+=item *
+
+write a niff compiler (useful for regression tests). Syntax similar
+to RIFF.

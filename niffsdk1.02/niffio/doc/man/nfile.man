@@ -1,0 +1,351 @@
+.rn '' }`
+''' $RCSfile$$Revision$$Date$
+'''
+''' $Log$
+'''
+.de Sh
+.br
+.if t .Sp
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.de Sp
+.if t .sp .5v
+.if n .sp
+..
+.de Ip
+.br
+.ie \\n(.$>=3 .ne \\$3
+.el .ne 3
+.IP "\\$1" \\$2
+..
+.de Vb
+.ft CW
+.nf
+.ne \\$1
+..
+.de Ve
+.ft R
+
+.fi
+..
+'''
+'''
+'''     Set up \*(-- to give an unbreakable dash;
+'''     string Tr holds user defined translation string.
+'''     Bell System Logo is used as a dummy character.
+'''
+.tr \(*W-|\(bv\*(Tr
+.ie n \{\
+.ds -- \(*W-
+.ds PI pi
+.if (\n(.H=4u)&(1m=24u) .ds -- \(*W\h'-12u'\(*W\h'-12u'-\" diablo 10 pitch
+.if (\n(.H=4u)&(1m=20u) .ds -- \(*W\h'-12u'\(*W\h'-8u'-\" diablo 12 pitch
+.ds L" ""
+.ds R" ""
+.ds L' '
+.ds R' '
+'br\}
+.el\{\
+.ds -- \(em\|
+.tr \*(Tr
+.ds L" ``
+.ds R" ''
+.ds L' `
+.ds R' '
+.ds PI \(*p
+'br\}
+.\"	If the F register is turned on, we'll generate
+.\"	index entries out stderr for the following things:
+.\"		TH	Title 
+.\"		SH	Header
+.\"		Sh	Subsection 
+.\"		Ip	Item
+.\"		X<>	Xref  (embedded
+.\"	Of course, you have to process the output yourself
+.\"	in some meaninful fashion.
+.if \nF \{
+.de IX
+.tm Index:\\$1\t\\n%\t"\\$2"
+..
+.nr % 0
+.rr F
+.\}
+.TH nfile 3 "niffio" "14/Jun/96" "NIFFIO Documentation"
+.IX Title "nfile 3"
+.UC
+.IX Name "nfile - NIFFIOFile routines"
+.if n .hy 0
+.if n .na
+.ds C+ C\v'-.1v'\h'-1p'\s-2+\h'-1p'+\s0\v'.1v'\h'-1p'
+.de CQ          \" put $1 in typewriter font
+.ft CW
+'if n "\c
+'if t \\&\\$1\c
+'if n \\&\\$1\c
+'if n \&"
+\\&\\$2 \\$3 \\$4 \\$5 \\$6 \\$7
+'.ft R
+..
+.\" @(#)ms.acc 1.5 88/02/08 SMI; from UCB 4.2
+.	\" AM - accent mark definitions
+.bd B 3
+.	\" fudge factors for nroff and troff
+.if n \{\
+.	ds #H 0
+.	ds #V .8m
+.	ds #F .3m
+.	ds #[ \f1
+.	ds #] \fP
+.\}
+.if t \{\
+.	ds #H ((1u-(\\\\n(.fu%2u))*.13m)
+.	ds #V .6m
+.	ds #F 0
+.	ds #[ \&
+.	ds #] \&
+.\}
+.	\" simple accents for nroff and troff
+.if n \{\
+.	ds ' \&
+.	ds ` \&
+.	ds ^ \&
+.	ds , \&
+.	ds ~ ~
+.	ds ? ?
+.	ds ! !
+.	ds /
+.	ds q
+.\}
+.if t \{\
+.	ds ' \\k:\h'-(\\n(.wu*8/10-\*(#H)'\'\h"|\\n:u"
+.	ds ` \\k:\h'-(\\n(.wu*8/10-\*(#H)'\`\h'|\\n:u'
+.	ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'^\h'|\\n:u'
+.	ds , \\k:\h'-(\\n(.wu*8/10)',\h'|\\n:u'
+.	ds ~ \\k:\h'-(\\n(.wu-\*(#H-.1m)'~\h'|\\n:u'
+.	ds ? \s-2c\h'-\w'c'u*7/10'\u\h'\*(#H'\zi\d\s+2\h'\w'c'u*8/10'
+.	ds ! \s-2\(or\s+2\h'-\w'\(or'u'\v'-.8m'.\v'.8m'
+.	ds / \\k:\h'-(\\n(.wu*8/10-\*(#H)'\z\(sl\h'|\\n:u'
+.	ds q o\h'-\w'o'u*8/10'\s-4\v'.4m'\z\(*i\v'-.4m'\s+4\h'\w'o'u*8/10'
+.\}
+.	\" troff and (daisy-wheel) nroff accents
+.ds : \\k:\h'-(\\n(.wu*8/10-\*(#H+.1m+\*(#F)'\v'-\*(#V'\z.\h'.2m+\*(#F'.\h'|\\n:u'\v'\*(#V'
+.ds 8 \h'\*(#H'\(*b\h'-\*(#H'
+.ds v \\k:\h'-(\\n(.wu*9/10-\*(#H)'\v'-\*(#V'\*(#[\s-4v\s0\v'\*(#V'\h'|\\n:u'\*(#]
+.ds _ \\k:\h'-(\\n(.wu*9/10-\*(#H+(\*(#F*2/3))'\v'-.4m'\z\(hy\v'.4m'\h'|\\n:u'
+.ds . \\k:\h'-(\\n(.wu*8/10)'\v'\*(#V*4/10'\z.\v'-\*(#V*4/10'\h'|\\n:u'
+.ds 3 \*(#[\v'.2m'\s-2\&3\s0\v'-.2m'\*(#]
+.ds o \\k:\h'-(\\n(.wu+\w'\(de'u-\*(#H)/2u'\v'-.3n'\*(#[\z\(de\v'.3n'\h'|\\n:u'\*(#]
+.ds d- \h'\*(#H'\(pd\h'-\w'~'u'\v'-.25m'\f2\(hy\fP\v'.25m'\h'-\*(#H'
+.ds D- D\\k:\h'-\w'D'u'\v'-.11m'\z\(hy\v'.11m'\h'|\\n:u'
+.ds th \*(#[\v'.3m'\s+1I\s-1\v'-.3m'\h'-(\w'I'u*2/3)'\s-1o\s+1\*(#]
+.ds Th \*(#[\s+2I\s-2\h'-\w'I'u*3/5'\v'-.3m'o\v'.3m'\*(#]
+.ds ae a\h'-(\w'a'u*4/10)'e
+.ds Ae A\h'-(\w'A'u*4/10)'E
+.ds oe o\h'-(\w'o'u*4/10)'e
+.ds Oe O\h'-(\w'O'u*4/10)'E
+.	\" corrections for vroff
+.if v .ds ~ \\k:\h'-(\\n(.wu*9/10-\*(#H)'\s-2\u~\d\s+2\h'|\\n:u'
+.if v .ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'\v'-.4m'^\v'.4m'\h'|\\n:u'
+.	\" for low resolution devices (crt and lpr)
+.if \n(.H>23 .if \n(.V>19 \
+\{\
+.	ds : e
+.	ds 8 ss
+.	ds v \h'-1'\o'\(aa\(ga'
+.	ds _ \h'-1'^
+.	ds . \h'-1'.
+.	ds 3 3
+.	ds o a
+.	ds d- d\h'-1'\(ga
+.	ds D- D\h'-1'\(hy
+.	ds th \o'bp'
+.	ds Th \o'LP'
+.	ds ae ae
+.	ds Ae AE
+.	ds oe oe
+.	ds Oe OE
+.\}
+.rm #[ #] #H #V #F C
+.SH "NAME"
+.IX Header "NAME"
+nfile \- NIFFIOFile routines
+.SH "SYNOPSIS"
+.IX Header "SYNOPSIS"
+.Ip "\(bu" 4
+.IX Item "\(bu"
+\fINIFFIOFileNew()\fR
+.Ip "\(bu" 4
+.IX Item "\(bu"
+\fINIFFIOFileNewSTDC()\fR
+.Ip "\(bu" 4
+.IX Item "\(bu"
+\fINIFFIOFileInit()\fR
+.Ip "\(bu" 4
+.IX Item "\(bu"
+\fINIFFIOFileDelete()\fR
+.Ip "\(bu" 4
+.IX Item "\(bu"
+\fINIFFIOFileGetCLT()\fR
+.Ip "\(bu" 4
+.IX Item "\(bu"
+\fINIFFIOFileReadCLT()\fR
+.Ip "\(bu" 4
+.IX Item "\(bu"
+\fINIFFIOFileAdoptCLT()\fR
+.Ip "\(bu" 4
+.IX Item "\(bu"
+\fINIFFIOSeekChunkTags()\fR
+.SH "NIFFIOFileNew"
+.IX Header "NIFFIOFileNew"
+Return a pointer to a new NIFFIOFile, or null on failure.
+.PP
+.Vb 2
+\&     NIFFIOFile *
+\&     NIFFIOFileNew(void)
+.Ve
+.Sh "\s-1OBLIGATIONS\s0"
+.IX Subsection "\s-1OBLIGATIONS\s0"
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Don't forget to call \fINIFFIOFileInit()\fR for your new file.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+You must eventually call \fINIFFIOFileDelete()\fR to free the NIFFIOFile.
+.SH "NIFFIOFileNewSTDC"
+.IX Header "NIFFIOFileNewSTDC"
+Create a new NIFFIOFile given a Standard C Library FILE pointer
+.PP
+.Vb 2
+\&     NIFFIOFile *
+\&     NIFFIOFileNewSTDC(FILE *fp)
+.Ve
+.Sh "\s-1OBLIGATIONS\s0"
+.IX Subsection "\s-1OBLIGATIONS\s0"
+You must call \fINIFFIOFileDelete()\fR to free the new NIFFIOFile.
+.SH "NIFFIOFileInit"
+.IX Header "NIFFIOFileInit"
+Provide a NIFFIOFile with a user-defined file and I/O callbacks.
+.PP
+.Vb 7
+\&     RIFFIOSuccess
+\&     NIFFIOFileInit(NIFFIOFile *pnf,
+\&                    void *pvUserFile,
+\&                    RIFFIOReader reader,
+\&                    RIFFIOWriter writer,
+\&                    RIFFIOSeeker seeker,
+\&                    RIFFIOTeller teller)
+.Ve
+.Sh "\s-1ENTRY\s0"
+.IX Subsection "\s-1ENTRY\s0"
+.Ip "*<pnf>" 4
+.IX Item "*<pnf>"
+is the NIFFIOFile being initialized.
+.Ip "*<pvUserFile>" 4
+.IX Item "*<pvUserFile>"
+is a user representation of a file that will be passed to
+user-defined reader, writer, seeker, and teller functions.
+.Ip "*<reader>,<writer>,<seeker>,<teller>" 4
+.IX Item "*<reader>,<writer>,<seeker>,<teller>"
+are user-defined functions that perform operations on <pvUserFile>
+.Sh "\s-1OBLIGATIONS\s0"
+.IX Subsection "\s-1OBLIGATIONS\s0"
+\fINIFFFIOFileInit()\fR should be called immediately after \fINIFFIOFileNew()\fR
+.SH "NIFFIOFileDelete"
+.IX Header "NIFFIOFileDelete"
+Free the memory associated with a NIFFIOFile.
+.PP
+.Vb 2
+\&     void
+\&     NIFFIOFileDelete(NIFFIOFile *pnf)
+.Ve
+.Sh "\s-1WARNING\s0"
+.IX Subsection "\s-1WARNING\s0"
+This also frees the memory of any NIFFIOChunkLengthTable
+that may have been associated with the NIFFIOFile
+using \fINIFFIOFileAdoptCLT()\fR.
+.SH "NIFFIOFileGetCLT"
+.IX Header "NIFFIOFileGetCLT"
+Return a pointer to a NIFFIOFile's chunk length table.
+.PP
+.Vb 2
+\&     NIFFIOChunkLengthTable *
+\&     NIFFIOFileGetCLT(NIFFIOFile *pnf)
+.Ve
+.Sh "\s-1RETURN\s0"
+.IX Subsection "\s-1RETURN\s0"
+null if the chunk length table has not be set or read yet.
+.Sh "\s-1OBLIGATIONS\s0"
+.IX Subsection "\s-1OBLIGATIONS\s0"
+This pointer may become invalid after calls to
+other \s-1NIFFIO\s0 routines.  Such as what ?????
+.SH "NIFFIOFileReadCLT"
+.IX Header "NIFFIOFileReadCLT"
+Read and set a NIFFIOFile's chunk length table.
+.PP
+.Vb 2
+\&     RIFFIOSuccess
+\&     NIFFIOFileReadCLT(NIFFIOFile *pnf, RIFFIOChunk *pchunkCLT)
+.Ve
+.Sh "\s-1ENTRY\s0"
+.IX Subsection "\s-1ENTRY\s0"
+.Ip "*<*pchunkCLT>" 4
+.IX Item "*<*pchunkCLT>"
+is a chunk length table chunk that has been
+returned by \fINIFFIOChunkDescend()\fR.
+.Ip "*<*pnf>" 4
+.IX Item "*<*pnf>"
+may be positioned anywhere
+.Sh "\s-1EXIT\s0"
+.IX Subsection "\s-1EXIT\s0"
+Leaves the NIFFIOFile positioned after the chunk length table chunk.
+.SH "NIFFIOFileAdoptCLT"
+.IX Header "NIFFIOFileAdoptCLT"
+Assign and write a chunk length table to a NIFFIOFile.
+.PP
+.Vb 2
+\&     RIFFIOSuccess
+\&     NIFFIOFileAdoptCLT(NIFFIOFile *pnf, NIFFIOChunkLengthTable *pclt)
+.Ve
+.Sh "\s-1ENTRY\s0"
+.IX Subsection "\s-1ENTRY\s0"
+The NIFFIOFile must be positioned at the start of data
+of its \s-1CLT\s0 chunk.
+.Sh "\s-1EXIT\s0"
+.IX Subsection "\s-1EXIT\s0"
+Leaves the file positioned at the end of the \s-1CLT\s0 chunk data
+that it just wrote.
+.Sh "\s-1OBLIGATIONS\s0"
+.IX Subsection "\s-1OBLIGATIONS\s0"
+Upon return, the NIFFIOFile takes responsibility for
+deleting the \s-1CLT\s0 you just gave it.
+Don't free or delete <*pclt>; that will be done by either another
+call to \fINIFFIOFileAdoptCLT()\fR or \fINIFFIOFileDelete()\fR.
+.SH "NIFFIOSeekChunkTags"
+.IX Header "NIFFIOSeekChunkTags"
+Position a NIFFIOFile at the start of a given chunk's tags.
+.PP
+.Vb 2
+\&     RIFFIOSuccess
+\&     NIFFIOSeekChunkTags(NIFFIOFile *pnf, RIFFIOChunk *pchunk)
+.Ve
+This is done according to the chunk length table associated
+with the NIFFIOFile.
+.PP
+It is an error if there is no associated CLT. Use \fINIFFIOFileGetCLT()\fR
+to find out.
+.Sh "\s-1RETURNS\s0"
+.IX Subsection "\s-1RETURNS\s0"
+.Ip "*\s-1RIFFIO_OK\s0" 4
+.IX Item "*\s-1RIFFIO_OK\s0"
+on success
+.Ip "*\s-1RIFFIO_FAIL\s0" 4
+.IX Item "*\s-1RIFFIO_FAIL\s0"
+if the lookup failed to find the chunks id in the \s-1CLT\s0
+.Ip "*\s-1RIFFIO_FAIL\s0" 4
+.IX Item "*\s-1RIFFIO_FAIL\s0"
+on a file seek error
+
+.rn }` ''

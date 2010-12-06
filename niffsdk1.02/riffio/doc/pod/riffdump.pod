@@ -1,0 +1,8 @@
+
+=head1 NAME
+
+riffdump - dump chunk information about a riff file.
+
+=head1 SYNOPSIS
+
+riffdump file.rif

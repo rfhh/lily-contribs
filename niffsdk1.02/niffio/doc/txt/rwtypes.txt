@@ -1,0 +1,128 @@
+
+ NAME
+ ====
+ rwtypes - Read and Write basic types defined in "niff.h"
+
+ - NIFFIOReadBYTE()
+ - NIFFIOReadCHAR()
+ - NIFFIOReadSIGNEDBYTE()
+ - NIFFIOReadSHORT()
+ - NIFFIOReadLONG()
+ - NIFFIOReadRATIONAL()
+ - NIFFIOReadSTROFFSET()
+ - NIFFIOReadFONTIDX()
+
+ - NIFFIOWriteBYTE()
+ - NIFFIOWriteCHAR()
+ - NIFFIOWriteSIGNEDBYTE()
+ - NIFFIOWriteSHORT()
+ - NIFFIOWriteLONG()
+ - NIFFIOWriteRATIONAL()
+ - NIFFIOWriteSTROFFSET()
+ - NIFFIOWriteFONTIDX()
+
+
+ NIFFIOReadBYTE
+ ==============
+ Read an NIFF BYTE from a NIFFIOFile.
+
+| RIFFIOSuccess
+| NIFFIOReadBYTE(NIFFIOFile *pnf, BYTE *pbyte)
+
+ NIFFIOReadCHAR
+ ==============
+ Read a NIFF CHAR from a NIFFIOFile.
+
+| RIFFIOSuccess
+| NIFFIOReadCHAR(NIFFIOFile *pnf, CHAR *pchar)
+
+ NIFFIOReadSIGNEDBYTE
+ ====================
+ Read a NIFF SIGNEDBYTE from a NIFFIOFile.
+
+| RIFFIOSuccess
+| NIFFIOReadSIGNEDBYTE(NIFFIOFile *pnf, SIGNEDBYTE *sbp)
+
+ NIFFIOReadSHORT
+ ===============
+ Read a NIFF SHORT from a NIFFIOFile.
+
+| RIFFIOSuccess
+| NIFFIOReadSHORT(NIFFIOFile *pnf, SHORT *ssp)
+
+ NIFFIOReadLONG
+ ==============
+ Read a NIFF LONG from a NIFFIOFile.
+
+| RIFFIOSuccess
+| NIFFIOReadLONG(NIFFIOFile *pnf, LONG *slp)
+
+ NIFFIOReadRATIONAL
+ ==================
+ Read a NIFF RATIONAL from a NIFFIOFile.
+
+| RIFFIOSuccess
+| NIFFIOReadRATIONAL(NIFFIOFile *pnf, RATIONAL *prat)
+
+ NIFFIOReadSTROFFSET
+ ===================
+ Read a NIFF STROFFSET from a NIFFIOFile.
+
+| RIFFIOSuccess
+| NIFFIOReadSTROFFSET(NIFFIOFile *pnf, STROFFSET *pstroff)
+
+ NIFFIOReadFONTIDX
+ =================
+ Read a NIFF FONTIDX from a NIFFIOFile.
+
+| RIFFIOSuccess
+| NIFFIOReadFONTIDX(NIFFIOFile *pnf, FONTIDX *pfidx)
+
+ NIFFIOWriteBYTE
+ ===============
+ Write a NIFF BYTE to a NIFFIOFile.
+
+| RIFFIOSuccess
+| NIFFIOWriteBYTE(NIFFIOFile *pnf, BYTE b)
+
+ NIFFIOWriteSIGNEDBYTE
+ =====================
+ Write a NIFF SIGNEDBYTE to a NIFFIOFile.
+
+| RIFFIOSuccess
+| NIFFIOWriteSIGNEDBYTE(NIFFIOFile *pnf, SIGNEDBYTE sb)
+
+ NIFFIOWriteSHORT
+ ================
+ Write a NIFF SHORT to a NIFFIOfile.
+
+| RIFFIOSuccess
+| NIFFIOWriteSHORT(NIFFIOFile *pnf, SHORT ss)
+
+ NIFFIOWriteLONG
+ ===============
+ Write a NIFF LONG to a NIFFIOFile.
+
+| RIFFIOSuccess
+| NIFFIOWriteLONG(NIFFIOFile *pnf, LONG sl)
+
+ NIFFIOWriteRATIONAL
+ ===================
+ Write a NIFF RATIONAL to a NIFFIOFile.
+
+| RIFFIOSuccess
+| NIFFIOWriteRATIONAL(NIFFIOFile *pnf, RATIONAL rat)
+
+ NIFFIOWriteSTROFFSET
+ ====================
+ Write a NIFF STROFFSET to a NIFFIOFile.
+
+| RIFFIOSuccess
+| NIFFIOWriteSTROFFSET(NIFFIOFile *pnf, STROFFSET stroff)
+
+ NIFFIOWriteFONTIDX
+ ==================
+ Write a NIFF FONTIDX to a NIFFIOFile.
+
+| RIFFIOSuccess
+| NIFFIOWriteFONTIDX(NIFFIOFile *pnf, FONTIDX f)

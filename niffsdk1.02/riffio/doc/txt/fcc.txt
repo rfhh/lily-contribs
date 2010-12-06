@@ -1,0 +1,62 @@
+
+ NAME
+ ====
+ fcc - Four-character code operations
+ 
+ SYNOPSIS
+ ========
+
+ - RIFFIOFOURCCIsValid()
+ - RIFFIOFOURCCToString()
+
+
+
+ RIFFIOFOURCCIsValid
+ ===================
+ Check the validity of a four-character code.
+
+| int
+| RIFFIOFOURCCIsValid(RIFFIOFOURCC fcc)
+
+ Check <fcc> according to the rules
+
+ - alphanumeric ASCII characters only [A-Z],[0-9],[a-z]
+
+ - padded on the right with spaces
+
+ - no embedded spaces
+
+ RETURN
+ ------
+ 1 - if fcc is valid,
+
+ 0 - otherwise
+ 
+ BUGS
+ ----
+ This does not work on FOURCC's that require escape codes to 
+ represent them in string form.
+
+
+ RIFFIOFOURCCToString
+ ====================
+ Write a four-character code into a string.
+
+| void
+| RIFFIOFOURCCToString(const RIFFIOFOURCC fcc, char *str)
+
+ ENTRY
+ -----
+ T <*str> must already be allocated to hold at 
+ least RIFFIO_FOURCC_MIN characters.
+
+ EXIT
+ ----
+ Writes the four characters (possibly using escape sequences) 
+ of <fcc> and a terminating NUL into <*str>.  
+
+ BUGS
+ ----
+ This does not work for FOURCC's that require escape codes to 
+ represent them as a string.
+

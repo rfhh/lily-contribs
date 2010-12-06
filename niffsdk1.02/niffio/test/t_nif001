@@ -1,0 +1,6 @@
+#!/bin/sh
+
+../bin/nif001
+
+../bin/niffdump nif001.nif
+

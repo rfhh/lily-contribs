@@ -1,0 +1,42 @@
+# $Header: /usr/local/cvsroot/niffio/configure.in,v 1.2 1996/06/12 01:57:45 tim Exp $
+
+AC_INIT(NIFFIO)
+AC_CONFIG_AUX_DIR(mk)
+
+AC_PROG_CC
+AC_PROG_INSTALL
+AC_PROG_RANLIB
+
+AC_PATH_PROGS(MAKEDEPEND, makedepend, :)
+
+dnl
+dnl Find packages that we use
+dnl
+
+if test -e ../niff/NIFF; then
+	niff_incdir='${pkg_topdir}/../niff/include'
+	echo found NIFF
+fi
+AC_SUBST(niff_incdir)
+
+if test -e ../riffio/RIFFIO; then
+
+	riffio_incdir='${pkg_topdir}/../riffio/include'
+	riffio_libdir='${pkg_topdir}/../riffio/lib'
+	echo found RIFFIO
+fi
+
+AC_SUBST(riffio_incdir)
+AC_SUBST(riffio_libdir)
+
+if test ! -d bin ; then
+	echo creating ./bin
+	mkdir ./bin
+fi
+
+if test ! -d lib ; then
+	echo creating ./lib
+	mkdir ./lib
+fi
+
+AC_OUTPUT(Makefile local.mk:local.in mk/top.mk:mk/top.in mk/mkdep)

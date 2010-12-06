@@ -1,0 +1,645 @@
+<!-- $Id$ -->
+<HTML><HEAD>
+<CENTER><TITLE>store</TITLE>
+</HEAD>
+<BODY></CENTER><p><hr>
+
+<H1> 
+<A NAME="store_name_0">
+NAME</A>
+</H1>
+store - Handy routines for creating NIFF lists, chunks, and tags.
+<p><p><hr>
+
+<H1> 
+<A NAME="store_synopsis_0">
+SYNOPSIS</A>
+</H1>
+<p>
+<H2> 
+<A NAME="store_creation_0">
+Creation and Deletion</A>
+</H2>
+<p>
+<UL>
+<LI>
+<A HREF="store.htm#store_niffiostoragenew_0">NIFFIOStorageNew()</A>
+
+<p>
+<LI>
+<A HREF="store.htm#store_niffiostorageinit_0">NIFFIOStorageInit()</A>
+
+<p>
+<LI>
+<A HREF="store.htm#store_niffiostoragenewstdc_0">NIFFIOStorageNewSTDC()</A>
+
+<p>
+<LI>
+<A HREF="store.htm#store_niffiostoragedelete_0">NIFFIOStorageDelete()</A>
+
+<p>
+</UL>
+.
+<p>
+<H2> 
+<A NAME="store_selection_0">
+Selection</A>
+</H2>
+<p>
+<UL>
+<LI>
+<A HREF="store.htm#store_niffiostoragegetcurrent_0">NIFFIOStorageGetCurrent()</A>
+
+<p>
+<LI>
+<A HREF="store.htm#store_niffiostoragesetcurrent_0">NIFFIOStorageSetCurrent()</A>
+
+<p>
+</UL>
+.
+<p>
+<H2> 
+<A NAME="store_property_0">
+Property Access</A>
+</H2>
+<p>
+<UL>
+<LI>
+<A HREF="store.htm#store_niffiostoragegetfile_0">NIFFIOStorageGetFile()</A>
+
+<p>
+<LI>
+<A HREF="store.htm#store_niffiostorageislistpending_0">NIFFIOStorageIsListPending()</A>
+
+<p>
+<LI>
+<A HREF="store.htm#store_niffiostorageischunkpending_0">NIFFIOStorageIsChunkPending()</A>
+
+<p>
+<LI>
+<A HREF="store.htm#store_niffiostorageistagpending_0">NIFFIOStorageIsTagPending()</A>
+
+<p>
+<LI>
+<A HREF="store.htm#store_niffiostoragependinglist_0">NIFFIOStoragePendingList()</A>
+
+<p>
+<LI>
+<A HREF="store.htm#store_niffiostoragependingchunk_0">NIFFIOStoragePendingChunk()</A>
+
+<p>
+<LI>
+<A HREF="store.htm#store_niffiostoragependingtag_0">NIFFIOStoragePendingTag()</A>
+
+<p>
+</UL>
+.
+<p>
+<H2> 
+<A NAME="store_operations_0">
+Operations</A>
+</H2>
+<p>
+<UL>
+<LI>
+<A HREF="store.htm#store_niffiostorageliststart_0">NIFFIOStorageListStart()</A>
+
+<p>
+<LI>
+<A HREF="store.htm#store_niffiostoragelistend_0">NIFFIOStorageListEnd()</A>
+
+<p>
+<LI>
+<A HREF="store.htm#store_niffiostoragechunkstart_0">NIFFIOStorageChunkStart()</A>
+
+<p>
+<LI>
+<A HREF="store.htm#store_niffiostoragechunkend_0">NIFFIOStorageChunkEnd()</A>
+
+<p>
+<LI>
+<A HREF="store.htm#store_niffiostoragetagstart_0">NIFFIOStorageTagStart()</A>
+
+<p>
+<LI>
+<A HREF="store.htm#store_niffiostoragetagend_0">NIFFIOStorageTagEnd()</A>
+
+<p>
+</UL>
+.
+<p>
+<H2> 
+<A NAME="store_special_0">
+Special Objects</A>
+</H2>
+<p>
+<UL>
+<LI>
+<A HREF="store.htm#store_niffiostorestbl_0">NIFFIOStoreStbl()</A>
+
+<p>
+<LI>
+<A HREF="store.htm#store_niffiostoreclt_0">NIFFIOStoreCLT()</A>
+
+<p>
+<LI>
+<A HREF="store.htm#store_niffiostoredefaultclt_0">NIFFIOStoreDefaultCLT()</A>
+
+<p>
+</UL>
+.
+<p><p><hr>
+
+<H1> 
+<A NAME="store_niffiostoragenew_0">
+NIFFIOStorageNew</A>
+</H1>
+Create a new NIFFIOStorage, return null on failure.
+<p>
+<XMP>
+     NIFFIOStorage *
+     NIFFIOStorageNew(void)
+
+</XMP>
+<p>
+<H2> 
+<A NAME="store_obligations_0">
+OBLIGATIONS</A>
+</H2>
+<p>
+<UL>
+<LI>You should call 
+<A HREF="store.htm#store_niffiostorageinit_0">NIFFIOStorageInit()</A>
+ immediately.
+<p>
+<LI>Don't forget to free the NIFFIOStorage with 
+<A HREF="store.htm#store_niffiostoragedelete_0">NIFFIOStorageDelete()</A>
+.
+<p>
+<LI>You must eventually call 
+<A HREF="store.htm#store_niffiostoragesetcurrent_0">NIFFIOStorageSetCurrent()</A>
+ to use the
+new NIFFIOStorage object.
+<p>
+</UL>
+.
+<p><p><hr>
+
+<H1> 
+<A NAME="store_niffiostoragenewstdc_0">
+NIFFIOStorageNewSTDC</A>
+</H1>
+Create a new NIFFIOStorage given a Standard C File pointer.
+Make it the current NIFFIOStorage.
+<p>
+<XMP>
+     NIFFIOStorage *
+     NIFFIOStorageNewSTDC(FILE *fp)
+
+</XMP>
+<p>
+<H2> 
+<A NAME="store_obligations_0">
+OBLIGATIONS</A>
+</H2>
+The new NIFFIOStorage object will own a newly created NIFFIOFile.
+That file is available through 
+<A HREF="store.htm#store_niffiostoragegetfile_0">NIFFIOStorageGetFile()</A>
+ BUT YOU MUST
+NEVER FREE IT. 
+<A HREF="store.htm#store_niffiostoragedelete_0">NIFFIOStorageDelete()</A>
+ will delete the NIFFIOFile.
+This is different than 
+<A HREF="store.htm#store_niffiostoragenew_0">NIFFIOStorageNew()</A>
+ followed by
+
+<A HREF="store.htm#store_niffiostorageinit_0">NIFFIOStorageInit()</A>
+.
+<p>You must however, close &lt;*fp&gt; yourself.
+<p>
+<H2> 
+<A NAME="store_entry_0">
+ENTRY</A>
+</H2>
+<fp&gt; is a Standard C Library FILE pointer that has been opened for
+binary writing.
+<p>
+<H2> 
+<A NAME="store_exit_0">
+EXIT</A>
+</H2>
+The returned NIFFIOStorage is the current one.
+<p>
+<H2> 
+<A NAME="store_return_0">
+RETURN</A>
+</H2>
+Return null on failure.
+<p>
+<H2> 
+<A NAME="store_example_0">
+EXAMPLE</A>
+</H2>
+
+<XMP>
+    
+        FILE *fp;
+        NIFFIOStorage *pstore;
+    
+        fp = fopen("filename.nif", "rw");
+        pstore = NIFFIOStorageNewSTDC(fp);
+     
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="store_niffiostorageinit_0">
+NIFFIOStorageInit</A>
+</H1>
+Associate a NIFFIOFile with a NIFFIOStorage.
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOStorageInit(NIFFIOStorage *pstore, NIFFIOFile *pnf)
+
+</XMP>
+<p>
+<H2> 
+<A NAME="store_entry_0">
+ENTRY</A>
+</H2>
+T &lt;*pnf&gt; must exist and be open for writing.
+<p>
+<H2> 
+<A NAME="store_obligations_0">
+OBLIGATIONS</A>
+</H2>
+You are responsible for deleting &lt;*pnf&gt; after 
+<A HREF="store.htm#store_niffiostoragedelete_0">NIFFIOStorageDelete()</A>
+.
+This is different than calling 
+<A HREF="store.htm#store_niffiostoragenewstdc_0">NIFFIOStorageNewSTDC()</A>
+.
+<p><p><hr>
+
+<H1> 
+<A NAME="store_niffiostoragedelete_0">
+NIFFIOStorageDelete</A>
+</H1>
+Free the memory allocated to a NIFFIOStorage.
+<p>
+<XMP>
+     void
+     NIFFIOStorageDelete(NIFFIOStorage *pstore)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="store_niffiostoragesetcurrent_0">
+NIFFIOStorageSetCurrent</A>
+</H1>
+Set the NIFFIOStorage that will be operated on by all
+the NIFFIOStorage routines.
+<p>
+<XMP>
+     void
+     NIFFIOStorageSetCurrent(NIFFIOStorage *pstore)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="store_niffiostoragegetcurrent_0">
+NIFFIOStorageGetCurrent</A>
+</H1>
+Return a pointer to the current NIFFIOStorage.
+<p>
+<XMP>
+     NIFFIOStorage *
+     NIFFIOStorageGetCurrent(void)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="store_niffiostoragegetfile_0">
+NIFFIOStorageGetFile</A>
+</H1>
+Return a pointer to the NIFFIOFile of the current NIFFIOStorage
+<p>
+<XMP>
+     NIFFIOFile *
+     NIFFIOStorageGetFile(void)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="store_niffiostorageistagpending_0">
+NIFFIOStorageIsTagPending</A>
+</H1>
+Return true if a tag is pending.
+<p>
+<XMP>
+     int
+     NIFFIOStorageIsTagPending()
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="store_niffiostorageischunkpending_0">
+NIFFIOStorageIsChunkPending</A>
+</H1>
+Return true if a chunk is pending.
+<p>
+<XMP>
+     int 
+     NIFFIOStorageIsChunkPending(void)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="store_niffiostorageislistpending_0">
+NIFFIOStorageIsListPending</A>
+</H1>
+Return true if a list is pending.
+<p>
+<XMP>
+     int
+     NIFFIOStorageIsListPending(void)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="store_niffiostoragependingtag_0">
+NIFFIOStoragePendingTag</A>
+</H1>
+Return a pointer to the current pending tag.
+<p>
+<XMP>
+     NIFFIOTag *
+     NIFFIOStoragePendingTag(void)
+
+</XMP>
+<p>It is an error if there is no current pending tag.
+<p><p><hr>
+
+<H1> 
+<A NAME="store_niffiostoragependingchunk_0">
+NIFFIOStoragePendingChunk</A>
+</H1>
+Return a pointer to the current pending chunk.
+<p>
+<XMP>
+     RIFFIOChunk *
+     NIFFIOStoragePendingChunk(void)
+
+</XMP>
+<p>It is an error if there is no current pending chunk.
+<p><p><hr>
+
+<H1> 
+<A NAME="store_niffiostoragependinglist_0">
+NIFFIOStoragePendingList</A>
+</H1>
+Return a pointer to the current pending list.
+<p>
+<XMP>
+     RIFFIOChunk *
+     NIFFIOStoragePendingList(void)
+
+</XMP>
+<p>It is an error if there is not current pending list.
+<p><p><hr>
+
+<H1> 
+<A NAME="store_niffiostoragetagend_0">
+NIFFIOStorageTagEnd</A>
+</H1>
+Finalize the current pending tag.
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOStorageTagEnd(void)
+
+</XMP>
+<p>This is a no-op if there is no tag pending.
+<p><p><hr>
+
+<H1> 
+<A NAME="store_niffiostoragechunkend_0">
+NIFFIOStorageChunkEnd</A>
+</H1>
+Finalize the current pending chunk, including any pending tag.
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOStorageChunkEnd(void)\
+
+</XMP>
+<p>This is a no-op if there is no pending chunk or tag.
+<p><p><hr>
+
+<H1> 
+<A NAME="store_niffiostoragelistend_0">
+NIFFIOStorageListEnd</A>
+</H1>
+Finalize the current pending list, including any pending chunk or tag.
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOStorageListEnd(void)
+
+</XMP>
+<p>
+<H2> 
+<A NAME="store_exit_0">
+EXIT</A>
+</H2>
+Any pending list is uncovered and made the current pending list.
+<p>This is a no-op if there is no pending tag, chunk, or list.
+<p><p><hr>
+
+<H1> 
+<A NAME="store_niffiostoragetagstart_0">
+NIFFIOStorageTagStart</A>
+</H1>
+Write a tag header in a NIFFIOFile and remember the tag as pending.
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOStorageTagStart(NIFFIOTag *ptag)
+
+</XMP>
+<p>
+<H2> 
+<A NAME="store_entry_0">
+ENTRY</A>
+</H2>
+There must be a pending chunk.
+<p>
+<H2> 
+<A NAME="store_obligations_0">
+OBLIGATIONS</A>
+</H2>
+You must finalize the chunk with a call to either 
+<A HREF="store.htm#store_niffiostoragetagend_0">NIFFIOStorageTagEnd()</A>
+,
+
+<A HREF="store.htm#store_niffiostoragechunkend_0">NIFFIOStorageChunkEnd()</A>
+, or 
+<A HREF="store.htm#store_niffiostoragelistend_0">NIFFIOStorageListEnd()</A>
+.
+<p><p><hr>
+
+<H1> 
+<A NAME="store_niffiostoragechunkstart_0">
+NIFFIOStorageChunkStart</A>
+</H1>
+Write a chunk header to the current NIFFIOFile and remember the chunk as
+pending. Any current pending chunk (and/or tag) is finalized.
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOStorageChunkStart(RIFFIOChunk *pchunk)
+
+</XMP>
+<p>
+<H2> 
+<A NAME="store_obligations_0">
+OBLIGATIONS</A>
+</H2>
+You must finalize the chunk with a call to either 
+<A HREF="store.htm#store_niffiostoragechunkend_0">NIFFIOStorageChunkEnd()</A>
+
+or 
+<A HREF="store.htm#store_niffiostoragelistend_0">NIFFIOStorageListEnd()</A>
+.
+<p><p><hr>
+
+<H1> 
+<A NAME="store_niffiostorageliststart_0">
+NIFFIOStorageListStart</A>
+</H1>
+Write a list chunk header to a NIFFIOFile and remember the list as pending.
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOStorageListStart(RIFFIOChunk *pchunk)
+
+</XMP>
+<p>The new list will be nested within any pending list.
+Any pending chunk (not list) is finalized (along with its last tag).
+<p>
+<H2> 
+<A NAME="store_obligations_0">
+OBLIGATIONS</A>
+</H2>
+You must finalize the list chunk with a call to 
+<A HREF="store.htm#store_niffiostoragelistend_0">NIFFIOStorageListEnd()</A>
+.
+<p><p><hr>
+
+<H1> 
+<A NAME="store_niffiostorestbl_0">
+NIFFIOStoreStbl</A>
+</H1>
+Write a string table array using a NIFFIOStorage.
+<p>
+<XMP>
+     int
+     NIFFIOStoreStbl(NIFFIOStbl *pstbl, int nEntries)
+
+</XMP>
+<p>Writes &lt;nEntries&gt; of *pstbl to the current NIFFIOStorage.
+Each time you call 
+<A HREF="store.htm#store_niffiostorestbl_0">NIFFIOStoreStbl()</A>
+ in sequence, the string table
+entries are appended to the string table chunk.
+<p>
+<H2> 
+<A NAME="store_entry_0">
+ENTRY</A>
+</H2>
+<p>
+<UL>
+<LI>T &lt;*pstbl&gt; points to an array of &lt;nEntries&gt; NIFFIOStbl's
+<p>
+<LI>The current pending chunk must be a String Table.
+<p>
+</UL>
+.
+<p>
+<H2> 
+<A NAME="store_exit_0">
+EXIT</A>
+</H2>
+<p>
+<UL>
+<LI>Each string table offset is filled in with the correct value.
+<p>
+<LI>The current String Table chunk will still be pending.
+<p>
+</UL>
+.
+<p>
+<H2> 
+<A NAME="store_return_0">
+RETURN</A>
+</H2>
+Returns the number of string table entries written.
+<p>
+<H2> 
+<A NAME="store_errors_0">
+ERRORS</A>
+</H2>
+On error the current NIFFIOStorage's file position is undefined.
+<p><p><hr>
+
+<H1> 
+<A NAME="store_niffiostoreclt_0">
+NIFFIOStoreCLT</A>
+</H1>
+Write chunk length table data to the current NIFFIOStorage.
+Doesn't write the chunk header; use <EM>NIFFIOchunkCLT()</EM> for that.
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOStoreCLT(NIFFIOChunkLengthTable *pclt)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="store_niffiostoredefaultclt_0">
+NIFFIOStoreDefaultCLT</A>
+</H1>
+Write the default chunk length table data to the current NIFFIOStorage.
+Writes the chunk header.
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOStoreDefaultCLT(void)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="store_niffiostoreinfo_0">
+NIFFIOStoreINFO</A>
+</H1>
+Write a chunk to the INFO list
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOStoreINFO(RIFFIOFOURCC fccId, const char *str)
+
+</XMP>
+<p>
+</BODY>
+</HTML>

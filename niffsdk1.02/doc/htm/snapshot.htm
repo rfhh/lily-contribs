@@ -1,0 +1,151 @@
+<!-- $Id$ -->
+<HTML><HEAD>
+<CENTER><TITLE>snapshot</TITLE>
+</HEAD>
+<BODY></CENTER><p><hr>
+
+<H1> 
+<A NAME="snapshot_name_0">
+NAME</A>
+</H1>
+snapshot - What is the state of the NIFF SDK?
+<p><p><hr>
+
+<H1> 
+<A NAME="snapshot_synopsis_0">
+SYNOPSIS</A>
+</H1>
+<p>
+<UL>
+<LI>VERSION
+<p>
+<LI>WHAT'S NEW
+<p>
+<LI>BUG FIXES
+<p>
+<LI>TODO
+<p>
+</UL>
+I made some significant progress before I got 1.01 out so here is 1.02.instead. niffdump is _much_ improved.
+<p><p><hr>
+
+<H1> 
+<A NAME="snapshot_version_0">
+VERSION</A>
+</H1>
+1.02
+<p><p><hr>
+
+<H1> 
+<A NAME="snapshot_what_s_0">
+WHAT'S NEW</A>
+</H1>
+<p>
+<UL>
+<LI>Removed sample RIFF files
+<p>
+<LI>Reorganized NIFFSDK into RIFFIO, NIFFIO, and NIFF components.
+<p>
+<LI>Changed build system.
+<p>
+<LI>Autoconfiguration under UNIX
+<p>
+<LI>Everything under CVS
+<p>
+<LI>Documentation in text, man, pod, and HTML
+<p>
+<LI>A few simple regression tests.
+<p>
+<LI>Ran a few checks for memory leaks - looks good.
+<p>
+<LI>Replaced some functions added in 1.0 by Cindy Grande with similar ones.
+<EM>NIFFIOFilePrepare()</EM> and <EM>NIFFIOFileWriteCLT()</EM>.
+<p>
+<LI><EM>NIFFIOStorageNewSTDC()</EM>, <EM>NIFFIOFileNewSTDC()</EM> for simple initialization.
+<p>
+<LI><EM>NIFFIOStoreStbl()</EM>, <EM>NIFFIOStoreCLT()</EM>, <EM>NIFFIOStoreDefaultCLT()</EM> for
+NIFFIOStorage operations on special objects.
+<p>
+<LI>NIFFIOStorage now OWNS its NIFFIOFile. Don't call <EM>NIFFIOFileDelete()</EM>!
+<p>
+<LI>Slightly modified niff.h
+<p>
+<LI>No more tabs in source
+<p>
+<LI>fcc.c: Created macro RIFFIO_FOURCC_MIN for string lengths that will
+hold a FOURCC. Don't use the constant ``5'' anymore.
+<p>
+<LI>Added INFO chunks to <EM>NIFFIOCLTMakeDefaultEntries()</EM>.
+<p>
+<LI>Improved niffdump considerably. Check it out! It decodes many more
+chunks and a few tags.
+<p>
+<LI>niffio/names.c: functions to convert between NIFF Ids/enumerated types and
+strings. (Still need many more)
+<p>
+<LI>niffio/clt.c: don't store length of default CLT array anymore, used sentinel.
+<p>
+<LI>niffio/clt.c: added RIFF INFO chunks to default chunk length table.
+<p>
+</UL>
+.
+<p><p><hr>
+
+<H1> 
+<A NAME="snapshot_bug_0">
+BUG FIXES</A>
+</H1>
+<p>
+<UL>
+<LI><EM>RIFFIOChunkStackPush()</EM> used wrong expression to check for a full stack.
+<p>
+<LI><EM>STDCRIFFRead()</EM> had if statements without parenthesis
+<p>
+<LI>Made sure CPP line continuations had whitespace in front of them.
+<p>
+</UL>
+.
+<p><p><hr>
+
+<H1> 
+<A NAME="snapshot_todo_0">
+TODO</A>
+</H1>
+<p>
+<UL>
+<LI>Find out what developers _really_ need this thing to do.
+<p>
+<LI>Steve might want a function that reads a String Table into an array
+of strings. Sort of the inverse of <EM>NIFFIOStoreStbl()</EM>.
+<p>
+<LI>Need code that writes standard, example  NIFF files for
+regression tests.
+<p>
+<LI>Keep adding chunks and tags to niffdump.
+<p>
+<LI>Write a real user's guide.
+<p>
+<LI>Write more example code.
+<p>
+<LI>Implement more regression tests.
+<p>
+<LI>Automate memory leak checks.
+<p>
+<LI>Be explicit about what happens during parsing errors.
+<p>
+<LI>write functions to convert between NIFF enumerated types and strings.
+<p>
+<LI>niffdump should handle all niff objects
+<p>
+<LI>Add parser callback registration functions for RIFF INFO chunks.
+<p>
+<LI>niffdump should generate output in a standard format for a future
+niff compiler (useful for more regression tests).
+<p>
+<LI>write a niff compiler (useful for regression tests). Syntax similar
+to RIFF.
+<p>
+</UL>
+
+</BODY>
+</HTML>

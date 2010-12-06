@@ -1,0 +1,17 @@
+#!/usr/bin/perl
+
+require "genobs";
+
+
+	 foreach $ObjectName (sort keys(%ObjectTypes))
+	 {
+		($ObjectTypes{$ObjectName} ne 'list') && next;
+
+	    print $ObjectName, ":", $ObjectTypes{$ObjectName}, ":";
+		print $ObjectCooked{$ObjectName} ? 'cooked' : 'raw';
+		if ($ObjectMembers{$ObjectName})
+		{
+			print ":", $ObjectMembers{$ObjectName};
+		}
+		print "\n";
+	}

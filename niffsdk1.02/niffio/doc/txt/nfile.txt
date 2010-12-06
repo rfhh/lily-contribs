@@ -1,0 +1,178 @@
+
+ NAME
+ ====
+ nfile - NIFFIOFile routines
+
+ SYNOPSIS
+ ========
+
+ - NIFFIOFileNew()
+ - NIFFIOFileNewSTDC()
+ - NIFFIOFileInit()
+ - NIFFIOFileDelete()
+
+ - NIFFIOFileGetCLT()
+ - NIFFIOFileReadCLT()
+ - NIFFIOFileAdoptCLT()
+
+ - NIFFIOSeekChunkTags()
+
+
+ NIFFIOFileNew
+ =============
+ Return a pointer to a new NIFFIOFile, or null on failure.
+
+| NIFFIOFile *
+| NIFFIOFileNew(void)
+
+ OBLIGATIONS
+ -----------
+ - Don't forget to call NIFFIOFileInit() for your new file.
+ - You must eventually call NIFFIOFileDelete() to free the NIFFIOFile.
+
+
+ NIFFIOFileNewSTDC
+ =================
+ Create a new NIFFIOFile given a Standard C Library FILE pointer
+
+| NIFFIOFile *
+| NIFFIOFileNewSTDC(FILE *fp)
+
+ OBLIGATIONS
+ -----------
+ You must call NIFFIOFileDelete() to free the new NIFFIOFile.
+
+
+ NIFFIOFileInit
+ ==============
+ Provide a NIFFIOFile with a user-defined file and I/O callbacks.
+
+| RIFFIOSuccess
+| NIFFIOFileInit(NIFFIOFile *pnf,
+|                void *pvUserFile,
+|                RIFFIOReader reader,
+|                RIFFIOWriter writer,
+|                RIFFIOSeeker seeker,
+|                RIFFIOTeller teller)
+
+ ENTRY
+ -----
+ 
+  <pnf> : 
+    is the NIFFIOFile being initialized.
+
+  <pvUserFile> :
+    is a user representation of a file that will be passed to
+    user-defined reader, writer, seeker, and teller functions.
+ 
+  <reader>,<writer>,<seeker>,<teller> :
+    are user-defined functions that perform operations on <pvUserFile>
+
+ OBLIGATIONS
+ -----------
+ NIFFFIOFileInit() should be called immediately after NIFFIOFileNew()
+
+
+
+ NIFFIOFileDelete
+ ================
+ Free the memory associated with a NIFFIOFile.
+
+| void
+| NIFFIOFileDelete(NIFFIOFile *pnf)
+
+ WARNING
+ ------- 
+ This also frees the memory of any NIFFIOChunkLengthTable 
+ that may have been associated with the NIFFIOFile 
+ using NIFFIOFileAdoptCLT().
+
+
+ NIFFIOFileGetCLT
+ ================
+ Return a pointer to a NIFFIOFile's chunk length table.
+
+| NIFFIOChunkLengthTable *
+| NIFFIOFileGetCLT(NIFFIOFile *pnf)
+ 
+ RETURN
+ ------
+ null if the chunk length table has not be set or read yet. 
+
+ OBLIGATIONS
+ -----------
+ This pointer may become invalid after calls to
+ other NIFFIO routines.  Such as what ?????
+
+
+
+ NIFFIOFileReadCLT
+ =================
+ Read and set a NIFFIOFile's chunk length table.
+
+| RIFFIOSuccess
+| NIFFIOFileReadCLT(NIFFIOFile *pnf, RIFFIOChunk *pchunkCLT)
+
+ ENTRY
+ -----
+ <*pchunkCLT> :
+    is a chunk length table chunk that has been
+    returned by NIFFIOChunkDescend().
+ 
+ <*pnf> :
+    may be positioned anywhere
+ 
+ EXIT
+ ----
+ Leaves the NIFFIOFile positioned after the chunk length table chunk.
+
+
+ NIFFIOFileAdoptCLT
+ ==================
+ Assign and write a chunk length table to a NIFFIOFile.
+
+| RIFFIOSuccess
+| NIFFIOFileAdoptCLT(NIFFIOFile *pnf, NIFFIOChunkLengthTable *pclt)
+ 
+ ENTRY
+ -----
+ The NIFFIOFile must be positioned at the start of data
+ of its CLT chunk.
+
+ EXIT
+ ----
+ Leaves the file positioned at the end of the CLT chunk data
+ that it just wrote.
+
+ OBLIGATIONS
+ ----------- 
+ Upon return, the NIFFIOFile takes responsibility for
+ deleting the CLT you just gave it.  
+ Don't free or delete <*pclt>; that will be done by either another
+ call to NIFFIOFileAdoptCLT() or NIFFIOFileDelete().
+
+
+ NIFFIOSeekChunkTags
+ ===================
+ Position a NIFFIOFile at the start of a given chunk's tags.
+
+| RIFFIOSuccess
+| NIFFIOSeekChunkTags(NIFFIOFile *pnf, RIFFIOChunk *pchunk)
+
+ This is done according to the chunk length table associated
+ with the NIFFIOFile.
+ 
+ It is an error if there is no associated CLT. Use NIFFIOFileGetCLT()
+ to find out.
+ 
+ RETURNS
+ -------
+  RIFFIO_OK :
+    on success
+  
+  RIFFIO_FAIL :
+    if the lookup failed to find the chunks id in the CLT
+ 
+  RIFFIO_FAIL :
+    on a file seek error 
+

@@ -1,0 +1,56 @@
+<!-- $Id$ -->
+<HTML><HEAD>
+<CENTER><TITLE>changes</TITLE>
+</HEAD>
+<BODY></CENTER><p><hr>
+
+<H1> 
+<A NAME="changes_name_0">
+NAME</A>
+</H1>
+changes - log of changes to RIFFIO
+<p><p><hr>
+
+<H1> 
+<A NAME="changes_synopsis_0">
+SYNOPSIS</A>
+</H1>
+<p><p><hr>
+
+<H1> 
+<A NAME="changes_description_0">
+DESCRIPTION</A>
+</H1>
+<p><p><hr>
+
+<H1> 
+<A NAME="changes_riffio_0">
+RIFFIO 1.0</A>
+</H1>
+<p>
+<UL>
+<LI>
+<A HREF="stack.htm#stack_riffiochunkstackpush_0">RIFFIOChunkStackPush()</A>
+
+used
+<p><UL><LI>    	(pstack->size == pstack->top ) to check for a full stack</LI>
+</UL>
+<p>instead of
+<p>
+<XMP>
+           (pstack->size == pstatck->top + 1)
+
+</XMP>
+<p>
+<LI>stdcriff.c
+
+<A HREF="stdcriff.htm#stdcriff_stdcriffread_0">STDCRIFFRead()</A>
+ had if statements without parenthesis.
+<p>
+<LI>fcc.c
+Created MACRO RIFFIO_FOURCC_MIN
+<p>
+</UL>
+
+</BODY>
+</HTML>

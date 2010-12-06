@@ -1,0 +1,9 @@
+
+niff_libdir=@niff_libdir@
+niff_incdir=@niff_incdir@
+
+riffio_libdir=@riffio_libdir@
+riffio_incdir=@riffio_incdir@
+
+PKG_CPPFLAGS=-I$(pkg_incdir) -I$(niff_incdir) -I$(riffio_incdir)
+PKG_DEPLIBS=$(pkg_libdir)/niffio.a $(riffio_libdir)/stdcriff.a $(riffio_libdir)/riffio.a

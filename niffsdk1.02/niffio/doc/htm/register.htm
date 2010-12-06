@@ -1,0 +1,259 @@
+<!-- $Id$ -->
+<HTML><HEAD>
+<CENTER><TITLE>register</TITLE>
+</HEAD>
+<BODY></CENTER><p><hr>
+
+<H1> 
+<A NAME="register_name_0">
+NAME</A>
+</H1>
+register - parser callback registration routines
+<p><p><hr>
+
+<H1> 
+<A NAME="register_synopsis_0">
+SYNOPSIS</A>
+</H1>
+<p>
+<UL>
+<LI>
+<A HREF="register.htm#register_niffioregisterdefaultlist_0">NIFFIORegisterDefaultList()</A>
+
+<p>
+<LI><EM>NIFFIORegisterDefaultChunk()</EM>
+<p>
+<LI>
+<A HREF="register.htm#register_niffioregisterdefaultatomicchunk_0">NIFFIORegisterDefaultAtomicChunk()</A>
+
+<p>
+<LI>
+<A HREF="register.htm#register_niffioregisterdefaulttag_0">NIFFIORegisterDefaultTag()</A>
+
+<p>
+<LI>
+<A HREF="register.htm#register_niffioregisterform_0">NIFFIORegisterForm()</A>
+
+<p>
+<LI>
+<A HREF="register.htm#register_niffioregisterlist_0">NIFFIORegisterList()</A>
+
+<p>
+<LI>
+<A HREF="register.htm#register_niffioregisteratomicchunk_0">NIFFIORegisterAtomicChunk()</A>
+
+<p>
+<LI><EM>NIFFIORegisterListXXX()</EM>
+<p>
+<LI><EM>NIFFIORegisterChunkXXX()</EM>
+<p>
+<LI><EM>NIFFIORegisterTagXXX()</EM>
+<p>
+</UL>
+.
+<p><p><hr>
+
+<H1> 
+<A NAME="register_niffioregisterdefaultlist_0">
+NIFFIORegisterDefaultList</A>
+</H1>
+Register default list callbacks
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIORegisterDefaultList(NIFFIOParser *pparser,
+                               NIFFIOChunkCallback cbStart,
+                               NIFFIOChunkCallback cbEnd)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="register_niffioregisterdefaulttaggedchunk_0">
+NIFFIORegisterDefaultTaggedChunk</A>
+</H1>
+Register default chunk callbacks
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIORegisterDefaultTaggedChunk(NIFFIOParser *pparser,
+                                      NIFFIOChunkCallback cbStart,
+                                      NIFFIOChunkCallback cbEnd)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="register_niffioregisterdefaultatomicchunk_0">
+NIFFIORegisterDefaultAtomicChunk</A>
+</H1>
+Register a default callback for Atomic chunks
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIORegisterDefaultAtomicChunk(NIFFIOParser *pparser,
+                                      NIFFIOChunkCallback cb)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="register_niffioregisterdefaulttag_0">
+NIFFIORegisterDefaultTag</A>
+</H1>
+Register a default callback for tags
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIORegisterDefaultTag(NIFFIOParser *pparser,
+                              NIFFIOTagCallback cbTag)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="register_niffioregisterform_0">
+NIFFIORegisterForm</A>
+</H1>
+Register callbacks for a Niff form
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIORegisterForm(NIFFIOParser *pparser,
+                        NIFFIOChunkCallback cbStart,
+                        NIFFIOChunkCallback cbEnd)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="register_niffioregisterlist_0">
+NIFFIORegisterList</A>
+</H1>
+Register callbacks for specific lists
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIORegisterList(NIFFIOParser *pparser,
+                        FOURCC fccType,
+                        NIFFIOChunkCallback cbStart,
+                        NIFFIOChunkCallback cbEnd)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="register_niffioregisteratomicchunk_0">
+NIFFIORegisterAtomicChunk</A>
+</H1>
+Register a callback for specific Atomic chunks
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIORegisterAtomicChunk(NIFFIOParser *pparser,
+                               FOURCC fccId,
+                               NIFFIOChunkCallback cb)
+
+</XMP>
+<p>Registration functions for Lists
+<p>
+<XMP>
+     #define REG_LIST(nifftype)                                                   \
+     RIFFIOSuccess                                                                \
+     NIFFIORegisterList##nifftype(NIFFIOParser *pparser,                          \
+                                  NIFFIOChunkCallback cbStart,                    \
+                                  NIFFIOChunkCallback cbEnd)                      \
+     {                                                                            \
+          return NIFFIORegisterList(pparser, nifflist##nifftype, cbStart, cbEnd); \
+     }
+
+</XMP>
+<p>Registration functions for atomic, raw chunks
+<p>
+<XMP>
+     #define REG_ATOMIC(nifftype)                                            \
+     RIFFIOSuccess                                                           \
+     NIFFIORegisterChunk##nifftype(                                          \
+                                   NIFFIOParser *pparser,                    \
+                                   NIFFIOChunkCallback cb)                   \
+     {                                                                       \
+          return NIFFIORegisterAtomicChunk(pparser, niffckid##nifftype, cb); \
+     }
+     
+
+</XMP>
+<p>Registration functions for tagable, raw Chunks
+<p>
+<XMP>
+     
+     #define REG_TAGRAW(nifftype)                                    \
+     RIFFIOSuccess                                                   \
+     NIFFIORegisterChunk##nifftype(                                  \
+                                   NIFFIOParser *pparser,            \
+                                   NIFFIOChunkCallback cbStart,      \
+                                   NIFFIOChunkCallback cbEnd)        \
+     {                                                               \
+          return NIFFIOPRegisterTaggedRawChunk(pparser,              \
+                                               niffckid##nifftype,   \
+                                               cbStart,              \
+                                               cbEnd);               \
+     }
+
+</XMP>
+<p>Registration functions for tagable, cooked Chunks
+<p>
+<XMP>
+     #define REG_TAGCOOK(nifftype)                                           \
+     RIFFIOSuccess                                                           \
+     NIFFIORegisterChunk##nifftype(                                          \
+        NIFFIOParser *pparser,                                               \
+        RIFFIOSuccess (*cbStart)(NIFFIOChunkContext *, niff##nifftype *),    \
+        RIFFIOSuccess (*cbEnd)(NIFFIOChunkContext *, niff##nifftype *))      \
+     {                                                                       \
+        return NIFFIOPRegisterTaggedCookedChunk(                             \
+             pparser,                                                        \
+             niffckid##nifftype,                                             \
+             (NIFFIOPReader) NIFFIOReadniff##nifftype,                       \
+             (NIFFIOCookedChunkCallback) cbStart,                            \
+             (NIFFIOCookedChunkCallback) cbEnd);                             \
+     }
+
+</XMP>
+<p>Registration functions for raw Tags
+<p>
+<XMP>
+     #define REG_TAGRAW(nifftype)                                            \
+     RIFFIOSuccess                                                           \
+     NIFFIORegisterTag##nifftype(                                            \
+                                 NIFFIOParser *pparser,                      \
+                                 FOURCC fcc,                                 \
+                                 NIFFIOTagCallback cb)                       \
+     {                                                                       \
+          return NIFFIOPRegisterRawTag(pparser, nifftag##nifftype, fcc, cb); \
+     }
+     
+
+</XMP>
+<p>Registration functions for cooked Tags
+<p>
+<XMP>
+     #define REG_TAGCOOK(nifftype)                                           \
+     RIFFIOSuccess                                                           \
+     NIFFIORegisterTag##nifftype(                                            \
+           NIFFIOParser *pparser,                                            \
+           FOURCC fcc,                                                       \
+           RIFFIOSuccess (*cb)(NIFFIOTagContext *, niff##nifftype *))        \
+     {                                                                       \
+          return NIFFIOPRegisterCookedTag(                                   \
+                     pparser,                                                \
+                     nifftag##nifftype,                                      \
+                     fcc,                                                    \
+                     (NIFFIOPReader) NIFFIOReadniff##nifftype,               \
+                     (NIFFIOCookedTagCallback) cb);                          \
+     }
+     
+
+</XMP>
+<p>
+</BODY>
+</HTML>

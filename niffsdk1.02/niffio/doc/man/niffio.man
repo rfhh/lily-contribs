@@ -1,0 +1,388 @@
+.rn '' }`
+''' $RCSfile$$Revision$$Date$
+'''
+''' $Log$
+'''
+.de Sh
+.br
+.if t .Sp
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.de Sp
+.if t .sp .5v
+.if n .sp
+..
+.de Ip
+.br
+.ie \\n(.$>=3 .ne \\$3
+.el .ne 3
+.IP "\\$1" \\$2
+..
+.de Vb
+.ft CW
+.nf
+.ne \\$1
+..
+.de Ve
+.ft R
+
+.fi
+..
+'''
+'''
+'''     Set up \*(-- to give an unbreakable dash;
+'''     string Tr holds user defined translation string.
+'''     Bell System Logo is used as a dummy character.
+'''
+.tr \(*W-|\(bv\*(Tr
+.ie n \{\
+.ds -- \(*W-
+.ds PI pi
+.if (\n(.H=4u)&(1m=24u) .ds -- \(*W\h'-12u'\(*W\h'-12u'-\" diablo 10 pitch
+.if (\n(.H=4u)&(1m=20u) .ds -- \(*W\h'-12u'\(*W\h'-8u'-\" diablo 12 pitch
+.ds L" ""
+.ds R" ""
+.ds L' '
+.ds R' '
+'br\}
+.el\{\
+.ds -- \(em\|
+.tr \*(Tr
+.ds L" ``
+.ds R" ''
+.ds L' `
+.ds R' '
+.ds PI \(*p
+'br\}
+.\"	If the F register is turned on, we'll generate
+.\"	index entries out stderr for the following things:
+.\"		TH	Title 
+.\"		SH	Header
+.\"		Sh	Subsection 
+.\"		Ip	Item
+.\"		X<>	Xref  (embedded
+.\"	Of course, you have to process the output yourself
+.\"	in some meaninful fashion.
+.if \nF \{
+.de IX
+.tm Index:\\$1\t\\n%\t"\\$2"
+..
+.nr % 0
+.rr F
+.\}
+.TH niffio 3 "niffio" "14/Jun/96" "NIFFIO Documentation"
+.IX Title "niffio 3"
+.UC
+.IX Name "niffio - Data types of the NIFFIO API"
+.if n .hy 0
+.if n .na
+.ds C+ C\v'-.1v'\h'-1p'\s-2+\h'-1p'+\s0\v'.1v'\h'-1p'
+.de CQ          \" put $1 in typewriter font
+.ft CW
+'if n "\c
+'if t \\&\\$1\c
+'if n \\&\\$1\c
+'if n \&"
+\\&\\$2 \\$3 \\$4 \\$5 \\$6 \\$7
+'.ft R
+..
+.\" @(#)ms.acc 1.5 88/02/08 SMI; from UCB 4.2
+.	\" AM - accent mark definitions
+.bd B 3
+.	\" fudge factors for nroff and troff
+.if n \{\
+.	ds #H 0
+.	ds #V .8m
+.	ds #F .3m
+.	ds #[ \f1
+.	ds #] \fP
+.\}
+.if t \{\
+.	ds #H ((1u-(\\\\n(.fu%2u))*.13m)
+.	ds #V .6m
+.	ds #F 0
+.	ds #[ \&
+.	ds #] \&
+.\}
+.	\" simple accents for nroff and troff
+.if n \{\
+.	ds ' \&
+.	ds ` \&
+.	ds ^ \&
+.	ds , \&
+.	ds ~ ~
+.	ds ? ?
+.	ds ! !
+.	ds /
+.	ds q
+.\}
+.if t \{\
+.	ds ' \\k:\h'-(\\n(.wu*8/10-\*(#H)'\'\h"|\\n:u"
+.	ds ` \\k:\h'-(\\n(.wu*8/10-\*(#H)'\`\h'|\\n:u'
+.	ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'^\h'|\\n:u'
+.	ds , \\k:\h'-(\\n(.wu*8/10)',\h'|\\n:u'
+.	ds ~ \\k:\h'-(\\n(.wu-\*(#H-.1m)'~\h'|\\n:u'
+.	ds ? \s-2c\h'-\w'c'u*7/10'\u\h'\*(#H'\zi\d\s+2\h'\w'c'u*8/10'
+.	ds ! \s-2\(or\s+2\h'-\w'\(or'u'\v'-.8m'.\v'.8m'
+.	ds / \\k:\h'-(\\n(.wu*8/10-\*(#H)'\z\(sl\h'|\\n:u'
+.	ds q o\h'-\w'o'u*8/10'\s-4\v'.4m'\z\(*i\v'-.4m'\s+4\h'\w'o'u*8/10'
+.\}
+.	\" troff and (daisy-wheel) nroff accents
+.ds : \\k:\h'-(\\n(.wu*8/10-\*(#H+.1m+\*(#F)'\v'-\*(#V'\z.\h'.2m+\*(#F'.\h'|\\n:u'\v'\*(#V'
+.ds 8 \h'\*(#H'\(*b\h'-\*(#H'
+.ds v \\k:\h'-(\\n(.wu*9/10-\*(#H)'\v'-\*(#V'\*(#[\s-4v\s0\v'\*(#V'\h'|\\n:u'\*(#]
+.ds _ \\k:\h'-(\\n(.wu*9/10-\*(#H+(\*(#F*2/3))'\v'-.4m'\z\(hy\v'.4m'\h'|\\n:u'
+.ds . \\k:\h'-(\\n(.wu*8/10)'\v'\*(#V*4/10'\z.\v'-\*(#V*4/10'\h'|\\n:u'
+.ds 3 \*(#[\v'.2m'\s-2\&3\s0\v'-.2m'\*(#]
+.ds o \\k:\h'-(\\n(.wu+\w'\(de'u-\*(#H)/2u'\v'-.3n'\*(#[\z\(de\v'.3n'\h'|\\n:u'\*(#]
+.ds d- \h'\*(#H'\(pd\h'-\w'~'u'\v'-.25m'\f2\(hy\fP\v'.25m'\h'-\*(#H'
+.ds D- D\\k:\h'-\w'D'u'\v'-.11m'\z\(hy\v'.11m'\h'|\\n:u'
+.ds th \*(#[\v'.3m'\s+1I\s-1\v'-.3m'\h'-(\w'I'u*2/3)'\s-1o\s+1\*(#]
+.ds Th \*(#[\s+2I\s-2\h'-\w'I'u*3/5'\v'-.3m'o\v'.3m'\*(#]
+.ds ae a\h'-(\w'a'u*4/10)'e
+.ds Ae A\h'-(\w'A'u*4/10)'E
+.ds oe o\h'-(\w'o'u*4/10)'e
+.ds Oe O\h'-(\w'O'u*4/10)'E
+.	\" corrections for vroff
+.if v .ds ~ \\k:\h'-(\\n(.wu*9/10-\*(#H)'\s-2\u~\d\s+2\h'|\\n:u'
+.if v .ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'\v'-.4m'^\v'.4m'\h'|\\n:u'
+.	\" for low resolution devices (crt and lpr)
+.if \n(.H>23 .if \n(.V>19 \
+\{\
+.	ds : e
+.	ds 8 ss
+.	ds v \h'-1'\o'\(aa\(ga'
+.	ds _ \h'-1'^
+.	ds . \h'-1'.
+.	ds 3 3
+.	ds o a
+.	ds d- d\h'-1'\(ga
+.	ds D- D\h'-1'\(hy
+.	ds th \o'bp'
+.	ds Th \o'LP'
+.	ds ae ae
+.	ds Ae AE
+.	ds oe oe
+.	ds Oe OE
+.\}
+.rm #[ #] #H #V #F C
+.SH "NAME"
+.IX Header "NAME"
+niffio \- Data types of the NIFFIO API
+.PP
+NIFFIO provides data types and functions to manipulate NIFF\-specific
+features of NIFF files (eg. tags, chunk length tables).
+Because NIFF files are also RIFF files, NIFFIO makes heavy use
+of the RIFFIO API for ordinary RIFF features (eg. chunks).
+.SH "NIFF Specification"
+.IX Header "NIFF Specification"
+Where is NIFF described?
+.PP
+The NIFF file format is described in the NIFF specification.
+.PP
+Notation Interchange File Format
+URL ftp://blackbox.cartah.washington.edu
+.SH "NIFF Version"
+.IX Header "NIFF Version"
+Which version of NIFF does NIFFIO support?
+.PP
+NIFFIO supports NIFF 6b.
+.SH "NIFFIOChunkLengthTable"
+.IX Header "NIFFIOChunkLengthTable"
+How are chunk length tables represented?
+.PP
+NIFFIO provides chunk length table routines that operate on
+a pointer to a NIFFIOChunkLengthTable structure.
+.PP
+A NIFFIOChunkLengthTable is not necessarily stored in memory
+the same way as a chunk length table is stored in a NIFF file.
+.PP
+All of the members of a NIFFIOChunkLengthTable are private.
+.SH "NIFFIOTag"
+.IX Header "NIFFIOTag"
+How are tags supported?
+.PP
+A NIFFIOTag holds tag id, size, and file location information about
+a tag in a NIFF file.
+.PP
+.Vb 12
+\&       
+\&     typedef struct 
+\&     {
+\&         /* Public - users need to read and set these members */
+\&         BYTE         tagid;       /* type of tag */
+\&         BYTE         tagsizeData; /* size of tag's data
+\&                                    * (does not include possible pad byte)
+\&                                    */
+\&         
+\&         /* Other Private members - not for NIFFIO users */
+\&      
+\&     } NIFFIOTag;
+.Ve
+.SH "NIFFIOFile"
+.IX Header "NIFFIOFile"
+How are NIFF files represented?
+.PP
+Operations on NIFF files take pointers to a NIFFIOFile structure.
+.PP
+Represents a NIFF file, including I/O operations and its chunk
+length table.
+.PP
+There are no public members of a NIFFIOFile.
+.PP
+Because NIFF files are also RIFF files,
+all of the I/O operations defined for RIFFIO files have
+RIFFIO equivalents. (see *<NIFFIO Inherit>*)
+.SH "NIFFIOStbl"
+.IX Header "NIFFIOStbl"
+How is the NIFF String Table (stbl) represented?
+.PP
+Operations on the String Table take a pointer to a NIFFIOStbl structure.
+.PP
+This structure represents a single string item, including a pointer to its
+value and its offset into the NIFF file's string table. It is used by the
+NIFF writing program.
+.PP
+When writing a NIFF file, the user supplies an array of type
+NIFFIOStbl, with the pointers to each of the strings placed into
+the <*str> fields.  The user then calls NIFFIOchunkStringTable with
+this array and the number of strings supplied.
+\fINIFFIOStoreStbl()\fR puts the strings into string table format,
+calculating the offsets and storing each offset into the matching
+position for its string, and then stores the whole string table
+into the file.  The string offsets can be thus be obtained and used
+by the writing program when writing out chunks which refer to the
+string later in the file.
+.PP
+.Vb 7
+\&     
+\&     typedef struct 
+\&     {
+\&         STROFFSET offset;  /* Offset of string relative to chunk data start */
+\&         char      *str;    
+\&     } NIFFIOStbl;
+\&     
+.Ve
+.SH "NIFFIOParser"
+.IX Header "NIFFIOParser"
+How does NIFFIO know how to parse a NIFF file?
+.PP
+NIFFIO uses a NIFFIOParser structure to store parsing information
+for NIFF files.  A NIFFIOParser remembers user-supplied callbacks
+to process selected NIFF chunks and tags.
+.PP
+See Also:
+\- *<NIFFIO Parse>*
+.Ip "\(bu" 4
+.IX Item "\(bu"
+*<\s-1NIFFIO\s0 Register>*
+.PP
+A user may choose to trace the operation of a NIFFIOParser.
+The default tracer uses the Standard C Library to print to <stderr>.
+Alternatively, the user may supply their own routine to handle
+tracing output.
+.Sh "NIFFIOParserTracer"
+.IX Subsection "NIFFIOParserTracer"
+Callback to handle parser tracing output.
+.PP
+.Vb 4
+\&     typedef void (*NIFFIOParserTracer)(const char *strParser,
+\&                                        const unsigned nLevel, 
+\&                                        const char *strFormat, 
+\&                                        ...);
+.Ve
+\s-1PARAMETERS\s0:
+<strParser> is a string that identifies a parser in case there
+is more than one parser in a program.
+.PP
+<nLevel> is the nesting depth of the current chunk or tag.
+It is the number of chunks above the current object. For example, the
+the \s-1NIFF\s0 form chunk has an <nLevel> == 0.
+.PP
+<strFormat> is a vprintf compatible format string that reflects the
+following variable argument list to the NIFFIOParserTracer.
+.PP
+.Vb 1
+\&     
+.Ve
+.Sh "NIFFIOUserContext"
+.IX Subsection "NIFFIOUserContext"
+User-defined parser state information provided by parent chunk callbacks.
+.PP
+.Vb 1
+\&     typedef void *NIFFIOUserContext;
+.Ve
+While parsing a \s-1NIFF\s0 file, users may keep track of their own
+parsing information by supplying pointers to custom, user-defined data
+structures.  In turn, the \s-1NIFFIO\s0 parser will pass chunk and tag callbacks
+the \*(L"context\*(R" of their enclosing (parent) chunk.
+.PP
+NIFFIOUserContexts are solely for the user's use.
+\s-1NIFFIO\s0 will never dereference any NIFFIOUserContext.
+User contexts may be safely ignored by any user who does not wish to
+use them.  It is safe to assign a null pointer to a NIFFIOUserContext.
+.PP
+.Vb 1
+\&     
+.Ve
+In addition to the NIFFIOUserContext of its parent chunk, a
+chunk callback routine also gets information about the chunk it
+is processing through a NIFFIOChunkContext structure.
+.Sh "NIFFIOChunkContext"
+.IX Subsection "NIFFIOChunkContext"
+Parser state information provided to chunk callbacks.
+.PP
+.Vb 12
+\&      
+\&     typedef struct
+\&     {
+\&       unsigned          nLevel;        /* chunk depth */
+\&       NIFFIOFile        *pnf;          /* NIFF file that contains the chunk   */
+\&       RIFFIOChunk       *pchunk;       /* Chunk information from file         */
+\&       NIFFIOUserContext ctxParent;     /* Parent chunk user context           */
+\&       NIFFIOUserContext ctxMe;         /* Child user context, to be filled in
+\&                                         * by chunk start callback
+\&                                         */
+\&     } NIFFIOChunkContext;
+\&     
+.Ve
+.Sh "NIFFIOTagContext"
+.IX Subsection "NIFFIOTagContext"
+Parser state information provided to tag callbacks.
+.PP
+.Vb 9
+\&     typedef struct
+\&     {
+\&       unsigned          nLevel;        /* tag depth */
+\&       NIFFIOFile        *pnf;          /* NIFF file that contains the chunk  */
+\&       NIFFIOTag         *ptag;         /* Tag information from file          */
+\&       RIFFIOChunk       *pchunkParent; /* Parent chunk information from file */
+\&       NIFFIOUserContext ctxParent;     /* Parent chunk user context          */
+\&     } NIFFIOTagContext;
+\&     
+.Ve
+.SH "Parser Callbacks"
+.IX Header "Parser Callbacks"
+Here are the types of functions that the user needs to define to
+use as callbacks.
+.Sh "NIFFIOChunkCallback"
+.IX Subsection "NIFFIOChunkCallback"
+Process a chunk encountered by the parser.
+.PP
+.Vb 2
+\&     typedef RIFFIOSuccess (*NIFFIOChunkCallback)(NIFFIOChunkContext *pchunkctx);
+\&     
+.Ve
+.Sh "NIFFIOTagCallback"
+.IX Subsection "NIFFIOTagCallback"
+Process a tag encountered by the parser.
+.PP
+.Vb 2
+\&     typedef RIFFIOSuccess (*NIFFIOTagCallback)(NIFFIOTagContext *ptagctx); 
+\&     
+.Ve
+
+.rn }` ''

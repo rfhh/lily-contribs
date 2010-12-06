@@ -1,0 +1,25 @@
+# $Header: /usr/local/cvsroot/riffio/configure.in,v 1.2 1996/06/06 06:09:37 tim Exp $
+
+AC_INIT(RIFFIO)
+AC_CONFIG_AUX_DIR(mk)
+
+AC_PROG_CC
+AC_PROG_INSTALL
+AC_PROG_RANLIB
+
+AC_PATH_PROGS(MAKEDEPEND, makedepend, :)
+
+VERSION=VERSION
+AC_SUBST_FILE(VERSION)
+
+if test ! -d bin ; then
+	echo creating ./bin
+	mkdir ./bin
+fi
+
+if test ! -d lib ; then
+	echo creating ./lib
+	mkdir ./lib
+fi
+
+AC_OUTPUT(Makefile mk/top.mk:mk/top.in mk/mkdep)

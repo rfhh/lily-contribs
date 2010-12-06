@@ -1,0 +1,19 @@
+
+ NAME
+ ====
+ tststack - test RIFFIO stack operations
+ 
+ SYNOPSIS
+ ========
+ 
+ tststack 
+
+ DESCRIPTION
+ ===========
+ Runs various tests on RIFFIOChunkStack operations. Core dumps on failure. 
+
+ RETURN VALUE
+ ============
+ Returns 0 if all tests pass.
+ Non-zero otherwise.
+

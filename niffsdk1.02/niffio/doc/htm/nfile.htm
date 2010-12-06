@@ -1,0 +1,338 @@
+<!-- $Id$ -->
+<HTML><HEAD>
+<CENTER><TITLE>nfile</TITLE>
+</HEAD>
+<BODY></CENTER><p><hr>
+
+<H1> 
+<A NAME="nfile_name_0">
+NAME</A>
+</H1>
+nfile - NIFFIOFile routines
+<p><p><hr>
+
+<H1> 
+<A NAME="nfile_synopsis_0">
+SYNOPSIS</A>
+</H1>
+<p>
+<UL>
+<LI>
+<A HREF="nfile.htm#nfile_niffiofilenew_0">NIFFIOFileNew()</A>
+
+<p>
+<LI>
+<A HREF="nfile.htm#nfile_niffiofilenewstdc_0">NIFFIOFileNewSTDC()</A>
+
+<p>
+<LI>
+<A HREF="nfile.htm#nfile_niffiofileinit_0">NIFFIOFileInit()</A>
+
+<p>
+<LI>
+<A HREF="nfile.htm#nfile_niffiofiledelete_0">NIFFIOFileDelete()</A>
+
+<p>
+<LI>
+<A HREF="nfile.htm#nfile_niffiofilegetclt_0">NIFFIOFileGetCLT()</A>
+
+<p>
+<LI>
+<A HREF="nfile.htm#nfile_niffiofilereadclt_0">NIFFIOFileReadCLT()</A>
+
+<p>
+<LI>
+<A HREF="nfile.htm#nfile_niffiofileadoptclt_0">NIFFIOFileAdoptCLT()</A>
+
+<p>
+<LI>
+<A HREF="nfile.htm#nfile_niffioseekchunktags_0">NIFFIOSeekChunkTags()</A>
+
+<p>
+</UL>
+.
+<p><p><hr>
+
+<H1> 
+<A NAME="nfile_niffiofilenew_0">
+NIFFIOFileNew</A>
+</H1>
+Return a pointer to a new NIFFIOFile, or null on failure.
+<p>
+<XMP>
+     NIFFIOFile *
+     NIFFIOFileNew(void)
+
+</XMP>
+<p>
+<H2> 
+<A NAME="nfile_obligations_0">
+OBLIGATIONS</A>
+</H2>
+<p>
+<UL>
+<LI>Don't forget to call 
+<A HREF="nfile.htm#nfile_niffiofileinit_0">NIFFIOFileInit()</A>
+ for your new file.
+<p>
+<LI>You must eventually call 
+<A HREF="nfile.htm#nfile_niffiofiledelete_0">NIFFIOFileDelete()</A>
+ to free the NIFFIOFile.
+<p>
+</UL>
+.
+<p><p><hr>
+
+<H1> 
+<A NAME="nfile_niffiofilenewstdc_0">
+NIFFIOFileNewSTDC</A>
+</H1>
+Create a new NIFFIOFile given a Standard C Library FILE pointer
+<p>
+<XMP>
+     NIFFIOFile *
+     NIFFIOFileNewSTDC(FILE *fp)
+
+</XMP>
+<p>
+<H2> 
+<A NAME="nfile_obligations_0">
+OBLIGATIONS</A>
+</H2>
+You must call 
+<A HREF="nfile.htm#nfile_niffiofiledelete_0">NIFFIOFileDelete()</A>
+ to free the new NIFFIOFile.
+<p><p><hr>
+
+<H1> 
+<A NAME="nfile_niffiofileinit_0">
+NIFFIOFileInit</A>
+</H1>
+Provide a NIFFIOFile with a user-defined file and I/O callbacks.
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOFileInit(NIFFIOFile *pnf,
+                    void *pvUserFile,
+                    RIFFIOReader reader,
+                    RIFFIOWriter writer,
+                    RIFFIOSeeker seeker,
+                    RIFFIOTeller teller)
+
+</XMP>
+<p>
+<H2> 
+<A NAME="nfile_entry_0">
+ENTRY</A>
+</H2>
+<p>
+<DL COMPACT>
+<DT><STRONG>
+<EM>*&lt;pnf&gt;</EM>
+</STRONG>
+<DD>
+is the NIFFIOFile being initialized.
+<p>
+<DT><STRONG>
+<EM>*&lt;pvUserFile&gt;</EM>
+</STRONG>
+<DD>
+is a user representation of a file that will be passed to
+user-defined reader, writer, seeker, and teller functions.
+<p>
+<DT><STRONG>
+<EM>*&lt;reader&gt;,&lt;writer&gt;,&lt;seeker&gt;,&lt;teller&gt;</EM>
+</STRONG>
+<DD>
+are user-defined functions that perform operations on &lt;pvUserFile&gt;
+<p>
+</DL>
+.
+<p>
+<H2> 
+<A NAME="nfile_obligations_0">
+OBLIGATIONS</A>
+</H2>
+<EM>NIFFFIOFileInit()</EM> should be called immediately after 
+<A HREF="nfile.htm#nfile_niffiofilenew_0">NIFFIOFileNew()</A>
+
+<p><p><hr>
+
+<H1> 
+<A NAME="nfile_niffiofiledelete_0">
+NIFFIOFileDelete</A>
+</H1>
+Free the memory associated with a NIFFIOFile.
+<p>
+<XMP>
+     void
+     NIFFIOFileDelete(NIFFIOFile *pnf)
+
+</XMP>
+<p>
+<H2> 
+<A NAME="nfile_warning_0">
+WARNING</A>
+</H2>
+This also frees the memory of any NIFFIOChunkLengthTable
+that may have been associated with the NIFFIOFile
+using 
+<A HREF="nfile.htm#nfile_niffiofileadoptclt_0">NIFFIOFileAdoptCLT()</A>
+.
+<p><p><hr>
+
+<H1> 
+<A NAME="nfile_niffiofilegetclt_0">
+NIFFIOFileGetCLT</A>
+</H1>
+Return a pointer to a NIFFIOFile's chunk length table.
+<p>
+<XMP>
+     NIFFIOChunkLengthTable *
+     NIFFIOFileGetCLT(NIFFIOFile *pnf)
+
+</XMP>
+<p>
+<H2> 
+<A NAME="nfile_return_0">
+RETURN</A>
+</H2>
+null if the chunk length table has not be set or read yet.
+<p>
+<H2> 
+<A NAME="nfile_obligations_0">
+OBLIGATIONS</A>
+</H2>
+This pointer may become invalid after calls to
+other NIFFIO routines.  Such as what ?????
+<p><p><hr>
+
+<H1> 
+<A NAME="nfile_niffiofilereadclt_0">
+NIFFIOFileReadCLT</A>
+</H1>
+Read and set a NIFFIOFile's chunk length table.
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOFileReadCLT(NIFFIOFile *pnf, RIFFIOChunk *pchunkCLT)
+
+</XMP>
+<p>
+<H2> 
+<A NAME="nfile_entry_0">
+ENTRY</A>
+</H2>
+<p>
+<DL COMPACT>
+<DT><STRONG>
+<EM>*&lt;*pchunkCLT&gt;</EM>
+</STRONG>
+<DD>
+is a chunk length table chunk that has been
+returned by 
+<A HREF="inherit.htm#inherit_niffiochunkdescend_0">NIFFIOChunkDescend()</A>
+.
+<p>
+<DT><STRONG>
+<EM>*&lt;*pnf&gt;</EM>
+</STRONG>
+<DD>
+may be positioned anywhere
+<p>
+</DL>
+.
+<p>
+<H2> 
+<A NAME="nfile_exit_0">
+EXIT</A>
+</H2>
+Leaves the NIFFIOFile positioned after the chunk length table chunk.
+<p><p><hr>
+
+<H1> 
+<A NAME="nfile_niffiofileadoptclt_0">
+NIFFIOFileAdoptCLT</A>
+</H1>
+Assign and write a chunk length table to a NIFFIOFile.
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOFileAdoptCLT(NIFFIOFile *pnf, NIFFIOChunkLengthTable *pclt)
+
+</XMP>
+<p>
+<H2> 
+<A NAME="nfile_entry_0">
+ENTRY</A>
+</H2>
+The NIFFIOFile must be positioned at the start of data
+of its CLT chunk.
+<p>
+<H2> 
+<A NAME="nfile_exit_0">
+EXIT</A>
+</H2>
+Leaves the file positioned at the end of the CLT chunk data
+that it just wrote.
+<p>
+<H2> 
+<A NAME="nfile_obligations_0">
+OBLIGATIONS</A>
+</H2>
+Upon return, the NIFFIOFile takes responsibility for
+deleting the CLT you just gave it.
+Don't free or delete &lt;*pclt&gt;; that will be done by either another
+call to 
+<A HREF="nfile.htm#nfile_niffiofileadoptclt_0">NIFFIOFileAdoptCLT()</A>
+ or 
+<A HREF="nfile.htm#nfile_niffiofiledelete_0">NIFFIOFileDelete()</A>
+.
+<p><p><hr>
+
+<H1> 
+<A NAME="nfile_niffioseekchunktags_0">
+NIFFIOSeekChunkTags</A>
+</H1>
+Position a NIFFIOFile at the start of a given chunk's tags.
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOSeekChunkTags(NIFFIOFile *pnf, RIFFIOChunk *pchunk)
+
+</XMP>
+<p>This is done according to the chunk length table associated
+with the NIFFIOFile.
+<p>It is an error if there is no associated CLT. Use 
+<A HREF="nfile.htm#nfile_niffiofilegetclt_0">NIFFIOFileGetCLT()</A>
+
+to find out.
+<p>
+<H2> 
+<A NAME="nfile_returns_0">
+RETURNS</A>
+</H2>
+<p>
+<DL COMPACT>
+<DT><STRONG>
+<EM>*RIFFIO_OK</EM>
+</STRONG>
+<DD>
+on success
+<p>
+<DT><STRONG>
+<EM>*RIFFIO_FAIL</EM>
+</STRONG>
+<DD>
+if the lookup failed to find the chunks id in the CLT
+<p>
+<DT><STRONG>
+<EM>*RIFFIO_FAIL</EM>
+</STRONG>
+<DD>
+on a file seek error
+<p>
+</DL>
+
+</BODY>
+</HTML>

@@ -1,0 +1,80 @@
+<!-- $Id$ -->
+<HTML><HEAD>
+<CENTER><TITLE>stbl</TITLE>
+</HEAD>
+<BODY></CENTER><p><hr>
+
+<H1> 
+<A NAME="stbl_name_0">
+NAME</A>
+</H1>
+stbl - string table functions
+<p><p><hr>
+
+<H1> 
+<A NAME="stbl_synopsis_0">
+SYNOPSIS</A>
+</H1>
+<p>
+<UL>
+<LI>
+<A HREF="stbl.htm#stbl_niffiostblwrite_0">NIFFIOStblWrite()</A>
+
+<p>
+</UL>
+.
+<p><p><hr>
+
+<H1> 
+<A NAME="stbl_see_0">
+SEE ALSO</A>
+</H1>
+<p>
+<UL>
+<LI>
+<A HREF="store.htm#store_niffiostorestbl_0">NIFFIOStoreStbl()</A>
+
+<p>
+</UL>
+.
+<p><p><hr>
+
+<H1> 
+<A NAME="stbl_niffiostblwrite_0">
+NIFFIOStblWrite</A>
+</H1>
+Write a single string table entry to a RIFFIOFile.
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOStblWrite(NIFFIOFile *pnf, 
+                     RIFFIOChunk *pchunkSTBL, 
+                     NIFFIOStbl *pstbl)
+
+</XMP>
+<p>
+<H2> 
+<A NAME="stbl_entry_0">
+ENTRY</A>
+</H2>
+T &lt;*pchunkSTBL&gt; must be newly created by <EM>RIFFIOChunkCreate()</EM> and not
+yet finalized by <EM>RIFFIOChunkFinalize()</EM>.
+<p>
+<H2> 
+<A NAME="stbl_exit_0">
+EXIT</A>
+</H2>
+Writes &lt; pstbl-&gt;str &gt; (including its terminating NUL character) to
+a string table chunk &lt;*pchunkSTBL&gt; in the NIFFIOFile &lt;*pnf&gt;.
+<p>Writing takes place at the current file position.
+<p>Calculates the string offset from pchunkSTBL's data offset and
+returns it in &lt;pstbl-&gt;offset&gt;.
+<p>
+<H2> 
+<A NAME="stbl_return_0">
+RETURN</A>
+</H2>
+RIFFIO_RESULT_OK on success.
+<p>
+</BODY>
+</HTML>

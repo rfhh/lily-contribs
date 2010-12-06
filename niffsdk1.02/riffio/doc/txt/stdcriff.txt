@@ -1,0 +1,54 @@
+
+ NAME
+ ====
+ stdcriff - routines to map the Standard C library to the RIFFIOFile 
+            interface
+
+ SYNOPSIS
+ ========
+ 
+ - STDCRIFFRead()
+ - STDCRIFFWrite()
+ - STDCRIFFSeek()
+ - STDCRIFFTell() 
+
+
+ DESCRIPTION
+ ===========
+ You can provide these routines to RIFFIOFileInit() along with an
+ open Standard C Library (FILE *).
+
+ EXAMPLES
+ ========
+ 
+ See the L<hello> example.
+ 
+
+
+ STDCRIFFRead
+ ============
+ Read bytes from a Standard C library file
+
+| long
+| STDCRIFFRead(void *pvUserFile, void *pvBuffer, long nBytes)
+
+ STDCRIFFWrite
+ =============
+ Write bytes to a Standard C library file
+
+| long
+| STDCRIFFWrite(void *pvUserFile, void *pvBuffer, long nBytes)
+
+ STDCRIFFSeek
+ =============
+ Seek to a specific position in a Standard C library file
+
+| RIFFIOSuccess
+| STDCRIFFSeek(void *pvUserFile, RIFFIOOffset offset, RIFFIOSeekOrigin origin)
+
+ STDCRIFFTell
+ ============
+ Return the file position in a Standard C library file
+
+| long
+| STDCRIFFTell(void *pvUserFile)

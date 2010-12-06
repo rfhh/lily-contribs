@@ -1,0 +1,30 @@
+
+=head1 NAME
+
+rwniff - Read and Write structures defined in "niff.h"
+
+=head1 SYNOPSIS
+
+=over 4
+
+=item *
+
+NIFFIOWriteniffXXX()
+
+=item *
+
+NIFFIOReadniffXXX()
+
+=back
+
+Where XXX is the name of a structure defined in "niff.h"
+
+=head1 EXAMPLES
+
+     NIFFIOFile *pnf1, *pnf1;
+     niffPart   part;
+    
+     NIFFIOReadniffPart(pnf1, &part);
+     NIFFIOWriteniffPart(pnf2, &part);
+    
+

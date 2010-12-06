@@ -1,0 +1,207 @@
+<!-- $Id$ -->
+<HTML><HEAD>
+<CENTER><TITLE>table</TITLE>
+</HEAD>
+<BODY></CENTER><p><hr>
+
+<H1> 
+<A NAME="table_name_0">
+NAME</A>
+</H1>
+table - Maintain a table of FOURCC/value pairs
+<p><p><hr>
+
+<H1> 
+<A NAME="table_synopsis_0">
+SYNOPSIS</A>
+</H1>
+<p>
+<UL>
+<LI>
+<A HREF="table.htm#table_riffiofcctablenew_0">RIFFIOFCCTableNew()</A>
+
+<p>
+<LI>
+<A HREF="table.htm#table_riffiofcctabledelete_0">RIFFIOFCCTableDelete()</A>
+
+<p>
+<LI>
+<A HREF="table.htm#table_riffiofcctablemakeentry_0">RIFFIOFCCTableMakeEntry()</A>
+
+<p>
+<LI>
+<A HREF="table.htm#table_riffiofcctablelookup_0">RIFFIOFCCTableLookup()</A>
+
+<p>
+<LI>
+<A HREF="table.htm#table_riffiofcctablecount_0">RIFFIOFCCTableCount()</A>
+
+<p>
+<LI>
+<A HREF="table.htm#table_riffiofcctablecreatearray_0">RIFFIOFCCTableCreateArray()</A>
+
+<p>
+<LI><EM>RIFFIOFCCTableFreeEntries()</EM>
+<p>
+<LI>
+<A HREF="table.htm#table_riffiofcctableforeachentry_0">RIFFIOFCCTableForEachEntry()</A>
+
+<p>
+<LI>
+<A HREF="table.htm#table_riffiofcctabledump_0">RIFFIOFCCTableDump()</A>
+
+<p>
+</UL>
+.
+<p><p><hr>
+
+<H1> 
+<A NAME="table_riffiofcctablenew_0">
+RIFFIOFCCTableNew</A>
+</H1>
+Return a newly created table.
+<p>
+<H2> 
+<A NAME="table__0">
+| RIFFIOFCCTable *</A>
+</H2>
+| RIFFIOFCCTableNew(void)
+OBLIGATIONS
+<p>Use RIFFIOFCCTableDelete to free the table.
+<p>
+<H2> 
+<A NAME="table_returns_0">
+RETURNS</A>
+</H2>
+The new table or null on failure.
+<p><p><hr>
+
+<H1> 
+<A NAME="table_riffiofcctabledelete_0">
+RIFFIOFCCTableDelete</A>
+</H1>
+Free all memory allocated for a table.
+<p>
+<XMP>
+     void
+     RIFFIOFCCTableDelete(RIFFIOFCCTable *ptable)
+
+</XMP>
+<p>
+<H2> 
+<A NAME="table_warning_0">
+WARNING</A>
+</H2>
+Orphans all table entry values if they happen to be pointers.
+<p>
+<H2> 
+<A NAME="table_entry_0">
+ENTRY</A>
+</H2>
+<*ptable&gt; must have been created by RIFFIOFCCTableCreate.
+<p><p><hr>
+
+<H1> 
+<A NAME="table_riffiofcctablemakeentry_0">
+RIFFIOFCCTableMakeEntry</A>
+</H1>
+Make a new entry in a table.
+<p>
+<XMP>
+     RIFFIOSuccess
+     RIFFIOFCCTableMakeEntry(RIFFIOFCCTable *ptable, RIFFIOFCCTableEntry newEntry)
+
+</XMP>
+<p>Replaces any existing entry with the value of the new entry.
+<p>
+<H2> 
+<A NAME="table_return_0">
+RETURN</A>
+</H2>
+Return the success status of the operation.
+<p><p><hr>
+
+<H1> 
+<A NAME="table_riffiofcctablelookup_0">
+RIFFIOFCCTableLookup</A>
+</H1>
+Lookup a value in a RIFFIOFCCTable given a FOURCC.
+<p>
+<XMP>
+     RIFFIOSuccess
+     RIFFIOFCCTableLookup(RIFFIOFCCTable *ptable, RIFFIOFCCTableEntry *entryp)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="table_riffiofcctablecount_0">
+RIFFIOFCCTableCount</A>
+</H1>
+Return the number of entries in a table
+<p>
+<XMP>
+     unsigned
+     RIFFIOFCCTableCount(RIFFIOFCCTable *ptable)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="table_riffiofcctablecreatearray_0">
+RIFFIOFCCTableCreateArray</A>
+</H1>
+Return a newly allocated array of all the entries in a table.
+<p>
+<XMP>
+     RIFFIOFCCTableEntry *
+     RIFFIOFCCTableCreateArray(RIFFIOFCCTable *ptable)
+
+</XMP>
+<p>
+<H2> 
+<A NAME="table_exit_0">
+EXIT</A>
+</H2>
+The new array is NOT sorted in any particular order.
+<p>
+<H2> 
+<A NAME="table_obligations_0">
+OBLIGATIONS</A>
+</H2>
+The new array must be freed by the caller.
+<p><p><hr>
+
+<H1> 
+<A NAME="table_riffiofcctableforeachentry_0">
+RIFFIOFCCTableForEachEntry</A>
+</H1>
+Apply a function over every entry in a table.
+<p>
+<XMP>
+     void
+     RIFFIOFCCTableForEachEntry(RIFFIOFCCTable *ptable, void f(RIFFIOFCCTableEntry))
+
+</XMP>
+<p>
+<H2> 
+<A NAME="table_entry_0">
+ENTRY</A>
+</H2>
+<f&gt; must not modify, add or delete any entries
+<p><p><hr>
+
+<H1> 
+<A NAME="table_riffiofcctabledump_0">
+RIFFIOFCCTableDump</A>
+</H1>
+Print the contents of a RIFFIOFCCTable for debugging
+<p>
+<XMP>
+     void
+     RIFFIOFCCTableDump(FILE *fp, RIFFIOFCCTable *ptable)
+
+</XMP>
+<p>
+</BODY>
+</HTML>

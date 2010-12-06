@@ -1,0 +1,192 @@
+
+=head1 NAME
+
+rwtypes - Read and Write basic types defined in "niff.h"
+
+=over 4
+
+=item *
+
+NIFFIOReadBYTE()
+
+=item *
+
+NIFFIOReadCHAR()
+
+=item *
+
+NIFFIOReadSIGNEDBYTE()
+
+=item *
+
+NIFFIOReadSHORT()
+
+=item *
+
+NIFFIOReadLONG()
+
+=item *
+
+NIFFIOReadRATIONAL()
+
+=item *
+
+NIFFIOReadSTROFFSET()
+
+=item *
+
+NIFFIOReadFONTIDX()
+
+=item *
+
+NIFFIOWriteBYTE()
+
+=item *
+
+NIFFIOWriteCHAR()
+
+=item *
+
+NIFFIOWriteSIGNEDBYTE()
+
+=item *
+
+NIFFIOWriteSHORT()
+
+=item *
+
+NIFFIOWriteLONG()
+
+=item *
+
+NIFFIOWriteRATIONAL()
+
+=item *
+
+NIFFIOWriteSTROFFSET()
+
+=item *
+
+NIFFIOWriteFONTIDX()
+
+=back
+
+=head1 NIFFIOReadBYTE
+
+Read an NIFF BYTE from a NIFFIOFile.
+
+     RIFFIOSuccess
+     NIFFIOReadBYTE(NIFFIOFile *pnf, BYTE *pbyte)
+
+
+=head1 NIFFIOReadCHAR
+
+Read a NIFF CHAR from a NIFFIOFile.
+
+     RIFFIOSuccess
+     NIFFIOReadCHAR(NIFFIOFile *pnf, CHAR *pchar)
+
+
+=head1 NIFFIOReadSIGNEDBYTE
+
+Read a NIFF SIGNEDBYTE from a NIFFIOFile.
+
+     RIFFIOSuccess
+     NIFFIOReadSIGNEDBYTE(NIFFIOFile *pnf, SIGNEDBYTE *sbp)
+
+
+=head1 NIFFIOReadSHORT
+
+Read a NIFF SHORT from a NIFFIOFile.
+
+     RIFFIOSuccess
+     NIFFIOReadSHORT(NIFFIOFile *pnf, SHORT *ssp)
+
+
+=head1 NIFFIOReadLONG
+
+Read a NIFF LONG from a NIFFIOFile.
+
+     RIFFIOSuccess
+     NIFFIOReadLONG(NIFFIOFile *pnf, LONG *slp)
+
+
+=head1 NIFFIOReadRATIONAL
+
+Read a NIFF RATIONAL from a NIFFIOFile.
+
+     RIFFIOSuccess
+     NIFFIOReadRATIONAL(NIFFIOFile *pnf, RATIONAL *prat)
+
+
+=head1 NIFFIOReadSTROFFSET
+
+Read a NIFF STROFFSET from a NIFFIOFile.
+
+     RIFFIOSuccess
+     NIFFIOReadSTROFFSET(NIFFIOFile *pnf, STROFFSET *pstroff)
+
+
+=head1 NIFFIOReadFONTIDX
+
+Read a NIFF FONTIDX from a NIFFIOFile.
+
+     RIFFIOSuccess
+     NIFFIOReadFONTIDX(NIFFIOFile *pnf, FONTIDX *pfidx)
+
+
+=head1 NIFFIOWriteBYTE
+
+Write a NIFF BYTE to a NIFFIOFile.
+
+     RIFFIOSuccess
+     NIFFIOWriteBYTE(NIFFIOFile *pnf, BYTE b)
+
+
+=head1 NIFFIOWriteSIGNEDBYTE
+
+Write a NIFF SIGNEDBYTE to a NIFFIOFile.
+
+     RIFFIOSuccess
+     NIFFIOWriteSIGNEDBYTE(NIFFIOFile *pnf, SIGNEDBYTE sb)
+
+
+=head1 NIFFIOWriteSHORT
+
+Write a NIFF SHORT to a NIFFIOfile.
+
+     RIFFIOSuccess
+     NIFFIOWriteSHORT(NIFFIOFile *pnf, SHORT ss)
+
+
+=head1 NIFFIOWriteLONG
+
+Write a NIFF LONG to a NIFFIOFile.
+
+     RIFFIOSuccess
+     NIFFIOWriteLONG(NIFFIOFile *pnf, LONG sl)
+
+
+=head1 NIFFIOWriteRATIONAL
+
+Write a NIFF RATIONAL to a NIFFIOFile.
+
+     RIFFIOSuccess
+     NIFFIOWriteRATIONAL(NIFFIOFile *pnf, RATIONAL rat)
+
+
+=head1 NIFFIOWriteSTROFFSET
+
+Write a NIFF STROFFSET to a NIFFIOFile.
+
+     RIFFIOSuccess
+     NIFFIOWriteSTROFFSET(NIFFIOFile *pnf, STROFFSET stroff)
+
+
+=head1 NIFFIOWriteFONTIDX
+
+Write a NIFF FONTIDX to a NIFFIOFile.
+
+     RIFFIOSuccess
+     NIFFIOWriteFONTIDX(NIFFIOFile *pnf, FONTIDX f)
+

@@ -1,0 +1,160 @@
+
+=head1 NAME
+
+tags - tag creation and navigation routines
+
+=head1 SYNOPSIS
+
+=head2 Tag Creation
+
+=over 4
+
+=item *
+
+NIFFIOTagCreate()
+
+=item *
+
+NIFFIOTagFinalize()
+
+=back
+
+=head2 Tag Navigation
+
+=over 4
+
+=item *
+
+NIFFIOTagDescend()
+
+=item *
+
+NIFFIOTagAscend()
+
+=back
+
+=head1 NIFFIOTagCreate
+
+Start a new tag in a NIFF file.
+
+     RIFFIOSuccess
+     NIFFIOTagCreate(NIFFIOFile *pnf, NIFFIOTag *ptag)
+
+
+=head2 ENTRY
+
+=over 4
+
+=item *
+
+T <ptag->tagid> must contain the tag ID of the new tag.
+
+=item *
+
+T <ptag->tagsizeData> will be written to the file but
+does not need to have a correct value.
+
+=back
+
+=head2 EXIT
+
+=over 4
+
+=item *
+
+Writes a new tag header to <*pnf>.
+
+=item *
+
+Marks the tag as "dirty" (means the data size may need updating).
+
+=back
+
+=head2 OBLIGATIONS
+
+NIFFIOTagFinalize() must eventually be called with <*ptag>
+to finish writing the tag.
+If NIFFIOTagFinalize() determines that <ptag->tagsizeData> is correct
+then it will not seek back in the file to correct it.
+
+=head1 NIFFIOTagFinalize
+
+Finish writing a tag to a NIFFIOFile.
+
+     RIFFIOSuccess
+     NIFFIOTagFinalize(NIFFIOFile *pnf, NIFFIOTag *ptag)
+
+
+=head2 ENTRY
+
+T <*ptag> must be the result of a call to NIFFIOTagCreate.
+
+=head2 EXIT
+
+=over 4
+
+=item *
+
+Updates the tag data size on the file and in <*ptag> (if necessary).
+
+=item *
+
+Writes a NUL pad byte (if necessary).
+
+=item *
+
+Leaves the file positioned at the end of the new tag.
+
+=back
+
+=head2 ERRORS
+
+On failure, the file position is undefined.
+
+=head1 NIFFIOTagDescend
+
+Read a tag header from a RIFF file.
+
+     RIFFIOSuccess
+     NIFFIOTagDescend(NIFFIOFile *pnf, NIFFIOTag *ptag)
+
+
+=head2 ENTRY
+
+The file must be positioned at the start of a tag.
+
+=head2 EXIT
+
+=over 4
+
+=item *
+
+Leaves the file positioned after the tag's size field.
+
+=item *
+
+<ptag->tagid> and
+<ptag->tagsizeData> are updated from the
+tag's header.
+
+=back
+
+=head1 NIFFIOTagAscend
+
+Position a NIFFIOFile after a specified tag.
+
+     RIFFIOSuccess
+     NIFFIOTagAscend(NIFFIOFile *pnf, NIFFIOTag *ptag)
+
+
+=head2 ENTRY
+
+T <*ptag> was returned by NIFFIOTagDescend.
+
+=head2 EXIT
+
+T <*pnf> is postioned at the end of <*ptag>
+
+=head2 ERRORS
+
+On failure, the file position is undefined.

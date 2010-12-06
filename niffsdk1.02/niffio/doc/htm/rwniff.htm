@@ -1,0 +1,44 @@
+<!-- $Id$ -->
+<HTML><HEAD>
+<CENTER><TITLE>rwniff</TITLE>
+</HEAD>
+<BODY></CENTER><p><hr>
+
+<H1> 
+<A NAME="rwniff_name_0">
+NAME</A>
+</H1>
+rwniff - Read and Write structures defined in ``niff.h''
+<p><p><hr>
+
+<H1> 
+<A NAME="rwniff_synopsis_0">
+SYNOPSIS</A>
+</H1>
+<p>
+<UL>
+<LI><EM>NIFFIOWriteniffXXX()</EM>
+<p>
+<LI><EM>NIFFIOReadniffXXX()</EM>
+<p>
+</UL>
+Where XXX is the name of a structure defined in ``niff.h''.
+<p><p><hr>
+
+<H1> 
+<A NAME="rwniff_examples_0">
+EXAMPLES</A>
+</H1>
+
+<XMP>
+     NIFFIOFile *pnf1, *pnf1;
+     niffPart   part;
+    
+     NIFFIOReadniffPart(pnf1, &part);
+     NIFFIOWriteniffPart(pnf2, &part);
+    
+
+</XMP>
+<p>
+</BODY>
+</HTML>

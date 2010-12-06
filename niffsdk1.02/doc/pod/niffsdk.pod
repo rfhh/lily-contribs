@@ -1,0 +1,665 @@
+
+=head1 NAME
+
+niffsdk - faq for the NIFFSDK
+
+=head1 SYNOPSIS
+
+User Guide prepared by Tim Butler and Cindy Grande <72723.1272@compuserve.com>
+
+=head2 General
+
+=over 4
+
+=item *
+
+What is the Niff SDK?
+
+=item *
+
+Who is to blame?
+
+=item *
+
+What is in the NIFF SDK?
+
+=item *
+
+What platforms does the NIFF SDK support?
+
+=item *
+
+Where can I get the NIFF SDK?
+
+=item *
+
+What is the latest version of the NIFF SDK?
+
+=item *
+
+What features are provided by NIFFSDK?
+
+=item *
+
+How do I find my way around the NIFF SDK?
+
+=item *
+
+How do I install the NIFF SDK?
+
+=back
+
+=head2 Using the NIFFSDK
+
+=over 4
+
+=item *
+
+How can I learn about the NIFF SDK?
+
+=item *
+
+How do I write a NIFF file?
+
+=item *
+
+Is there an easy way to write the Chunk Length Table?
+
+=item *
+
+Is there an easy way to write the String Table?
+
+=item *
+
+How do I read a NIFF file?
+
+=item *
+
+How do I parse a NIFF file?
+
+=item *
+
+What information does the parser provide to the user callback functions?
+
+=item *
+
+What is the difference between Atomic and Taggable Chunks?
+
+=item *
+
+What is the difference between a Raw and Cooked Chunk?
+
+=back
+
+=head2 Hacking
+
+=over 4
+
+=item *
+
+What are the coding conventions?
+
+=item *
+
+Why are there so many types of registration routines and callback functions?
+
+=back
+
+=head1 General
+
+=head2 What is the Niff SDK?
+
+The NIFF SDK is a free, public domain, platform independent Software
+Developer's Kit (SDK) for software developers implementing the
+Notation Interchange File Format (NIFF).  It is a collection of
+software libraries and tools to support reading, writing, and
+navigating NIFF files. NIFF documentation, sample code, and sample
+NIFF files are included. The NIFF SDK makes it possible for a software
+developer to add NIFF reading and writing capabilities to an existing
+program without writing the housekeeping functions that would
+otherwise be required.
+
+The first release of this software has been through an initial testing
+phase, but further improvements are expected.  Your bug reports,
+comments and suggestions are welcome - please direct them to Tim
+Butler (tim@netbox.com).
+
+The software is supplied in source code format in the C programming
+language.
+
+This guide assumes the reader is familiar with NIFF, RIFF and the C
+programming language.  For detailed information on the NIFF format,
+and a summary of RIFF, please refer to the current NIFF specification,
+at blackbox.cartah.washington.edu, in the /pub/NIFF directory.
+
+=head2 Who is to blame?
+
+=over 4
+
+=item *
+
+Tim Butler
+
+=item *
+
+Cindy Grande
+
+=item *
+
+Mark Walsen
+
+=item *
+
+Steven Mounce
+
+=back
+
+=head2 Who do I complain to?
+
+Tim Butler (tim@netbox.com)
+
+=head2 What is in the NIFF SDK?
+
+The NIFFSDK is comprised of three major parts:
+
+=over 4
+
+=item *RIFFIO
+
+Libraries and tools for RIFF files.
+
+=item *NIFFIO
+
+Libraries and tools for NIFF files (a special case of RIFF)
+Uses RIFFIO and NIFF.
+
+=item *NIFF
+
+"Official" files from the NIFF Project (really only niff.h for now).
+
+=back
+
+=head2 What platforms does the NIFF SDK support?
+
+The NIFF SDK is written in ANSI C and uses ANSI-specific features not
+provided in K+R C such as function prototypes, preprocessor
+stringizing and token concatenation, and assumes minimum sizes for
+data types.  ANSI I/O operations and the console user interface are
+used as the defaults, although the user may override these.  (Future
+versions may include Windows and Macintosh code for this purpose.)
+
+The NIFF SDK has been compiled and (partially) tested under:
+HP/UX C compiler
+Borland C 4.5 (MS-DOS)
+Think C (Mac)
+
+=head2 Where can I get the NIFF SDK?
+
+The NIFF SDK is available for anonymous FTP from
+URL ftp://blackbox.cartah.washington.edu
+
+in the /pub/NIFF directory.
+
+Compressed zip and cpt formats are provided (NIFFSDK.ZIP and NIFFSDK.CPT).
+
+=head2 What is the latest version of the NIFF SDK?
+
+Version 1.02
+
+Your comments, bug reports and suggestions are welcome, and will be
+incorporated in future versions.  Report them to Tim Butler, at the
+email address above.
+
+This version's documentation only covers the highest level user
+interface, for NIFF files only.  Other kinds of RIFF files are also
+supported by the NIFF SDK, but are not yet documented in this User
+Guide. After some practice, programmers might want to try out some of
+the user-customizable features such as custom error handling and
+non-ANSI I/O operations.  Documentation for these features is still in
+progress.
+
+=head2 What features are provided by NIFFSDK?
+
+RIFFIO:
+
+=over 4
+
+=item *
+
+Customizable error handling and reporting.
+
+=item *
+
+Supports read, write, seek, and tell operations on RIFF files
+through user-supplied callbacks.
+
+=item *
+
+Reads and writes integers to RIFF files regardless of
+machine byte order.
+
+=item *
+
+Read, write, and navigate chunks in a RIFF file
+
+=item *
+
+Operations to construct and disassemble four-character codes.
+
+=item *
+
+Provides a table data structure keyed on four-character codes.
+
+=back
+
+STDCRIFF (in RIFFIO):
+
+=over 4
+
+=item *
+
+Provides file I/O callbacks to RIFFIO using the Standard C library.
+
+=back
+
+NIFFIO:
+
+=over 4
+
+=item *
+
+Extends RIFFIO to handle NIFF files
+
+=item *
+
+Provides a chunk length table data struture and operations.
+
+=item *
+
+Extends RIFFIO files to support chunk length tables.
+
+=item *
+
+Supports writing strings to NIFF string tables.
+
+=item *
+
+Read, write, and navigate tags in a NIFF file.
+
+=item *
+
+Reads and writes NIFF primitive types, regardless of machine representation.
+
+=item *
+
+Reads and writes NIFF chunk and tag structures.
+
+=item *
+
+Provides a NIFF parser that scans a NIFF file and makes callbacks
+to user-supplied functions based on list, chunk, and tag types.
+
+=item *
+
+Keeps track of pending lists and chunks while writing a NIFF file.
+
+=back
+
+=head2 How do I find my way around the NIFF SDK?
+
+Each component may contain the following subdirectories:
+
+=over 4
+
+=item *include
+
+source include files
+
+=item *doc/txt
+
+documentation in text format
+
+=item *doc/{htm,man,pod}
+
+documentation in other formats (derived from text)
+
+=item *mk
+
+Makefile includes
+
+=item *src/lib
+
+source code for libraries
+
+=item *src/cmd
+
+source code for tools
+
+=item *src/example
+
+example source code
+
+=item *src/test
+
+source code for testing
+
+=item *test
+
+test suite
+
+=back
+
+=head1 How do I install the NIFF SDK?
+
+The exact procedure depends on your programming environment.
+
+Under Unix use the GNU configuration script and make:
+
+=over 4
+
+=item *
+
+Change directories to top of the distribution.
+
+=item *
+
+Run configure.
+
+If you need to customize the configuration then run "configure --help"
+for help.
+
+=item *
+
+make all
+
+=item *
+
+make check (optional)
+
+=item *
+
+make install
+
+=back
+
+If you aren't running Unix then you are on your own (for now).
+You will have to track down all the sources tucked away in the nooks
+and crannies of the distribution.
+
+You might want to start by building the "hello world" application in
+riffio/src/example/hello, or write a simple file using
+niffio/src/example/nif001.  For nif001, link in all of the libraries in the
+{riffio,niffio}/src/lib directories.
+
+=head2 What are those extraneous T's at the beginning of some sentences?
+
+I used a single (silent) T to start some sentences that don't begin with a
+capital letter. It's a kludge.
+
+=head1 USING THE NIFFSDK
+
+=head2 How can I learn about the NIFF SDK?
+
+=over 4
+
+=item *
+
+Read the online documentation
+
+The documentation is in pretty bad shape right now but is a top
+priority.
+
+Each part of the NIFFSDK has a doc directory that contains documentation
+in various formats including text, unix man pages, perl POD, and HTML.
+(Some of the HTML links even work!)
+
+Most of the documentation that exists is for reference, rather than learning.
+It is extracted directly from the source.
+
+There is no index to the documentation yet.
+
+=item *
+
+Look at example source code.
+
+There are a few examples under {riffio,niffio}/src/example
+
+=back
+
+=head2 How do I write a NIFF file?
+
+Look at the example program niffio/src/example/nif001.
+
+The easiest way to write a NIFF file is to use the NIFFIOStorage
+functions.  They provide a layer on top of the NIFFIOFile routines to
+keep track of lists and chunks that have not been finalized.
+
+First, open a file using fopen(), and save the file pointer.  Then
+call NIFFIOStorageNewSTDC() to allocate and set up the storage areas
+needed to keep track of the status of this file.  NIFFIOStorage operations
+will assume that all following I/O operations are intended for this
+file (the "current" file), unless otherwise specified.
+
+If more than one NIFF file is to be active at once, you must perform
+the open and NIFFIOStorageNewSTDC() steps for each file.  You must
+change the current file by calling NIFFIOStorageSetCurrent(pstore),
+where <pstore> is the NIFFIOStorage pointer returned by the
+NIFFIOStorageNewSTDC() call for the desired file.
+
+After all I/O to a file is complete, call NIFFIOStorageDelete(pstore),
+using the pointer returned by NIFFIOStorageNewSTDC().  This
+releases the storage used by the NIFF SDK for this file.
+
+To write the NIFF form chunk, use NIFFIOStartNiff().  This must be
+balanced with a call to NIFFIOEndNiff() when you are finished writing
+to the file.
+
+To write a NIFF list chunk, call NIFFIOStartXXX, where XXX is the name
+of the list, as defined in the niff.h header file.  After all chunks
+have been written for this list, complete the list with a call to
+NIFFIOEndXXX.  For example, for a Setup Section list, use
+NIFFIOStartSetupSection() and NIFFIOEndSetupSection().
+
+To write an ordinary chunk, call NIFFIOchunkYYY(arg list), where YYY
+is the name of the chunk, as defined in the niff.h header file, and
+arg list is an argument list composed of the fields in the chunk's
+structure.  For example, to write a Part chunk,
+
+        NIFFIOchunkPart(0,0,1,2,-1,-1,-1);
+
+
+supplies constant values for the fields in the following structure:
+
+        typedef struct  niffPart
+        {               
+            SHORT           partID;
+            STROFFSET       name;
+            STROFFSET       abbreviation;
+            BYTE            numberOfStaves;
+            SIGNEDBYTE      midiChannel;
+            SIGNEDBYTE      midiCable;      
+            SIGNEDBYTE      transpose;      
+        }  niffPart;
+
+
+To add a tag to a chunk, call NIFFIOtagZZZ(arg list), where ZZZ is the
+name of the tag, as defined in the niff.h header file, and arg list is
+an argument list composed of the fields in the tag's structure.  For
+example, to write a Logical Placement tag,
+
+        NIFFIOtagLogicalPlacement(0, 2, 0);
+
+
+supplies constant values for the fields in the following structure:
+
+        typedef struct niffLogicalPlacement
+         {
+             BYTE    horizontal;
+             BYTE    vertical;
+             BYTE    proximity;      
+         } niffLogicalPlacement;
+
+
+=head2 Is there an easy way to write the Chunk Length Table?
+
+Yes. Call NIFFIOStoreDefaultCLT().  The NIFFIOStoreDefaultCLT() function
+uses a standard chunk length table that includes all valid NIFF chunks
+and their lengths in the current NIFF version.  If you want a custom
+chunk length table, some lower level functions can be used for this
+purpose (but the procedure is not yet documented).
+
+=head1 Is there an easy way to write the String Table?
+
+Yes. Call NIFFIOchunkStringTable() to begin a string table chunk.
+Then call NIFFIOStoreStbl(myStbl, n), where myStbl is an array of type
+NIFFIOStbl, and <n> is the number of strings.  You must first fill
+<myStbl> with pointers to all the strings you will refer to later in
+the NIFF file.  NIFFIOStoreStbl() will store the string data,
+calculating the correct offset for each string and storing it in the
+<myStbl> offset element that corresponds to the pointer to the string.
+See MyWriteStringTable() in niffio/src/example/nif001/nif001.c for an
+example.
+
+=head2 How do I read a NIFF file?
+
+Create a new NIFFIOFile from you own Standard C Library FILE pointer
+using NIFFIOFileNewSTDC().
+
+See the niffio/src/cmd/niffdump/niffdump.c for an example of
+the next steps.
+
+Allocate space needed by the NIFF SDK's parsing routines with the
+following statement:
+
+            pparserNew = NIFFIOParserNew();
+
+
+Then "register" each distinct type of list, chunk and tag that your
+program recognizes.  Registering an item means specifying a pointer to
+the names of user "callback" functions that are to be called when the
+parser encounters an item of this type.  These functions are where you
+would put your own program logic for interpreting the values in each
+list, chunk or tag.
+
+For lists and standard chunks, you can specify two functions - one to
+be called when the list or chunk is first encountered (function1), and
+one to be called after all components of the list or chunk have been
+read (function2).  For "atomic" chunks (those which are not allowed
+tags) and for tags, you can specify only one function - to be called
+after the chunk or tag has been read.  The function names and contents
+are entirely up to you - those supplied in callback.c are examples.
+
+To register a list, use the following statement, where XXX is the name
+of the list (from niff.h):
+
+            NIFFIORegisterListXXX(pparserNew, function1, function2);
+
+
+To register a chunk, use the following statement, where YYY is the
+name of the chunk (from niff.h):
+
+            NIFFIORegisterChunkYYY(pparserNew, function1, function2);
+
+
+To register a tag, use the following statement, where ZZZ is the name
+of the tag (from niff.h), and YYY is the name of the parent chunk:
+
+            NIFFIORegisterTagZZZ(pparserNew, niffckidYYY, function1);
+
+
+You may specify NIFFIO_FOURCC_WILDCARD in place of <niffckidYYY>, if
+you want to use the same function to process a tag no matter which
+chunk is its parent.
+
+You may also register default functions for a list, taggable chunk,
+atomic chunk, or tag.  These functions will be called when any
+unregistered item of the appropriate type is encountered.
+
+=head2 How do I parse a NIFF file?
+
+After initializing the parser, use the following statement to set the tracing
+feature either off or on:
+
+        NIFFIOParserSetTracing(pparser, 1); /* 1 = trace on, 0 = trace off */
+
+
+The tracer sends output to the console as it encounters each item in the file.
+
+Next, start the parser with the following statement:
+
+        NIFFIOParseFile(pparser, pnf,  0, 0 );
+
+
+This specifies the file to be parsed, and the parser storage area (the one
+containing the pointers to the registered functions, initialized above).
+The parser will proceed through the file, passing control to the user callback
+functions when it encounters the corresponding items.
+
+=head2 What information does the parser provide to the user callback functions?
+
+Each callback function is supplied with a "context" storage area that contains
+information about the current state of the parser and the file.  See the
+documentation for the following structures in niffio.h:
+
+=over 4
+
+=item *NIFFIOChunkContext
+
+Parser state information provided to chunk callbacks.
+
+=item *NIFFIOUserContext
+
+User-defined parser state information provided by parent chunk callbacks.
+
+=item *NIFFIOTagContext
+
+Parser state information provided to tag callbacks.
+
+=back
+
+=head2 What is the difference between Atomic and Taggable Chunks?
+
+The NIFF SDK parser uses the term "atomic" to refer to a chunk type
+which will not have any tags. (That is, the Chunk Length Table entry
+for this chunk type is -1).  A "taggable" chunk is any other type of
+chunk. These terms distinguish the different chunk types according to
+how they are used by the parser.
+
+=head2 What is the difference between a Raw and Cooked Chunk?
+
+The NIFF SDK parser calls a chunk "raw" when it has an empty fixed
+portion.  (The Chunk Length Table entry for this chunk type is zero.)
+A "cooked" chunk is one which has a defined structure, and thus a
+positive value in its Chunk Length Table entry.
+
+=head1 HACKING
+
+=head2 What are the coding conventions?
+
+Here are some Hungarian notation prefixes that are used throughout the
+source.
+
+     str      NUL-terminated string
+     rf       RIFFIOFile
+     nf       NIFFIOFile
+     offset   RIFFIOOffset
+     fcc      Four-character code
+     chunk    RIFFIOChunk
+     size     RIFFIOSize
+     tag      NIFFIOTag
+     userctx  NIFFIOUserContext
+     chunkctx NIFFIOChunkContext
+     tagctx   NIFFIOTagContext
+     clt      NIFFIOChunkLengthTable
+
+
+=head2 Why are there so many types of registration routines and callback functions?
+
+The idea was to use C's argument and type checking as much as
+possible.  Each registration function takes callbacks that are
+specific to chunk and tag types.
+
+(To be continued...
+...really...)
+
+$Id: niffsdk.txt,v 1.2 1996/06/15 03:11:16 tim Exp $

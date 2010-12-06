@@ -1,0 +1,261 @@
+<!-- $Id$ -->
+<HTML><HEAD>
+<CENTER><TITLE>rfile</TITLE>
+</HEAD>
+<BODY></CENTER><p><hr>
+
+<H1> 
+<A NAME="rfile_name_0">
+NAME</A>
+</H1>
+rfile - RIFFIOFile routines
+<p><p><hr>
+
+<H1> 
+<A NAME="rfile_synopsis_0">
+SYNOPSIS</A>
+</H1>
+<p>
+<UL>
+<LI>
+<A HREF="rfile.htm#rfile_riffiofilenew_0">RIFFIOFileNew()</A>
+
+<p>
+<LI>
+<A HREF="rfile.htm#rfile_riffiofileinit_0">RIFFIOFileInit()</A>
+
+<p>
+<LI>
+<A HREF="rfile.htm#rfile_riffiofiledelete_0">RIFFIOFileDelete()</A>
+
+<p>
+<LI>
+<A HREF="rfile.htm#rfile_riffiofilegetformtype_0">RIFFIOFileGetFormType()</A>
+
+<p>
+<LI>
+<A HREF="rfile.htm#rfile_riffioread_0">RIFFIORead()</A>
+
+<p>
+<LI>
+<A HREF="rfile.htm#rfile_riffiowrite_0">RIFFIOWrite()</A>
+
+<p>
+<LI>
+<A HREF="rfile.htm#rfile_riffioseek_0">RIFFIOSeek()</A>
+
+<p>
+<LI>
+<A HREF="rfile.htm#rfile_riffiotell_0">RIFFIOTell()</A>
+
+<p>
+</UL>
+.
+<p><p><hr>
+
+<H1> 
+<A NAME="rfile_riffiofilenew_0">
+RIFFIOFileNew</A>
+</H1>
+Return a pointer to a new RIFFIOFile,
+or null on failure
+<p>
+<XMP>
+     RIFFIOFile *
+     RIFFIOFileNew(void)
+
+</XMP>
+<p>
+<H2> 
+<A NAME="rfile_obligations_0">
+OBLIGATIONS</A>
+</H2>
+The file cannot be operated on until 
+<A HREF="rfile.htm#rfile_riffiofileinit_0">RIFFIOFileInit()</A>
+ is called.
+<p><p><hr>
+
+<H1> 
+<A NAME="rfile_riffiofileinit_0">
+RIFFIOFileInit</A>
+</H1>
+Provide a NIFFIOFile with a user-defined I/O callbacks.
+<p>
+<XMP>
+     RIFFIOSuccess
+     RIFFIOFileInit(RIFFIOFile *prf,
+                    void *pvUserFile,
+                    RIFFIOReader reader,
+                    RIFFIOWriter writer,
+                    RIFFIOSeeker seeker,
+                    RIFFIOTeller teller)
+
+</XMP>
+<p><EM>RIFFFIOFileInit()</EM> should be called immediately after <EM>NIFFIOFileNew()</EM>
+<p>
+<H2> 
+<A NAME="rfile_entry_0">
+ENTRY</A>
+</H2>
+<p>
+<DL COMPACT>
+<DT><STRONG>
+<EM>*&lt;prf&gt;</EM>
+</STRONG>
+<DD>
+is the RIFFIOFile that is being initialized.
+<p>
+<DT><STRONG>
+<EM>*&lt;pvUserFile&gt;</EM>
+</STRONG>
+<DD>
+points to a user representation of a file that will be passed to
+user-defined reader, writer, seeker, and teller functions.
+<p>
+<DT><STRONG>
+<EM>*&lt;reader&gt;,&lt;writer&gt;,&lt;seeker&gt;,&lt;teller&gt;</EM>
+</STRONG>
+<DD>
+are user-defined functions that perform operations on &lt;*pvUserFile&gt;.
+<p>
+</DL>
+.
+<p><p><hr>
+
+<H1> 
+<A NAME="rfile_riffiofiledelete_0">
+RIFFIOFileDelete</A>
+</H1>
+Free the memory allocated to a RIFFIOFile.
+<p>
+<XMP>
+     void
+     RIFFIOFileDelete(RIFFIOFile *prf)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="rfile_riffiofilegetformtype_0">
+RIFFIOFileGetFormType</A>
+</H1>
+Return the form type (UNKNOWN, RIFF, or RIFX)
+of a RIFFIOFile
+<p>
+<XMP>
+     RIFFIOFormType 
+     RIFFIOFileGetFormType(RIFFIOFile *prf)
+
+</XMP>
+<p>The form type is unknown until the first form chunk of a RIFFIOFile
+is descended into or created.
+<p><p><hr>
+
+<H1> 
+<A NAME="rfile_riffioread_0">
+RIFFIORead</A>
+</H1>
+Read bytes from a RIFF file.
+<p>
+<XMP>
+     long 
+     RIFFIORead(RIFFIOFile *prf, void *pvBuffer, long nBytes)
+
+</XMP>
+<p>
+<H2> 
+<A NAME="rfile_entry_0">
+ENTRY</A>
+</H2>
+T &lt;*pvBuffer&gt; must be allocated to hold &lt;nBytes&gt;.
+<p>
+<H2> 
+<A NAME="rfile_exit_0">
+EXIT</A>
+</H2>
+<p>
+<UL>
+<LI>Up to &lt;nBytes&gt; have been read from &lt;*prf&gt; into &lt;*pvBuffer&gt;.
+<p>
+</UL>
+.
+<p>
+<H2> 
+<A NAME="rfile_return_0">
+RETURN</A>
+</H2>
+<p>
+<UL>
+<LI>The number of bytes actually read,
+<p>
+<LI>0 on end of file,
+<p>
+<LI>-1 on error.
+<p>
+</UL>
+.
+<p><p><hr>
+
+<H1> 
+<A NAME="rfile_riffiowrite_0">
+RIFFIOWrite</A>
+</H1>
+Write bytes to a RIFF file.
+<p>
+<XMP>
+     long 
+     RIFFIOWrite(RIFFIOFile *prf, void *pvBuffer, long nBytes)
+
+</XMP>
+<p>Write &lt;nBytes&gt; from &lt;*pvBuffer&gt; to &lt;*prf&gt;.
+<p>
+<H2> 
+<A NAME="rfile_return_0">
+RETURN</A>
+</H2>
+The number of bytes actually written.
+<p><p><hr>
+
+<H1> 
+<A NAME="rfile_riffioseek_0">
+RIFFIOSeek</A>
+</H1>
+Seek to a location in a RIFF file.
+<p>
+<XMP>
+     RIFFIOSuccess
+     RIFFIOSeek(RIFFIOFile *prf, RIFFIOOffset offset, RIFFIOSeekOrigin origin)
+
+</XMP>
+<p>Seek &lt;offset&gt; bytes relative to &lt;origin&gt;.
+<p><origin&gt; may be one of
+<p>RIFFIO_SEEK_SET:
+beginning of file
+<p>RIFFIO_SEEK_CUR:
+current file position
+<p>RIFFIO_SEEK_END:
+end of file
+<p>
+<H2> 
+<A NAME="rfile_errors_0">
+ERRORS</A>
+</H2>
+On failure, the file position is undefined.
+<p><p><hr>
+
+<H1> 
+<A NAME="rfile_riffiotell_0">
+RIFFIOTell</A>
+</H1>
+Return the current RIFF file position.
+<p>
+<XMP>
+     long
+     RIFFIOTell(RIFFIOFile *prf)
+
+</XMP>
+<p>A file's position is measured in bytes from the
+beginning of the file.
+<p>
+</BODY>
+</HTML>

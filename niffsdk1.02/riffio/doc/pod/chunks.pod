@@ -1,0 +1,298 @@
+
+=head1 NAME
+
+chunks - create, navigate, and operate on chunks
+
+=head1 SYNOPSIS
+
+=head2 Chunk Creation
+
+=over 4
+
+=item *
+
+RIFFIOChunkCreate()
+
+=item *
+
+RIFFIOChunkFinalize()
+
+=back
+
+=head2 Chunk Navigation
+
+=over 4
+
+=item *
+
+RIFFIOChunkDescend()
+
+=item *
+
+RIFFIOChunkAscend()
+
+=item *
+
+RIFFIOChunkDataEnd()
+
+=item *
+
+RIFFIOChunkEnd()
+
+=item *
+
+RIFFIOChunkDataOffset()
+
+=item *
+
+RIFFIOChunkSeekData()
+
+=back
+
+=head2 Chunk Operations
+
+=over 4
+
+=item *
+
+RIFFIOChunkIsList()
+
+=back
+
+=head1 DESCRIPTION
+
+=head1 RIFFIOChunkCreate
+
+Start a new chunk in a RIFF file.
+
+     RIFFIOSuccess
+     RIFFIOChunkCreate(RIFFIOFile *prf, RIFFIOChunk *pchunk) 
+
+
+=head2 ENTRY
+
+=over 4
+
+=item *
+
+pchunk->fccId provides the new chunk id.
+
+=item *
+
+pchunk->fccType must contain a type id for Lists and Forms and
+is ignored otherwise.
+
+=item *
+
+pchunk->sizeData does not need to be correct.
+
+=back
+
+=head2 EXIT
+
+=over 4
+
+=item *
+
+Writes a chunk header to *prf according to *pchunk.
+RIFFIOChunkCreate() will write pchunk->sizeData to the file.
+
+=item *
+
+Leaves *prf positioned at the start of the new chunk's data,
+
+=item *
+
+If *pchunk is a form, then *prf is marked with the proper
+byte order.
+
+=back
+
+=head2 OBLIGATIONS
+
+=over 4
+
+=item *
+
+After writing the chunk contents, *pchunk
+must be finished with RIFFIOChunkFinalize().
+
+=item *
+
+Don't change the <*pchunk> data members before calling
+RIFFIOChunkFinalize().
+
+=item *
+
+If the pchunk->sizeData is correct when the chunk is finalized,
+then RIFFIOChunkFinalize() will not update the chunk's size in
+the file.
+
+=back
+
+=head2 ERRORS
+
+On failure, the file position is undefined.
+
+=head1 RIFFIOChunkFinalize
+
+Finish writing a new chunk in a RIFF file.
+
+     RIFFIOSuccess
+     RIFFIOChunkFinalize(RIFFIOFile *prf, RIFFIOChunk *pchunk)
+
+
+=head2 ENTRY
+
+<*pchunk> was returned by RIFFIOChunkCreate
+
+=head2 EXIT
+
+=over 4
+
+=item *
+
+Updates the chunk size in the file and in <*pchunk> (if necessary).
+
+=item *
+
+Writes a NUL pad byte (if necessary).
+
+=item *
+
+Leaves the file positioned after the chunk.
+
+=back
+
+=head2 ERRORS
+
+On failure, the file position is undefined.
+
+=head1 RIFFIOChunkDescend
+
+Read a chunk header from a RIFF file.
+
+     RIFFIOSuccess
+     RIFFIOChunkDescend(RIFFIOFile *prf, RIFFIOChunk *pchunk)
+
+
+=head2 ENTRY
+
+<*prf> must be positioned at the start of a chunk.
+
+=head2 EXIT
+
+=over 4
+
+=item *
+
+Leaves the file positioned at the start of the chunk's contents
+(either the first subchunk of a LIST or a normal chunk's data).
+
+=item *
+
+If the chunk is a RIFF or RIFX form, then
+marks the RIFFIOFile byte order accordingly.
+
+=item *
+
+<*pchunk> holds the id, size, and possibly the
+list type of the newly read chunk.
+
+=back
+
+=head2 ERRORS
+
+On failure the file position is undefined.
+
+=head1 RIFFIOChunkAscend
+
+Advance a RIFF file past a chunk.
+
+     RIFFIOSuccess
+     RIFFIOChunkAscend(RIFFIOFile *prf, const RIFFIOChunk *pchunk)
+
+
+=head2 ENTRY
+
+<*pchunk> was returned by either RIFFIOChunkDescend or
+RIFFIOChunkFinalize.
+
+=head2 EXIT
+
+<*prf> is positioned at the end of <*pchunk>
+
+=head2 ERRORS
+
+On failure, the file position is undefined.
+
+=head1 RIFFIOChunkDataOffset
+
+Return the file position of a chunk's data (or list's first subchunk)
+
+     RIFFIOOffset
+     RIFFIOChunkDataOffset(const RIFFIOChunk *pchunk)
+
+
+=head1 RIFFIOChunkSeekData
+
+Seek to the start of a chunk's data or a list's contents
+
+     RIFFIOSuccess
+     RIFFIOChunkSeekData(RIFFIOFile *prf, const RIFFIOChunk *pchunk)
+
+
+Note that this is different than RIFFIOChunkDescend() because
+RIFFIOChunkSeekData() can be called regardless of the current
+file postion.
+
+=head2 ENTRY
+
+<*prf> may be positioned anywhere.
+
+=head2 EXIT
+
+<*prf> is postioned at the start of a chunk's data or the first
+subchunk of a list.
+
+=head2 ERRORS
+
+On error, the file postion is undefined.
+
+=head1 RIFFIOChunkIsList
+
+Return true if a chunk is a form or a list.
+
+     int
+     RIFFIOChunkIsList(const RIFFIOChunk *pchunk)
+
+
+=head1 RIFFIOChunkDataEnd
+
+Return true if a file is positioned at the end of a chunk's data.
+
+     int
+     RIFFIOChunkDataEnd(RIFFIOFile *prf, const RIFFIOChunk *pchunk)
+
+
+The chunk data's end may be before any NUL pad byte.
+
+=head2 ENTRY
+
+<*pchunk> must be a "clean" chunk, returned by either
+RIFFIOChunkDescend() or RIFFIOChunkFinalize().
+
+=head1 RIFFIOChunkEnd
+
+Return true if a RIFF file is positioned at the end of a chunk.
+
+     int
+     RIFFIOChunkEnd(RIFFIOFile *prf, const RIFFIOChunk *pchunk)
+
+
+The chunk end is after any NUL pad byte.
+
+=head2 ENTRY
+
+<*pchunk> must be a "clean" chunk, returned by either
+RIFFIOChunkDescend() or RIFFIOChunkFinalize().

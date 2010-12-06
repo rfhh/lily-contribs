@@ -1,0 +1,54 @@
+
+=head1 NAME
+
+error - handle RIFFIO errors
+
+=head1 SYNOPSIS
+
+=over 4
+
+=item *
+
+RIFFIOError()
+
+=item *
+
+RIFFIOInstallErrorHandler()
+
+=back
+
+If RIFFIO_NO_ERROR is defined then disable the default error processing
+Otherwise use DefaultErrorHandler.
+
+=head1 RIFFIOInstallErrorHandler
+
+Override RIFFIO error handling.
+
+     RIFFIOErrorHandler 
+     RIFFIOInstallErrorHandler(RIFFIOErrorHandler ehNew)
+
+
+<ehNew> is a function to handle errors.  Null to disable error
+handling.
+
+=head2 RETURNS
+
+the current error handling function.
+
+=head1 RIFFIOError
+
+Post an error message
+
+=head2 | void
+| RIFFIOError(const char *strModule, const char *strFormat, ...)
+PARAMETERS
+
+=over 4
+
+=item *strModule
+
+string nameing the module reporting the error
+
+=item *strFormat
+
+printf compatible string corresponding to the remaining arguments

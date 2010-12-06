@@ -1,0 +1,244 @@
+
+=head1 NAME
+
+inherit - RIFFIO-style file operations on NIFFIOFiles
+
+=head1 SYNOPSIS
+
+All of these routines behave just like their RIFFIO counterparts.
+
+=over 4
+
+=item *
+
+NIFFIOFileGetFormType()
+
+=item *
+
+NIFFIORead()
+
+=item *
+
+NIFFIOWrite()
+
+=item *
+
+NIFFIOSeek()
+
+=item *
+
+NIFFIOTell()
+
+=item *
+
+NIFFIOChunkCreate()
+
+=item *
+
+NIFFIOChunkFinalize()
+
+=item *
+
+NIFFIOChunkDescend()
+
+=item *
+
+NIFFIOChunkAscend()
+
+=item *
+
+NIFFIOChunkDataSeek()
+
+=item *
+
+NIFFIOChunkDataEnd()
+
+=item *
+
+NIFFIOChunkEnd()
+
+=item *
+
+NIFFIOWrite8()
+
+=item *
+
+NIFFIOWrite16()
+
+=item *
+
+NIFFIOWrite32()
+
+=item *
+
+NIFFIOWriteFOURCC()
+
+=item *
+
+NIFFIORead8()
+
+=item *
+
+NIFFIORead16()
+
+=item *
+
+NIFFIORead32()
+
+=item *
+
+NIFFIOReadFOURCC()
+
+=back
+
+=head1 NIFFIOFileGetFormType
+
+See RIFFIOFileGetFormType()
+
+     RIFFIOFormType
+     NIFFIOFileGetFormType(NIFFIOFile *pnf)
+
+
+=head1 NIFFIORead
+
+See RIFFIORead()
+
+     long
+     NIFFIORead(NIFFIOFile *pnf, void *bufferp, long n)
+
+
+=head1 NIFFIOWrite
+
+See RIFFIOWrite()
+
+     long
+     NIFFIOWrite(NIFFIOFile *pnf, void *bufferp, long n)
+
+
+=head1 NIFFIOSeek
+
+See RIFFIOSeek()
+
+     RIFFIOSuccess
+     NIFFIOSeek(NIFFIOFile *pnf, RIFFIOOffset offset, RIFFIOSeekOrigin origin)
+
+
+=head1 NIFFIOTell
+
+See RIFFIOTell()
+
+     long
+     NIFFIOTell(NIFFIOFile *pnf)
+
+
+=head1 NIFFIOChunkCreate
+
+See RIFFIOChunkCreate()
+
+     RIFFIOSuccess
+     NIFFIOChunkCreate(NIFFIOFile *pnf, RIFFIOChunk *pchunk)
+
+
+=head1 NIFFIOChunkFinalize
+
+See RIFFIOChunkFinalize()
+
+     RIFFIOSuccess
+     NIFFIOChunkFinalize(NIFFIOFile *pnf, RIFFIOChunk *pchunk)
+
+
+=head1 NIFFIOChunkAscend
+
+See RIFFIOChunkAscend()
+
+     RIFFIOSuccess
+     NIFFIOChunkAscend(NIFFIOFile *pnf, RIFFIOChunk *pchunk)
+
+
+=head1 NIFFIOChunkDescend
+
+See RIFFIOChunkDescend()
+
+     RIFFIOSuccess
+     NIFFIOChunkDescend(NIFFIOFile *pnf, RIFFIOChunk *pchunk)
+
+
+=head1 NIFFIOChunkDataSeek
+
+See RIFFIOChunkDataSeek()
+
+     RIFFIOSuccess
+     NIFFIOChunkSeekData(NIFFIOFile *pnf, const RIFFIOChunk *pchunk)
+
+
+=head1 NIFFIOChunkDataEnd
+
+See RIFFIOChunkDataEnd()
+
+     int
+     NIFFIOChunkDataEnd(NIFFIOFile *pnf, RIFFIOChunk *pchunk)
+
+
+=head1 NIFFIOChunkEnd
+
+See RIFFIOChunkEnd()
+
+     int
+     NIFFIOChunkEnd(NIFFIOFile *pnf, RIFFIOChunk *pchunk)
+
+
+=head1 NIFFIOWrite8
+
+See RIFFIOWrite8()
+
+     RIFFIOSuccess NIFFIOWrite8(NIFFIOFile *pnf, unsigned char uc)
+
+
+=head1 NIFFIOWrite16
+
+See RIFFIOWrite16()
+
+     RIFFIOSuccess NIFFIOWrite16(NIFFIOFile *pnf, unsigned short us)
+
+
+=head1 NIFFIOWrite32
+
+See RIFFIOWrite32()
+
+     RIFFIOSuccess NIFFIOWrite32(NIFFIOFile *pnf, unsigned long ul)
+
+
+=head1 NIFFIOWriteFOURCC
+
+See RIFFIOWriteFOURCC()
+
+     RIFFIOSuccess NIFFIOWriteFOURCC(NIFFIOFile *pnf, FOURCC fcc)
+
+
+=head1 NIFFIORead8
+
+See RIFFIORead8()
+
+     RIFFIOSuccess NIFFIORead8(NIFFIOFile *pnf, unsigned char *puc)
+
+
+=head1 NIFFIORead16
+
+See RIFFIORead16()
+
+     RIFFIOSuccess NIFFIORead16(NIFFIOFile *pnf, unsigned short *pus)
+
+
+=head1 NIFFIORead32
+
+See RIFFIORead32()
+
+     RIFFIOSuccess NIFFIORead32(NIFFIOFile *pnf, unsigned long *pul)
+
+
+=head1 NIFFIOReadFOURCC
+
+See RIFFIOReadFOURCC()
+
+     RIFFIOSuccess NIFFIOReadFOURCC(NIFFIOFile *pnf, FOURCC *pfcc)
+
