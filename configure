@@ -1,0 +1,117 @@
+#!/bin/sh
+
+if [ x$NIFF2LY_ROOT != x ]
+then
+	NIFF2LY_ROOT_ENV=$NIFF2LY_ROOT
+fi
+
+if [ -f configuration ]
+then
+        echo "Previous configuration read from file 'configuration'."
+	echo "If you wish to discard the previous configuration,"
+	echo "please remove or rename the file 'configuration'"
+	echo "and run configure again."
+
+	source configuration
+
+	echo ""
+	echo "Copied configuration:"
+	cat configuration
+	echo ""
+fi
+
+if [ x$NIFF2LY_ROOT_ENV != x ]
+then
+	NIFF2LY_ROOT=$NIFF2LY_ROOT_ENV
+elif [ x$NIFF2LY_ROOT = x ]
+then
+	NIFF2LY_ROOT=`pwd`
+fi
+
+if [ x$NIFF_ROOT = x ]
+then
+	NIFF_ROOT=/usr/local/VU/niff
+fi
+
+if [ x$INSTALL = x ]
+then
+	INSTALL=/usr/local
+fi
+
+if [ x$CC = x ]
+then
+	CC=`which cc`
+fi
+
+for i
+do
+	case $i in
+	--niff2ly-root=*)
+			NIFF2LY_ROOT=`expr $i : '--niff2ly-root=\(.*\)'`
+			;;
+	--niff-root=*)
+			NIFF_ROOT=`expr $i : '--niff-root=\(.*\)'`
+			;;
+	--prefix=*)
+			INSTALL=`expr $i : '--prefix=\(.*\)'`
+			;;
+	--cc=*)
+			CC=`expr $i : '--cc=\(.*\)'`
+			;;
+	--help|-h|-?)
+			echo configure [options]
+			echo options:
+			echo "	" option name "		" default
+			echo "	" --cc=PATH "		" $CC
+			echo "	" --niff2ly-root=PATH "	" $NIFF2LY_ROOT
+			echo "	" --niff-root=PATH "	" $NIFF_ROOT
+			echo "	" --prefix=PATH "		" $INSTALL
+			exit 0
+			;;
+	*)
+			echo No such option: $i -- ignored
+	esac
+done
+
+if [ -f common.mk ]
+then
+	cp common.mk common.mk.old
+fi
+
+if [ -f common.mk.orig ]
+then
+	diff -c common.mk.orig common.mk > .common.mk.diff
+else
+	rm -f .common.mk.diff
+fi
+
+sed -e "
+s+@ROOT@+$NIFF2LY_ROOT+
+s+@NIFF@+$NIFF_ROOT+
+s+@INSTALL@+$INSTALL+
+s+@CC@+$CC+
+" < common.in > common.mk
+
+cp common.mk common.mk.orig
+if [ -f .common.mk.diff ]
+then
+	patch -p0 < .common.mk.diff
+	rm .common.mk.diff
+fi
+
+echo "
+NIFF2LY_ROOT=$NIFF2LY_ROOT
+NIFF_ROOT=$NIFF_ROOT
+INSTALL=$INSTALL
+CC=$CC
+" > configuration
+
+echo "
+Configuration in $NIFF2LY_ROOT:
+----------------------
+niff2ly-root=$NIFF2LY_ROOT
+niff-root=$NIFF_ROOT
+install=$INSTALL
+cc=$CC
+----------------------
+"

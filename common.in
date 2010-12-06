@@ -1,0 +1,68 @@
+ROOT		= @ROOT@
+NIFF		= @NIFF@
+INSTALL		= @INSTALL@
+CC		= @CC@
+
+AR		= ar
+
+CFLAGS		+= -g -Wall
+CFLAGS		+= -MD
+CPPFLAGS	+= -I$(NIFF)/riffio/include
+CPPFLAGS	+= -I$(NIFF)/niffio/include
+CPPFLAGS	+= -I$(NIFF)/niff/include
+CPPFLAGS	+= -I$(ROOT)
+
+# CPPFLAGS	+= -DVERBOSE=1
+
+LDLIBS		=
+LDLIBS		+= $(ROOT)/niff/libniffparser.a
+LDLIBS		+= $(ROOT)/music/libmusic.a
+# The following would be the right way to link, but Cygwin's ld chokes on it
+# LDLIBS		+= $(ROOT)/lily/liblily.a
+LILYSRC		= $(wildcard lily/*.c)
+LILYOBJ		= $(LILYSRC:%.c=%.o)
+LDLIBS		+= $(LILYOBJ)
+
+LDLIBS  	+= $(NIFF)/niffio/lib/niffio.a
+LDLIBS  	+= $(NIFF)/riffio/lib/riffio.a
+LDLIBS  	+= $(NIFF)/riffio/lib/stdcriff.a
+LDLIBS  	+= -lgmp
+
+
+OBJ		= $(SRC:%.c=%.o)
+
+lib:		$(OBJ) subdirs
+		$(AR) crs $(LIB) $(OBJ)
+
+MAIN_OBJ	= $(MAIN:%.c=%.o)
+
+EXECUTABLE	= $(MAIN:%.c=%)
+
+$(EXECUTABLE):	$(LDLIBS) $(MAIN_OBJ)
+		$(LINK.c) $(MAIN_OBJ) $(LDFLAGS) -o $@ $(LDLIBS)
+
+main:		subdirs $(EXECUTABLE)
+
+install:	cp $(EXECUTABLE) $(INSTALL)/bin
+
+subdirs:	$(SUBDIRS:%=%_dir)
+
+%_dir:
+		cd $(@:%_dir=%); $(MAKE) $(MFLAGS)
+
+clean:
+		-rm -f $(OBJ) $(MAIN:%.c=%.o) $(DEPS)
+		-for d in $(SUBDIRS); do \
+			(cd $$d; $(MAKE) $(MFLAGS) clean); \
+		done
+
+distclean:	clean veryclean
+
+veryclean:
+		-rm -f configuration niff2ly common.mk.orig
+		-rm -f common.mk
+		-rm -f common.mk.orig common.mk.old .common.mk.diff
+
+
+DEPS		= $(SRC:%.c=%.d)
+-include $(DEPS)

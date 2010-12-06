@@ -1,0 +1,55 @@
+LIB	= ../libniffparser.a
+
+SRC	=
+SRC	+= AbsPlacement.c
+SRC	+= AltEnding.c
+SRC	+= AnchorOverride.c
+SRC	+= ArticDirection.c
+SRC	+= BezierIncoming.c
+SRC	+= BezierOutgoing.c
+SRC	+= ChordSymbolsOffset.c
+SRC	+= CustomFontChar.c
+SRC	+= CustomGraphicTag.c
+SRC	+= EndOfSystem.c
+SRC	+= FannedBeam.c
+SRC	+= FigBassOffset.c
+SRC	+= FontID.c
+SRC	+= GraceNote.c
+SRC	+= GuitarGridOffset.c
+SRC	+= GuitarTabTag.c
+SRC	+= Height.c
+SRC	+= ID.c
+SRC	+= Invisible.c
+SRC	+= LargeSize.c
+SRC	+= LineQuality.c
+SRC	+= LogicalPlacement.c
+SRC	+= LyricVerseOffset.c
+SRC	+= MidiPerformance.c
+SRC	+= MultiNodeEndOfSyst.c
+SRC	+= MultiNodeStartOfSyst.c
+SRC	+= NumStaffLines.c
+SRC	+= NumberOfFlags.c
+SRC	+= NumberOfNodes.c
+SRC	+= NumberStyle.c
+SRC	+= Ossia.c
+SRC	+= PartDescOverride.c
+SRC	+= PartID.c
+SRC	+= RefPtOverride.c
+SRC	+= RehearsalOffset.c
+SRC	+= RestNumeral.c
+SRC	+= Silent.c
+SRC	+= SlashedStem.c
+SRC	+= SmallSize.c
+SRC	+= SpacingByPart.c
+SRC	+= SplitStem.c
+SRC	+= StaffName.c
+SRC	+= StaffStep.c
+SRC	+= Tag.c
+SRC	+= Thickness.c
+SRC	+= TieDirection.c
+SRC	+= TupletDesc.c
+SRC	+= VoiceID.c
+SRC	+= Width.c
+
+include ../../common.mk
+
