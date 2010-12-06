@@ -70,7 +70,7 @@ read these structures in and write them out directly.
 
 /**********************************
  ******   NIFF DATA TYPES    ******
-/**********************************/
+ **********************************/
 
 typedef unsigned char   BYTE;           /* a one byte unsigned integer */
 typedef signed char     SIGNEDBYTE;     /* a one byte signed integer */
@@ -138,11 +138,11 @@ typedef struct {
 
 /*************************
  ******   LISTS     ******
-/*************************/
+ *************************/
 
 /********************************
  ******   SETUP SECTION    ******
-/********************************/
+ ********************************/
 
 
 
@@ -161,7 +161,7 @@ typedef struct {
 
 /********************************
  ******   DATA SECTION     ******
-/********************************/
+ ********************************/
 
 #define nifflistDataSection  MAKEFOURCC('d','a','t','a')
 
@@ -174,11 +174,11 @@ typedef struct {
 
 /*************************
  ******   CHUNKS    ******
-/*************************/
+ *************************/
 
 /********************************
  ******   SETUP SECTION    ******
-/********************************/
+ ********************************/
 
 typedef struct  niffChklentabEntry 
 {           
@@ -322,7 +322,7 @@ enum
 /********************************
  ******   DATA SECTION    ******
  ******   HEADER CHUNKS   ******
-/********************************/
+ ********************************/
 
 /*      niffPageHeader - no structure defined */
 #define niffckidPageHeader  MAKEFOURCC('p','g','h','d')
@@ -353,7 +353,7 @@ enum
 /********************************
  ******   DATA SECTION    ******
  ******   SYMBOL CHUNKS   ******
-/********************************/
+ ********************************/
 
 
 typedef struct  niffAccidental
@@ -1022,7 +1022,7 @@ typedef struct niffTremolo
 
 /*************************
  ******   TAGS    ******
-/*************************/
+ *************************/
 
 typedef struct niffAbsPlacement
 {
