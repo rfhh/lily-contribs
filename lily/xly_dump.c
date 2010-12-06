@@ -219,7 +219,7 @@ dump_noteval(note_p note, voice_p voice)
     int accidental;
 
     if (val < 0) {
-	octave = - (- val / OCTAVE_DIATON) - 1;
+	octave = - ((- val + OCTAVE_DIATON - 1) / OCTAVE_DIATON);
 	val = (val - octave * OCTAVE_DIATON) % OCTAVE_DIATON;
     } else {
 	octave = val / OCTAVE_DIATON;
