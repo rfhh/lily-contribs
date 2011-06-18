@@ -168,7 +168,7 @@ keyName(int s)
 static void
 dumpLayout(void)
 {
-    fprintf(lily_out, "\\version \"1.8\"\n\n");
+    fprintf(lily_out, "\\version \"1.8.0\"\n\n");
 }
 
 

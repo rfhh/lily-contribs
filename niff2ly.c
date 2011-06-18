@@ -162,7 +162,7 @@ main(int argc, char **argv)
 	    perror("Can't create lily file");
 	    return 2;
 	}
-        fprintf(lily_out, "\\version \"1.8\"\n");
+        fprintf(lily_out, "\\version \"1.8.0\"\n");
     }
 
     fprintf(stderr, "Now generate lily output... \n");
