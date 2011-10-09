@@ -59,7 +59,7 @@ mandir=${prefix}/man
 oldincludedir=/usr/include
 
 # The installation prefix for architecture-independent files
-prefix=.
+prefix=/usr/local
 
 # The directory for installing executables that system administrators run
 sbindir=${exec_prefix}/sbin
@@ -100,7 +100,7 @@ YACC=@YACC@
 
 MKDEP=$(SHELL) $(pkg_mkdir)/mkdep
 
-DEFS=
+DEFS= 
 LDFLAGS=
 ALL_LDFLAGS=$(PKG_LDFLAGS) $(MOD_LDFLAGS) $(LDFLAGS) $(FLV_LDFLAGS)
 

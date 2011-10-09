@@ -162,6 +162,7 @@ NIFFIOReadLONG(NIFFIOFile *pnf, LONG *slp)
     {
         *slp = ul;
     }
+    *slp &= 0xffffffff;   // Yes, we live in a 64-bit world
     assert(*slp == ul); /* true only on two's complement machines */
     return RIFFIO_OK;
 }
