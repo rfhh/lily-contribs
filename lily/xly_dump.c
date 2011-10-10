@@ -486,14 +486,23 @@ dumpNote(mpq_t *t, symbol_p scan, voice_p voice)
 		break;
 	    }
 	} else {
-	    assert(is_two_pow(nu + 1));
-	    while (nu > 1) {
-		dots++;
-		de /= 2;
-		nu /= 2;
-	    }
-	    fprintf(lily_out, "%d", de);
-	}
+            if (is_two_pow(nu + 1)) {
+                while (nu > 1) {
+                    dots++;
+                    de /= 2;
+                    nu /= 2;
+                }
+                fprintf(lily_out, "%d", de);
+            } else {
+                int     ts_de;
+                int     ts_nu;
+                mpq2rat(time_sig_current->duration, &ts_nu, &ts_de);
+
+                assert(mpq_equal(time_sig_current->duration, note->duration));
+                // special type of whole-bar-rest
+                fprintf(lily_out, "%d*%d", de, nu);
+            }
+        }
 	for (i = 0; i < dots; i++) {
 	    fprintf(lily_out, ".");
 	}
