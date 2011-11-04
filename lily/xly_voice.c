@@ -29,7 +29,7 @@ voice_increase(staff_p f)
 
     for (scan = f->replicated.front; scan != NULL; scan = scan->next) {
 	symbol_p c = symbol_clone(scan);
-	q_append(&v->q, c);
+	q_insert(&v->q, c);
     }
 }
 

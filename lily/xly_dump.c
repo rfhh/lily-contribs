@@ -264,7 +264,7 @@ dump_noteval(note_p note, voice_p voice)
 
 
 static void
-dumpSkip(mpq_t *t, symbol_p scan)
+dumpSkip(mpq_t *t, const symbol_t *scan)
 {
     static int		initialized = 0;
     static mpq_t	dt;
@@ -301,7 +301,9 @@ dumpSkip(mpq_t *t, symbol_p scan)
     if (! is_two_pow(de)) {
 	fprintf(stderr, "Uh oh -- skip now already a tuplet %d/%d??\n", nu, de);
     } else {
-	fprintf(lily_out, " s%d*%d", de, nu);
+        if (nu != 0) {
+            fprintf(lily_out, " s%d*%d", de, nu);
+        }
 	last_dumped_symbol = &sym_any_skip;
     }
     mpq_set(*t, scan->start);
@@ -444,16 +446,16 @@ dumpNote(mpq_t *t, symbol_p scan, voice_p voice)
 	    fprintf(lily_out, "r");
 	}
     } else {
-	chord = note->chord;
-	if (chord != NULL) {
-	    fprintf(lily_out, "<");
-	}
+        chord = note->chord;
+        if (chord != NULL) {
+            fprintf(lily_out, "<");
+        }
 
-	if (note->stem->slur_end != NO_ID) {
-	    fprintf(lily_out, ")");
-	}
+        if (note->stem->slur_end != NO_ID) {
+            fprintf(lily_out, ")");
+        }
 
-	dump_noteval(note, voice);
+        dump_noteval(note, voice);
     }
 
     if (! is_two_pow(de)) {
@@ -509,20 +511,21 @@ dumpNote(mpq_t *t, symbol_p scan, voice_p voice)
     }
 
     while (chord != NULL) {
-	fprintf(lily_out, " ");
-	dump_noteval(chord, voice);
-	chord = chord->chord;
+        fprintf(lily_out, " ");
+        dump_noteval(chord, voice);
+
+        chord = chord->chord;
     }
 
     for (a = note->stem->articulations; a != NULL; a = a->next) {
-	dumpArticulation(a);
+        dumpArticulation(a);
     }
 
     if (note->stem->slur_start != NO_ID) {
 	fprintf(lily_out, "( ");
     }
 
-    if (note->chord != NULL) {
+    if (note->chord != NULL && ! (note->flags & FLAG_REST)) {
 	fprintf(lily_out, "> ");
     }
 
@@ -699,6 +702,7 @@ bar_number(mpq_t *now, mpq_t remain)
     VPRINTF(("\n start = ")); VPRINT_MPQ((start));
     VPRINTF(("\n end = ")); VPRINT_MPQ((end));
     VPRINTF(("\n remain = ")); VPRINT_MPQ((remain));
+    VPRINTF(("\n"));
 
     while (scan != NULL && mpq_cmp(*now, end) >= 0) {
 	int nu;
@@ -719,6 +723,7 @@ bar_number(mpq_t *now, mpq_t remain)
 	mpq_mul(t, scan->symbol.time_signature.duration, num);
 	mpq_sub(remain, remain, t);
 	VPRINTF(("\n remain = ")); VPRINT_MPQ((remain));
+        VPRINTF(("\n"));
 
 	mpq_set(start, end);
 	if (scan->next == NULL || scan->next->next == NULL) {
@@ -766,6 +771,8 @@ dumpTimeSig(mpq_t *now, symbol_p s)
 	return;
     }
 
+    dumpSkip(now, s);
+
     t = symbol_clone(s);
 
     scan = time_line;
@@ -786,7 +793,8 @@ dumpTimeSig(mpq_t *now, symbol_p s)
 
     VPRINTF(("At t = "));
     VPRINT_MPQ(s->start);
-    VPRINTF((" this time sig\n"));
+    VPRINTF((" this time sig: %d/%d\n",
+             time_sig_current->top, time_sig_current->bottom));
 
     if (time_sig_current->top == -1) {
 	fprintf(lily_out, " \\property Staff.TimeSignature \\override #'style = #'C \\time 4/4 ");
@@ -867,6 +875,12 @@ dumpBarStart(mpq_t *t, symbol_p s)
 	     ! mpq_equal(last_dumped_symbol->start, s->start))) {
 	mpq_t	remain;
 	int	num;
+
+        while (dump_tuplet_current != NO_ID) {
+            /* stop */
+            fprintf(lily_out, " }");
+            tuplet_pop(&dump_tuplet_current);
+        }
 
 	mpq_init(remain);
 	dumpSkip(t, s);
@@ -1028,12 +1042,12 @@ i2count(int i)
     case 2:	return "Two";
     case 3:	return "Three";
     case 4:	return "Four";
-    case 5:	return "Five";
-    case 6:	return "Six";
-    case 7:	return "Seven";
-    case 8:	return "Eight";
-    case 9:	return "Nine";
-    case 10:	return "Ten";
+    case 5:	return "One";
+    case 6:	return "Two";
+    case 7:	return "Three";
+    case 8:	return "Four";
+    case 9:	return "One";
+    case 10:	return "Two";
     default:	fprintf(stderr, "Uh oh -- support for more voices needed... %d\n", i);
 		return NULL;
     }

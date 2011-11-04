@@ -6,6 +6,7 @@ CC		= @CC@
 AR		= ar
 
 CFLAGS		+= -g -Wall
+CFLAGS		+= -Werror
 CFLAGS		+= -MD
 CPPFLAGS	+= -I$(NIFF)/riffio/include
 CPPFLAGS	+= -I$(NIFF)/niffio/include

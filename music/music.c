@@ -9,6 +9,91 @@
 #include "music.h"
 
 
+// Utility functions from the debugger
+
+int
+mpq_printf(FILE *f, const mpq_t t)
+{
+    mpq_out_str(f, 10, t);
+    fprintf(f, "\n");
+
+    return 0;
+}
+
+
+int
+mpq_dump(const mpq_t t)
+{
+    return mpq_printf(stderr, t);
+}
+
+
+static const char *
+SYMBOL_TYPE_string(symbol_type_t s)
+{
+    switch (s) {
+    case SYM_ARPEGGIO: return "SYM_ARPEGGIO";
+    case SYM_ARTICULATION: return "SYM_ARTICULATION";
+    case SYM_BARLINE: return "SYM_BARLINE";
+    case SYM_BAR_START: return "SYM_BAR_START";
+    case SYM_CHORD: return "SYM_CHORD";
+    case SYM_CLEF: return "SYM_CLEF";
+    case SYM_DYNAMIC: return "SYM_DYNAMIC";
+    case SYM_GLISSANDO: return "SYM_GLISSANDO";
+    case SYM_HAIRPIN: return "SYM_HAIRPIN";
+    case SYM_KEY_SIGN: return "SYM_KEY_SIGN";
+    case SYM_MEASURE_NUMBERING: return "SYM_MEASURE_NUMBERING";
+    case SYM_MIDI: return "SYM_MIDI";
+    case SYM_NOTE: return "SYM_NOTE";
+    case SYM_OTTAVA: return "SYM_OTTAVA";
+    case SYM_ORNAMENT: return "SYM_ORNAMENT";
+    case SYM_PARENTH: return "SYM_PARENTH";
+    case SYM_PEDAL: return "SYM_PEDAL";
+    case SYM_PORTAMENTO: return "SYM_PORTAMENTO";
+    case SYM_REHEARSAL_MARK: return "SYM_REHEARSAL_MARK";
+    case SYM_REPEAT: return "SYM_REPEAT";
+    case SYM_STEM: return "SYM_STEM";
+    case SYM_TEMPO: return "SYM_TEMPO";
+    case SYM_TEXT: return "SYM_TEXT";
+    case SYM_TIE: return "SYM_TIE";
+    case SYM_TIME_SIGNATURE: return "SYM_TIME_SIGNATURE";
+    case SYM_TREMOLO: return "SYM_TREMOLO";
+    case SYM_TUPLET: return "SYM_TUPLET";
+    case SYM_NUMBER: return "SYM_NUMBER";
+    }
+
+    return "Unknown symbol";
+}
+
+
+int symbol_dump(const symbol_t *s);
+int
+symbol_dump(const symbol_t *s)
+{
+    fprintf(stderr, "%s@", SYMBOL_TYPE_string(s->type));
+    return mpq_dump(s->start);
+}
+
+
+int q_dump(const symbol_q_t *q, int off, int n);
+int
+q_dump(const symbol_q_t *q, int off, int n)
+{
+     const symbol_t *scan = q->front;
+     int        i;
+
+     for (i = 0; i < off && scan != NULL; i++, scan = scan->next) {
+         /* traverse */
+     }
+     for (; i < off + n && scan != NULL; i++, scan = scan->next) {
+         fprintf(stderr, "[%d] ", i);
+         symbol_dump(scan);
+     }
+
+     return 0;
+}
+
+
 void
 rat2mpq(mpq_t q, RATIONAL *r)
 {

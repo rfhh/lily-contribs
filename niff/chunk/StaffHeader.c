@@ -21,6 +21,7 @@ cbStaffHeaderStart(NIFFIOChunkContext *pctxChunk)
 {
     symbol_p	key;
 
+fprintf(stderr, "%s\n", __func__);
     cbChunkStart(pctxChunk);
     key = key_sign_create();
     key->symbol.key_sign.code = KEY_RESET;

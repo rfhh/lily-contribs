@@ -14,6 +14,10 @@
 
 int verbose_printf(char *fmt, ...);
 
+int mpq_printf(FILE *f, const mpq_t t);
+int mpq_dump(const mpq_t t);
+
+
 extern int	verbose;
 #define VPRINTF(s)      ((verbose) ? verbose_printf s : RIFFIO_OK)
 #define VPRINT_MPQ(t)   ((verbose) ? mpq_out_str(stderr, 10, t) : RIFFIO_OK)
