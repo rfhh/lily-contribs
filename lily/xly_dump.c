@@ -1125,6 +1125,8 @@ dump_notes(void)
 		newline();
 		newline();
 	    }
+fprintf(stderr, "For now, staff[0] is enough to find bugs. Skip the rest.\n");
+return;
 	}
 	fprintf(stderr, "\n");
     }
@@ -1167,8 +1169,11 @@ dump_score(void)
 	    indown();
 	    fprintf(lily_out, ">");
 	    newline();
+fprintf(stderr, "For now, staff[0] is enough to find bugs. Skip the rest.\n");
+goto outer;
 	}
     }
+outer:
 
     indown();
     fprintf(lily_out, ">");

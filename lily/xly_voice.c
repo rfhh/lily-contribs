@@ -395,7 +395,6 @@ handle_simultaneous_notes(staff_p f,
             if (constrained) {
                 fprintf(stderr,
                         "Ooooppss, constrained note but cannot connect to voice\n");
-                return 0;
             }
 
             /* Could not append */
@@ -428,21 +427,21 @@ handle_simultaneous_notes(staff_p f,
                         }
                     }
                 }
-
-                VPRINTF(("Append note to new voice[%d]\n", f->n_voice));
-#if VERBOSE
-                {
-                    int v;
-
-                    for (v = 0; v < f->n_voice; v++) {
-                        VPRINTF(("voice[%d] finish ", v));
-                        VPRINT_MPQ(f->voice[v].t_finish);
-                        VPRINTF(("\n"));
-                    }
-                }
-#endif
-                voice_increase(f);
             }
+
+            VPRINTF(("Append note to new voice[%d]\n", f->n_voice));
+#if VERBOSE
+            {
+                int v;
+
+                for (v = 0; v < f->n_voice; v++) {
+                    VPRINTF(("voice[%d] finish ", v));
+                    VPRINT_MPQ(f->voice[v].t_finish);
+                    VPRINTF(("\n"));
+                }
+            }
+#endif
+            voice_increase(f);
         }
 
         if (i != f->n_voice) {
@@ -455,7 +454,6 @@ handle_simultaneous_notes(staff_p f,
                 q_remove(&f->unvoiced, scan);
             }
             append_note(f, i, scan);
-                            break;
         }
 
 #if 0
@@ -514,7 +512,11 @@ handle_simultaneous_notes(staff_p f,
     }
 
     // update it now, at the end...
-    *c_next = (*c_scan)->next;
+    if (require_constrained) {
+        *c_next = (*c_scan)->next;
+    } else {
+        *c_next = *c_scan;
+    }
     mpq_clear(now);
 
     return r;
