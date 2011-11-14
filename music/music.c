@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <niffio.h>
 
@@ -298,6 +299,47 @@ symbol_clear(symbol_p s)
 {
     mpq_clear(s->start);
     free(s);
+}
+
+
+int	n_ties;
+tie_p	ties;
+
+
+void
+ties_increase(int ID)
+{
+    int		i;
+    int		old_n;
+
+    if (ID < n_ties) {
+	return;
+    }
+
+    old_n = n_ties;
+    n_ties = ID + 1;
+    ties = realloc(ties, n_ties * sizeof(*ties));
+    for (i = old_n; i < n_ties; i++) {
+	memset(&ties[i], 0, sizeof(*ties));
+    }
+}
+
+
+int	n_slurs;
+slur_p	slur;
+
+
+void
+slurs_increase(int ID)
+{
+    int	old_n_slurs = n_slurs;
+    int	i;
+
+    n_slurs = ID + 1;
+    slur = realloc(slur, n_slurs * sizeof(*slur));
+    for (i = old_n_slurs; i < n_slurs; i++) {
+        memset(&slur[i], 0, sizeof(*slur));
+    }
 }
 
 

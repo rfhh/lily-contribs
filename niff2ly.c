@@ -88,6 +88,7 @@ main(int argc, char **argv)
     char       *lily_file = NULL;
     int		i;
     int		option;
+    int         do_chording = 1;
 
     Progname = argv[0];
 
@@ -103,6 +104,8 @@ main(int argc, char **argv)
 #endif
 	} else if (strcmp(argv[i], "-o") == 0) {
 	    lily_file = argv[++i];
+        } else if (strcmp(argv[i], "--no-chords") == 0) {
+            do_chording = 0;
 	} else if (option == 0) {
 	    strNiffFile = argv[i];
 	    option++;
@@ -166,7 +169,7 @@ main(int argc, char **argv)
     }
 
     fprintf(stderr, "Now generate lily output... \n");
-    xly_dump(lily_out);
+    xly_dump(lily_out, do_chording);
 
     /*
      * Check for any extra bytes past the Form

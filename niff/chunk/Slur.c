@@ -15,15 +15,6 @@
 
 #include "Slur.h"
 
-typedef struct SLUR {
-    int		n;
-    int		pending;
-} slur_t, *slur_p;
-
-
-static slur_p	slur;
-static int	n_slur;
-
 
 static RIFFIOSuccess
 cbSlurStart(NIFFIOChunkContext *pctxChunk)
@@ -36,15 +27,8 @@ cbSlurEnd(NIFFIOChunkContext *pctxChunk)
 {
     slur_p	s;
 
-    if (ID_current >= n_slur) {
-	int	old_n_slur = n_slur;
-	int	i;
-
-	n_slur = ID_current + 1;
-	slur = realloc(slur, n_slur * sizeof(*slur));
-	for (i = old_n_slur; i < n_slur; i++) {
-	    memset(&slur[i], 0, sizeof(*slur));
-	}
+    if (ID_current >= n_slurs) {
+        slurs_increase(ID_current);
     }
 
     s = &slur[ID_current];

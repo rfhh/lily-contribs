@@ -5,6 +5,8 @@
 
 #include <gmp.h>
 
+#include <stddef.h>
+
 
 #define VERBOSE		1
 
@@ -299,6 +301,9 @@ struct SYMBOL {
 };
 
 
+#define SYMBOL_OF_SYM(sym)   ((symbol_p)((char *)(sym) - offsetof(symbol_t, symbol)))
+
+
 typedef struct symbol_q {
     symbol_p	front;
     symbol_p	tail;
@@ -353,8 +358,23 @@ extern tuplet_p		tuplet_current;
 extern tuplet_p		global_tuplet;
 extern int		n_tuplet;
 
+
 extern int		n_ties;
 extern tie_p		ties;
+
+void ties_increase(int ID);
+
+
+typedef struct SLUR {
+    int		n;
+    int		pending;
+} slur_t, *slur_p;
+
+extern slur_p	slur;
+extern int	n_slurs;
+
+void slurs_increase(int ID);
+
 
 void q_insert(symbol_q_p q, symbol_p n);
 void q_append(symbol_q_p q, symbol_p n);

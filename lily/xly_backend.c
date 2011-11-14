@@ -17,10 +17,10 @@
 
 
 void
-xly_dump(FILE *f)
+xly_dump(FILE *f, int do_chording)
 {
     xly_partial();
-    xly_chord();
+    xly_chord(do_chording);
     xly_repeat();
     xly_voice();
 

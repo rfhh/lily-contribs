@@ -15,28 +15,6 @@
 
 #include "Tie.h"
 
-int	n_ties;
-tie_p	ties;
-
-
-static void
-increase_ties(int ID)
-{
-    int		i;
-    int		old_n;
-
-    if (ID < n_ties) {
-	return;
-    }
-
-    old_n = n_ties;
-    n_ties = ID + 1;
-    ties = realloc(ties, n_ties * sizeof(*ties));
-    for (i = old_n; i < n_ties; i++) {
-	memset(&ties[i], 0, sizeof(*ties));
-    }
-}
-
 
 static RIFFIOSuccess
 cbTieStart(NIFFIOChunkContext *pctxChunk)
@@ -52,7 +30,7 @@ cbTieEnd(NIFFIOChunkContext *pctxChunk)
 {
     tie_p	tie;
 
-    increase_ties(ID_current);
+    ties_increase(ID_current);
     tie = &ties[ID_current];
     tie->occurred++;
 
