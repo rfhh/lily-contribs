@@ -37,7 +37,7 @@ note_create(niffNotehead *p)
     n->flags = stem_current->flags & (FLAG_GRACE | FLAG_SMALL | FLAG_INVISIBLE);
     n->tie_start  = NO_ID;
     n->tie_end    = NO_ID;
-    n->tuplet     = NO_ID;
+    n->tuplet     = stem_current->tuplet;
 
     return s;
 }

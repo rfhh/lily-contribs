@@ -254,8 +254,10 @@ append_note(staff_p s, int voice, symbol_p scan)
     v->tail = note;
 
     mpq_set(t, note->duration);
-    for (u = note->stem->tuplet; u != -1; u = global_tuplet[u].next) {
-	mpq_mul(t, t, global_tuplet[u].ratio);
+    if (0) {
+        for (u = note->stem->tuplet; u != -1; u = global_tuplet[u].next) {
+            mpq_mul(t, t, global_tuplet[u].ratio);
+        }
     }
     for (u = note->tuplet; u != -1; u = global_tuplet[u].next) {
 	mpq_mul(t, t, global_tuplet[u].ratio);
@@ -317,9 +319,11 @@ report_note(const symbol_p scan)
     }
     VPRINTF(" duration ");
     VPRINT_MPQ(note->duration);
-    for (u = note->stem->tuplet; u != -1; u = global_tuplet[u].next) {
-        VPRINTF("*");
-	VPRINT_MPQ(global_tuplet[u].ratio);
+    if (0) {
+        for (u = note->stem->tuplet; u != -1; u = global_tuplet[u].next) {
+            VPRINTF("*");
+            VPRINT_MPQ(global_tuplet[u].ratio);
+        }
     }
     for (u = note->tuplet; u != -1; u = global_tuplet[u].next) {
         VPRINTF("*");
@@ -352,6 +356,7 @@ report_symbol(const symbol_p scan, int verbos)
 
 static int
 handle_simultaneous_notes(staff_p f,
+                          mpq_t now,
                           symbol_p *c_scan,
                           symbol_p *c_next,
                           int recursing,
@@ -359,12 +364,8 @@ handle_simultaneous_notes(staff_p f,
 {
     symbol_p    scan;
     symbol_p    next;
-    mpq_t       now;
     int         r = 1;
     symbol_p    first_unconstrained = NULL;
-
-    mpq_init(now);
-    mpq_set(now, (*c_scan)->start);
 
     next = *c_next;
     for (scan = *c_scan;
@@ -548,7 +549,6 @@ handle_simultaneous_notes(staff_p f,
     } else {
         *c_next = *c_scan;
     }
-    mpq_clear(now);
 
     return r;
 }
@@ -559,6 +559,10 @@ do_staff_voicing(staff_p f, int recursing, symbol_p scan)
 {
     symbol_p	next;
     int		i;
+    mpq_t       now;
+    int         r = 1;
+
+    mpq_init(now);
 
     /* yes, test, because we might be recursing */
     if (scan != NULL && f->n_voice == 0) {
@@ -570,8 +574,10 @@ do_staff_voicing(staff_p f, int recursing, symbol_p scan)
 	if (recursing && f->slur_pending == 0) {
             VPRINTF("Terminate this recursion path...\n");
 	    f->next_after_backtrack = scan;
-            return 1;
+            goto exit;
 	}
+
+        mpq_set(now, scan->start);
 
 	next = scan->next;
         report_symbol(scan, 0);
@@ -634,12 +640,24 @@ do_staff_voicing(staff_p f, int recursing, symbol_p scan)
 	    break;
 
 	case SYM_NOTE:
-            if (! handle_simultaneous_notes(f, &scan, &next, recursing, 1)) {
-                return 0;
+            if (! handle_simultaneous_notes(f,
+                                            now,
+                                            &scan,
+                                            &next,
+                                            recursing,
+                                            1)) {
+                r = 0;
+                goto exit;
             }
             VPRINTF("%d scan %p next %p\n", __LINE__, scan, next);
-            if (! handle_simultaneous_notes(f, &scan, &next, recursing, 0)) {
-                return 0;
+            if (! handle_simultaneous_notes(f,
+                                            now,
+                                            &scan,
+                                            &next,
+                                            recursing,
+                                            0)) {
+                r = 0;
+                goto exit;
             }
             VPRINTF("%d scan %p next %p\n", __LINE__, scan, next);
 
@@ -657,9 +675,11 @@ do_staff_voicing(staff_p f, int recursing, symbol_p scan)
 	}
     }
 
+exit:
     f->next_after_backtrack = NULL;
+    mpq_clear(now);
 
-    return 1;
+    return r;
 }
 
 

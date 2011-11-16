@@ -49,8 +49,8 @@ rest_create(niffRest *p)
     }
     n->tie_start = NO_ID;
     n->tie_end   = NO_ID;
-    n->tuplet    = NO_ID;
     n->stem      = stem_current;
+    n->tuplet    = stem_current->tuplet;
 
     return s;
 }

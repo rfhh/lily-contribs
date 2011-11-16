@@ -427,30 +427,32 @@ dumpNote(mpq_t *t, symbol_p scan, voice_p voice)
 
     fprintf(lily_out, " ");
 
-    if (note->stem->tuplet != dump_tuplet_current ||
-            note->tuplet != dump_tuplet_current) {
+    if (0) {
+        if (note->stem->tuplet != dump_tuplet_current) {
+            /* Tuplet on or off or both? */
+            if (global_tuplet[note->stem->tuplet].next != dump_tuplet_current) {
+                /* stop */
+                fprintf(lily_out, "} ");
+                tuplet_pop(&dump_tuplet_current);
+            }
+            if (global_tuplet[note->stem->tuplet].next == dump_tuplet_current) {
+                /* start */
+                tuplet_push(&dump_tuplet_current, note->stem->tuplet);
+                fprintf(lily_out, " \\times %d/%d {",
+                        global_tuplet[dump_tuplet_current].num,
+                        global_tuplet[dump_tuplet_current].den);
+            }
+        }
+    }
+
+    if (note->tuplet != dump_tuplet_current) {
 	/* Tuplet on or off or both? */
-	if ((note->stem->tuplet != NO_ID &&
-                global_tuplet[note->stem->tuplet].next != dump_tuplet_current) ||
-                (note->tuplet != NO_ID &&
-                    global_tuplet[note->tuplet].next != dump_tuplet_current)) {
+	if (global_tuplet[note->tuplet].next != dump_tuplet_current) {
 	    /* stop */
 	    fprintf(lily_out, "} ");
 	    tuplet_pop(&dump_tuplet_current);
 	}
-	if (note->stem->tuplet != NO_ID &&
-                global_tuplet[note->stem->tuplet].next == dump_tuplet_current) {
-	    /* start */
-	    tuplet_push(&dump_tuplet_current, note->stem->tuplet);
-	    fprintf(lily_out, " \\times %d/%d {",
-		    global_tuplet[dump_tuplet_current].num,
-		    global_tuplet[dump_tuplet_current].den);
-	}
-	if (note->tuplet != NO_ID &&
-                global_tuplet[note->tuplet].next == dump_tuplet_current) {
-            if (note->stem->tuplet != NO_ID) {
-                fprintf(stderr, "Oooppsss nested stem/note tuplets. REFACTOR!\n");
-            }
+	if (global_tuplet[note->tuplet].next == dump_tuplet_current) {
 	    /* start */
 	    tuplet_push(&dump_tuplet_current, note->tuplet);
 	    fprintf(lily_out, " \\times %d/%d {",
@@ -557,8 +559,10 @@ dumpNote(mpq_t *t, symbol_p scan, voice_p voice)
     }
 
     mpq_set(dt, note->duration);
-    for (u = note->stem->tuplet; u != NO_ID; u = global_tuplet[u].next) {
-	mpq_mul(dt, dt, global_tuplet[u].ratio);
+    if (0) {
+        for (u = note->stem->tuplet; u != NO_ID; u = global_tuplet[u].next) {
+            mpq_mul(dt, dt, global_tuplet[u].ratio);
+        }
     }
     for (u = note->tuplet; u != NO_ID; u = global_tuplet[u].next) {
 	mpq_mul(dt, dt, global_tuplet[u].ratio);
@@ -1062,11 +1066,11 @@ dumpVoice(voice_p voice)
 static char *
 i2count(int i)
 {
-    switch ((i + 1) % 4) {
-    case 0:	return "Nul";
+    switch ((i % 4) + 1) {
     case 1:	return "One";
     case 2:	return "Two";
     case 3:	return "Three";
+    case 4:	return "Four";
     default:    return "Error";
     }
 }
@@ -1143,8 +1147,6 @@ dump_notes(void)
 		newline();
 		newline();
 	    }
-fprintf(stderr, "For now, staff[0] is enough to find bugs. Skip the rest.\n");
-return;
 	}
 	fprintf(stderr, "\n");
     }
@@ -1187,11 +1189,8 @@ dump_score(void)
 	    indown();
 	    fprintf(lily_out, ">");
 	    newline();
-fprintf(stderr, "For now, staff[0] is enough to find bugs. Skip the rest.\n");
-goto outer;
 	}
     }
-outer:
 
     indown();
     fprintf(lily_out, ">");
