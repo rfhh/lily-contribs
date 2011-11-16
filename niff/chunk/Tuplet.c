@@ -61,8 +61,13 @@ cbTupletEnd(NIFFIOChunkContext *pctxChunk)
 	tuplet_current = NULL;
     }
 
-    assert(stem_current != NULL);
-    tuplet_push(&stem_current->tuplet, ID_current);
+    if (note_current != NULL) {
+        fprintf(stderr, "Oooppsss, the idea of a global tuplet stack doesn't match tuplets bound to notes. REFACTOR!\n");
+        tuplet_push(&note_current->symbol.note.tuplet, ID_current);
+    } else {
+        assert(stem_current != NULL);
+        tuplet_push(&stem_current->tuplet, ID_current);
+    }
 
     cbChunkEnd(pctxChunk);
 

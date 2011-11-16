@@ -33,12 +33,12 @@ cbChnkLenTable(NIFFIOChunkContext *pctxChunk)
     {
         NIFFIOReadniffChklentabEntry(pnf, & entryCLT);
         RIFFIOFOURCCToString(entryCLT.chunkName, strFOURCC);
-        VPRINTF(("'%s' %5ldL\n", strFOURCC, entryCLT.offsetOfFirstTag));
+        VPRINTF("'%s' %5ldL\n", strFOURCC, entryCLT.offsetOfFirstTag);
     }
 
-    VPRINTF(("')'\n"));
+    VPRINTF("')'\n");
 
-    VPRINTF(("\n"));
+    VPRINTF("\n");
 
     cbChunkEnd(pctxChunk);
 

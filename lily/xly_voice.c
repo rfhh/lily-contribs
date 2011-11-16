@@ -29,7 +29,7 @@ void debugMeAt(mpq_t t)
 
     if (! initialized) {
         mpq_init(t_debug);
-        mpq_set_ui(t_debug, 237, 4);
+        mpq_set_ui(t_debug, 749, 8);
     }
 
     if (mpq_equal(t_debug, t)) {
@@ -257,6 +257,9 @@ append_note(staff_p s, int voice, symbol_p scan)
     for (u = note->stem->tuplet; u != -1; u = global_tuplet[u].next) {
 	mpq_mul(t, t, global_tuplet[u].ratio);
     }
+    for (u = note->tuplet; u != -1; u = global_tuplet[u].next) {
+	mpq_mul(t, t, global_tuplet[u].ratio);
+    }
     mpq_add(v->t_finish, scan->start, t);
 
     if (note->stem->slur_end != NO_ID) {
@@ -295,31 +298,40 @@ static void
 report_note(const symbol_p scan)
 {
     const note_p note = &scan->symbol.note;
+    int		u;
 
-    VPRINTF(("Test %p for contiguous append: t = ", scan));
+    VPRINTF("Test %p for contiguous append: t = ", scan);
     VPRINT_MPQ(scan->start);
     if (note->flags & FLAG_REST) {
-        VPRINTF((" rest"));
+        VPRINTF(" rest");
     } else if (note->chord != NULL) {
         note_p	chord;
-        VPRINTF((" step <"));
-        VPRINTF(("%d ", note->value));
+        VPRINTF(" step <");
+        VPRINTF("%d ", note->value);
         for (chord = note->chord; chord != NULL; chord = chord->chord) {
-            VPRINTF(("%d ", chord->value));
+            VPRINTF("%d ", chord->value);
         }
-        VPRINTF((">"));
+        VPRINTF(">");
     } else {
-        VPRINTF((" step %d", note->value));
+        VPRINTF(" step %d", note->value);
     }
-    VPRINTF((" duration "));
+    VPRINTF(" duration ");
     VPRINT_MPQ(note->duration);
-    VPRINTF((" beam %p %d %s [%d,%d]", note->stem, note->stem->beam,
+    for (u = note->stem->tuplet; u != -1; u = global_tuplet[u].next) {
+        VPRINTF("*");
+	VPRINT_MPQ(global_tuplet[u].ratio);
+    }
+    for (u = note->tuplet; u != -1; u = global_tuplet[u].next) {
+        VPRINTF("*");
+	VPRINT_MPQ(global_tuplet[u].ratio);
+    }
+    VPRINTF(" beam %p %d %s [%d,%d]", note->stem, note->stem->beam,
              (note->stem->flags & FLAG_STEM_UP) ? "up" : "down",
              note->stem->beam_left,
-             note->stem->beam_right));
-    VPRINTF((" tie> %d tie< %d", note->tie_start, note->tie_end));
-    VPRINTF((" slur> %d slur< %d",
-             note->stem->slur_start, note->stem->slur_end));
+             note->stem->beam_right);
+    VPRINTF(" tie> %d tie< %d", note->tie_start, note->tie_end);
+    VPRINTF(" slur> %d slur< %d",
+             note->stem->slur_start, note->stem->slur_end);
 }
 
 
@@ -330,10 +342,10 @@ report_symbol(const symbol_p scan, int verbos)
     if (verbos && scan->type == SYM_NOTE) {
         report_note(scan);
     } else {
-        VPRINTF(("At t = "));
+        VPRINTF("At t = ");
         VPRINT_MPQ(scan->start);
-        VPRINTF((" symbol %p %s: ", scan, SYMBOL_TYPE_string(scan->type)));
-        VPRINTF(("\n"));
+        VPRINTF(" symbol %p %s: ", scan, SYMBOL_TYPE_string(scan->type));
+        VPRINTF("\n");
     }
 }
 
@@ -375,7 +387,7 @@ handle_simultaneous_notes(staff_p f,
         }
 
         report_note(scan);
-        VPRINTF((" recursing %d", recursing));
+        VPRINTF(" recursing %d", recursing);
 
         debugMeAt(scan->start);
 
@@ -383,14 +395,14 @@ handle_simultaneous_notes(staff_p f,
             voice_p v = &f->voice[i];
             note_p tail = v->tail;
 
-            VPRINTF((" voice[%d].t_finish = ", i));
+            VPRINTF(" voice[%d].t_finish = ", i);
             VPRINT_MPQ(v->t_finish);
             if (tail == NULL) {
-                VPRINTF((" beam <nope>\n"));
+                VPRINTF(" beam <nope>\n");
             } else {
-                VPRINTF((" beam %p %d [%d,%d]\n", tail->stem,
+                VPRINTF(" beam %p %d [%d,%d]\n", tail->stem,
                          tail->stem->beam, tail->stem->beam_left,
-                         tail->stem->beam_left));
+                         tail->stem->beam_left);
             }
 
             // Do this nested if() for the debugger. Later? restore it to
@@ -399,7 +411,7 @@ handle_simultaneous_notes(staff_p f,
                 if (beam_match(tail, note)) {
                     if (slur_match(v, note)) {
                         if (mpq_equal(scan->start, v->t_finish)) {
-                            VPRINTF(("Append note contiguously to voice %d\n", i));
+                            VPRINTF("Append note contiguously to voice %d\n", i);
                             break;
                         }
                     }
@@ -416,11 +428,11 @@ handle_simultaneous_notes(staff_p f,
             /* Could not append */
             for (i = 0; i < f->n_voice; i++) {
                 if (mpq_cmp(scan->start, f->voice[i].t_finish) > 0) {
-                    VPRINTF(("Append note non-contiguously, t = "));
+                    VPRINTF("Append note non-contiguously, t = ");
                     VPRINT_MPQ(scan->start);
-                    VPRINTF((" voice[%d].t_finish = ", i));
+                    VPRINTF(" voice[%d].t_finish = ", i);
                     VPRINT_MPQ(f->voice[i].t_finish);
-                    VPRINTF((" to voice %d\n", i));
+                    VPRINTF(" to voice %d\n", i);
                     break;
                 }
             }
@@ -445,15 +457,15 @@ handle_simultaneous_notes(staff_p f,
                 }
             }
 
-            VPRINTF(("Append note to new voice[%d]\n", f->n_voice));
+            VPRINTF("Append note to new voice[%d]\n", f->n_voice);
 #if VERBOSE
             {
                 int v;
 
                 for (v = 0; v < f->n_voice; v++) {
-                    VPRINTF(("voice[%d] finish ", v));
+                    VPRINTF("voice[%d] finish ", v);
                     VPRINT_MPQ(f->voice[v].t_finish);
-                    VPRINTF(("\n"));
+                    VPRINTF("\n");
                 }
             }
 #endif
@@ -491,20 +503,20 @@ handle_simultaneous_notes(staff_p f,
         for (i = 0; i < n_note; i++) {
             staff_t	back_staff;
 
-            VPRINTF(("\nRecurse: try %d'th of %d note at t = ",
-                     i, n_note));
+            VPRINTF("\nRecurse: try %d'th of %d note at t = ",
+                     i, n_note);
             VPRINT_MPQ(scan->start);
-            VPRINTF(("\n"));
+            VPRINTF("\n");
             staff_clone(&back_staff, f);
             back_staff.start_backtrack = next;
             append_note(&back_staff, i, scan);
             if (do_staff_voicing(&back_staff, 1, next)) {
                 /* Success! Can commit the backtrack and continue
                  * our way. */
-                VPRINTF(("Commit: %d'th of %d note at t = ",
-                         i, n_note));
+                VPRINTF("Commit: %d'th of %d note at t = ",
+                         i, n_note);
                 VPRINT_MPQ(scan->start);
-                VPRINTF(("\n"));
+                VPRINTF("\n");
                 staff_commit(f, &back_staff, recursing, &next);
                 staff_cleanup(&back_staff);
                 break;
@@ -556,14 +568,14 @@ do_staff_voicing(staff_p f, int recursing, symbol_p scan)
     for (; scan != NULL; scan = next) {
 
 	if (recursing && f->slur_pending == 0) {
-            VPRINTF(("Terminate this recursion path...\n"));
+            VPRINTF("Terminate this recursion path...\n");
 	    f->next_after_backtrack = scan;
             return 1;
 	}
 
 	next = scan->next;
         report_symbol(scan, 0);
-        VPRINTF(("%d scan %p next %p next->next %p\n", __LINE__, scan, next, (next != NULL) ? next->next : NULL));
+        VPRINTF("%d scan %p next %p next->next %p\n", __LINE__, scan, next, (next != NULL) ? next->next : NULL);
 
         if (scan->type != SYM_NOTE) {
             // NOTEs have a special treatment because multiple simultaneous
@@ -610,10 +622,10 @@ do_staff_voicing(staff_p f, int recursing, symbol_p scan)
 	case SYM_CLEF:
 	case SYM_KEY_SIGN:
 	case SYM_TIME_SIGNATURE:
-            VPRINTF(("Symbol %s %p at t = ",
-                     SYMBOL_TYPE_string(scan->type), scan));
+            VPRINTF("Symbol %s %p at t = ",
+                     SYMBOL_TYPE_string(scan->type), scan);
             VPRINT_MPQ(scan->start);
-            VPRINTF(("; n_voice = %d\n", f->n_voice));
+            VPRINTF("; n_voice = %d\n", f->n_voice);
 	    for (i = 0; i < f->n_voice; i++) {
 		symbol_p c = symbol_clone(scan);
 		q_append(&f->voice[i].q, c);
@@ -625,11 +637,11 @@ do_staff_voicing(staff_p f, int recursing, symbol_p scan)
             if (! handle_simultaneous_notes(f, &scan, &next, recursing, 1)) {
                 return 0;
             }
-            VPRINTF(("%d scan %p next %p\n", __LINE__, scan, next));
+            VPRINTF("%d scan %p next %p\n", __LINE__, scan, next);
             if (! handle_simultaneous_notes(f, &scan, &next, recursing, 0)) {
                 return 0;
             }
-            VPRINTF(("%d scan %p next %p\n", __LINE__, scan, next));
+            VPRINTF("%d scan %p next %p\n", __LINE__, scan, next);
 
 	}
     }
@@ -638,9 +650,9 @@ do_staff_voicing(staff_p f, int recursing, symbol_p scan)
 	for (scan = f->unvoiced.front; scan != NULL; scan = next) {
 	    next = scan->next;
 	    assert(scan->type != SYM_NOTE);
-	    VPRINTF(("Skip this non-note symbol (t_start = "));
+	    VPRINTF("Skip this non-note symbol (t_start = ");
 	    VPRINT_MPQ(scan->start);
-	    VPRINTF((" on voice 0\n"));
+	    VPRINTF(" on voice 0\n");
 	    q_remove(&f->unvoiced, scan);
 	}
     }

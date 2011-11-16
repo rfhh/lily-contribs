@@ -9,6 +9,7 @@
 
 extern part_p		part_current;
 extern symbol_p		symbol_current;
+extern symbol_p         note_current;
 
 extern symbol_q_p	voice_current;
 extern symbol_q_p	voice_previous;

@@ -115,7 +115,7 @@ key_set(symbol_p s, int code, voice_p voice)
 	newline();
     }
 
-    VPRINTF(("Dump this key; key_current := %d\n", voice->key_current));
+    VPRINTF("Dump this key; key_current := %d\n", voice->key_current);
 }
 
 
@@ -233,7 +233,9 @@ dump_noteval(note_p note, voice_p voice)
     }
 
     key = defaultKey(val, voice);
-    VPRINTF((" dump note, keyed value = %d, accidental %d, measure accidental %d, key ofdset %d\n", val, note->accidental, measure_accidental[note->value], defaultKey(val, voice)));
+    VPRINTF(" dump note, keyed value = %d, accidental %d, measure accidental %d, key ofdset %d\n",
+            val, note->accidental, measure_accidental[note->value],
+            defaultKey(val, voice));
     fprintf(lily_out, "%s", keyName(val));
     if (note->accidental != 0) {
 	dumpAccidental(note->accidental);
@@ -312,7 +314,7 @@ dumpSkip(mpq_t *t, const symbol_t *scan)
 	last_dumped_symbol = &sym_any_skip;
     }
     mpq_set(*t, scan->start);
-    VPRINTF((" skip to t = "));
+    VPRINTF(" skip to t = ");
     VPRINT_MPQ(*t);
 }
 
@@ -322,7 +324,7 @@ dumpArticulation(symbol_p s)
 {
     articulation_p	a = &s->symbol.articulation;
 
-    VPRINTF(("OK, an articulation\n"));
+    VPRINTF("OK, an articulation\n");
 
     switch (a->shape) {
     case artStrongAccent:
@@ -412,29 +414,45 @@ dumpNote(mpq_t *t, symbol_p scan, voice_p voice)
 	initialized = 1;
     }
 
-    VPRINTF(("At t = "));
+    VPRINTF("At t = ");
     VPRINT_MPQ(*t);
 
     dumpSkip(t, scan);
 
-    VPRINTF((" dump note, value = %d, duration = ", note->value));
+    VPRINTF(" dump note, value = %d, duration = ", note->value);
     VPRINT_MPQ(note->duration);
-    VPRINTF((" tie = %d", note->tie_start));
-    VPRINTF((" slur> = %d slur< = %d\n",
-	    note->stem->slur_start, note->stem->slur_end));
+    VPRINTF(" tie = %d", note->tie_start);
+    VPRINTF(" slur> = %d slur< = %d\n",
+	    note->stem->slur_start, note->stem->slur_end);
 
     fprintf(lily_out, " ");
 
-    if (note->stem->tuplet != dump_tuplet_current) {
+    if (note->stem->tuplet != dump_tuplet_current ||
+            note->tuplet != dump_tuplet_current) {
 	/* Tuplet on or off or both? */
-	if (global_tuplet[note->stem->tuplet].next != dump_tuplet_current) {
+	if ((note->stem->tuplet != NO_ID &&
+                global_tuplet[note->stem->tuplet].next != dump_tuplet_current) ||
+                (note->tuplet != NO_ID &&
+                    global_tuplet[note->tuplet].next != dump_tuplet_current)) {
 	    /* stop */
 	    fprintf(lily_out, "} ");
 	    tuplet_pop(&dump_tuplet_current);
 	}
-	if (global_tuplet[note->stem->tuplet].next == dump_tuplet_current) {
+	if (note->stem->tuplet != NO_ID &&
+                global_tuplet[note->stem->tuplet].next == dump_tuplet_current) {
 	    /* start */
 	    tuplet_push(&dump_tuplet_current, note->stem->tuplet);
+	    fprintf(lily_out, " \\times %d/%d {",
+		    global_tuplet[dump_tuplet_current].num,
+		    global_tuplet[dump_tuplet_current].den);
+	}
+	if (note->tuplet != NO_ID &&
+                global_tuplet[note->tuplet].next == dump_tuplet_current) {
+            if (note->stem->tuplet != NO_ID) {
+                fprintf(stderr, "Oooppsss nested stem/note tuplets. REFACTOR!\n");
+            }
+	    /* start */
+	    tuplet_push(&dump_tuplet_current, note->tuplet);
 	    fprintf(lily_out, " \\times %d/%d {",
 		    global_tuplet[dump_tuplet_current].num,
 		    global_tuplet[dump_tuplet_current].den);
@@ -542,6 +560,9 @@ dumpNote(mpq_t *t, symbol_p scan, voice_p voice)
     for (u = note->stem->tuplet; u != NO_ID; u = global_tuplet[u].next) {
 	mpq_mul(dt, dt, global_tuplet[u].ratio);
     }
+    for (u = note->tuplet; u != NO_ID; u = global_tuplet[u].next) {
+	mpq_mul(dt, dt, global_tuplet[u].ratio);
+    }
     mpq_add(*t, *t, dt);
 
     last_dumped_symbol = scan;
@@ -625,9 +646,9 @@ dumpClef(symbol_p s)
 
     clef_current = c;
 
-    VPRINTF(("At t = "));
+    VPRINTF("At t = ");
     VPRINT_MPQ(s->start);
-    VPRINTF((" this clef\n"));
+    VPRINTF(" this clef\n");
     fprintf(lily_out, " %s", clef_name(clef_current));
     newline();
 }
@@ -703,32 +724,32 @@ bar_number(mpq_t *now, mpq_t remain)
     }
     mpq_set(remain, *now);
     mpq_sub(remain, remain, xly_t_partial);
-    VPRINTF(("now = ")); VPRINT_MPQ((*now));
-    VPRINTF(("\n start = ")); VPRINT_MPQ((start));
-    VPRINTF(("\n end = ")); VPRINT_MPQ((end));
-    VPRINTF(("\n remain = ")); VPRINT_MPQ((remain));
-    VPRINTF(("\n"));
+    VPRINTF("now = "); VPRINT_MPQ(*now);
+    VPRINTF("\n start = "); VPRINT_MPQ(start);
+    VPRINTF("\n end = "); VPRINT_MPQ(end);
+    VPRINTF("\n remain = "); VPRINT_MPQ(remain);
+    VPRINTF("\n");
 
     while (scan != NULL && mpq_cmp(*now, end) >= 0) {
 	int nu;
 	int de;
 
-	VPRINTF(("\n now = ")); VPRINT_MPQ((*now));
-	VPRINTF(("\n end = ")); VPRINT_MPQ((end));
+	VPRINTF("\n now = "); VPRINT_MPQ(*now);
+	VPRINTF("\n end = "); VPRINT_MPQ(end);
 
 	mpq_sub(t, end, start);
-	VPRINTF(("\n t = ")); VPRINT_MPQ((t));
+	VPRINTF("\n t = "); VPRINT_MPQ(t);
 	mpq_set(t2, t);
 	mpq_div(t, t2, scan->symbol.time_signature.duration);
-	VPRINTF(("\n t = ")); VPRINT_MPQ((t));
+	VPRINTF("\n t = "); VPRINT_MPQ(t);
 	mpq2rat(t, &nu, &de);
-	VPRINTF(("\n t = ")); VPRINT_MPQ((t));
+	VPRINTF("\n t = "); VPRINT_MPQ(t);
 	n += nu / de;	/* Discount partial bars */
 	mpq_set_si(num, n, 1);
 	mpq_mul(t, scan->symbol.time_signature.duration, num);
 	mpq_sub(remain, remain, t);
-	VPRINTF(("\n remain = ")); VPRINT_MPQ((remain));
-        VPRINTF(("\n"));
+	VPRINTF("\n remain = "); VPRINT_MPQ(remain);
+        VPRINTF("\n");
 
 	mpq_set(start, end);
 	if (scan->next == NULL || scan->next->next == NULL) {
@@ -796,10 +817,10 @@ dumpTimeSig(mpq_t *now, symbol_p s)
     time_sig_current->bottom = t->symbol.time_signature.bottom;
     mpq_set(time_sig_current->duration, t->symbol.time_signature.duration);
 
-    VPRINTF(("At t = "));
+    VPRINTF("At t = ");
     VPRINT_MPQ(s->start);
-    VPRINTF((" this time sig: %d/%d\n",
-             time_sig_current->top, time_sig_current->bottom));
+    VPRINTF(" this time sig: %d/%d\n",
+             time_sig_current->top, time_sig_current->bottom);
 
     if (time_sig_current->top == -1) {
 	fprintf(lily_out, " \\property Staff.TimeSignature \\override #'style = #'C \\time 4/4 ");
@@ -817,7 +838,7 @@ dumpOrnament(mpq_t *t, symbol_p s)
 {
     ornament_p	o = &s->symbol.ornament;
 
-    VPRINTF(("OK, an ornament\n"));
+    VPRINTF("OK, an ornament\n");
     switch (o->shape) {
     case ornMordent:
 	fprintf(lily_out, "-\\mordent");
@@ -868,7 +889,7 @@ dumpOrnament(mpq_t *t, symbol_p s)
 static void
 dumpBarStart(mpq_t *t, symbol_p s)
 {
-    VPRINTF(("OK, a bar start\n"));
+    VPRINTF("OK, a bar start\n");
 
     memset(measure_accidental - NOTE_VALUES, 0,
 	    (2 * NOTE_VALUES + 1) * sizeof(*measure_accidental));
@@ -1112,7 +1133,7 @@ dump_notes(void)
 	    fprintf(stderr, "staff %d, ", f);
 	    for (v = 0; v < part[p].staff[f].n_voice; v++) {
 		fprintf(stderr, "voice %d ", v);
-		VPRINTF(("Now dump part %d staff %d voice %d", p, f, v));
+		VPRINTF("Now dump part %d staff %d voice %d", p, f, v);
 		voice_reset();
 		fprintf(lily_out, "%s = \\notes {", part_name(p, f, v));
 		indup();

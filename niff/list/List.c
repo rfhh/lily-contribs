@@ -37,10 +37,10 @@ cbListStart(NIFFIOChunkContext *pctxChunk)
     RIFFIOFOURCCToString(pctxChunk->pchunk->fccType, strType);
 
 
-    VPRINTF(("\n start LIST %s ",
-	    NIFFIONameListType(pctxChunk->pchunk->fccType)));
-    VPRINTF(("'%s' ( '%s' sizeData = %ld",
-	    strId, strType, pctxChunk->pchunk->sizeData));
+    VPRINTF("\n start LIST %s ",
+	    NIFFIONameListType(pctxChunk->pchunk->fccType));
+    VPRINTF("'%s' ( '%s' sizeData = %ld",
+	    strId, strType, pctxChunk->pchunk->sizeData);
 
     return RIFFIO_OK;
 
@@ -60,7 +60,7 @@ cbListEnd(NIFFIOChunkContext *pctxChunk)
 
     RIFFIOFOURCCToString(pctxChunk->pchunk->fccType, strType);
 
-    VPRINTF((" ) end LIST %s", NIFFIONameListType(pctxChunk->pchunk->fccType)));
+    VPRINTF(" ) end LIST %s", NIFFIONameListType(pctxChunk->pchunk->fccType));
 
     return RIFFIO_OK;
 

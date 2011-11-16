@@ -43,6 +43,7 @@ cbStemStart(NIFFIOChunkContext *pctxChunk)
     s = stem_create();
     stem_current = &s->symbol.stem;
     symbol_current = s;
+    note_current = NULL;
 
     return RIFFIO_OK;
 }

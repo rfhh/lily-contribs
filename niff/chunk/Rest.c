@@ -27,7 +27,7 @@ rest_create(niffRest *p)
     rat2mpq(n->duration, &p->duration);
 
     if (mpq_cmp(n->duration, time_sig_current->duration) >= 0 &&
-	! mpq_equal(t_current, t_measure_start)) {
+            ! mpq_equal(t_current, t_measure_start)) {
 	fprintf(stderr, "Meet SharpEye rest(measure) bug. Replace start time ");
 	mpq_out_str(stderr, 10, t_current);
 	fprintf(stderr, " with measure start time ");
@@ -41,7 +41,7 @@ rest_create(niffRest *p)
 
     if (stem_current == NULL) {
 #if VERBOSE
-	VPRINTF(("\n ****** Get a Rest chunk without stem chunk??"));
+	VPRINTF("\n ****** Get a Rest chunk without stem chunk??");
 #else
 	fprintf(stderr, "Warning: ****** Get a Rest chunk without stem chunk??\n");
 #endif
@@ -49,6 +49,7 @@ rest_create(niffRest *p)
     }
     n->tie_start = NO_ID;
     n->tie_end   = NO_ID;
+    n->tuplet    = NO_ID;
     n->stem      = stem_current;
 
     return s;
@@ -62,9 +63,13 @@ cbRestStart(NIFFIOChunkContext *pctxChunk, niffRest *p)
 
     n = rest_create(p);
     symbol_current = n;
+    note_current = n;
     q_insert(voice_current, symbol_current);
 
     cbChunkStart(pctxChunk);
+
+    extern void debugMeAt(mpq_t);
+    debugMeAt(n->start);
 
     printSymbol(NIFFIOSymbolREST, p->shape, "shape");
     printSIGNEDBYTE(p->staffStep,    "staff step");
@@ -77,7 +82,10 @@ cbRestStart(NIFFIOChunkContext *pctxChunk, niffRest *p)
 static RIFFIOSuccess
 cbRestEnd(NIFFIOChunkContext *pctxChunk, niffRest *p)
 {
-    VPRINTF((" (tuplet ID = %d)", symbol_current->symbol.note.stem->tuplet));
+    VPRINTF(" (tuplet ID = %d|%d)",
+            symbol_current->symbol.note.stem->tuplet,
+            symbol_current->symbol.note.tuplet);
+
     return cbChunkEnd(pctxChunk);
 }
 

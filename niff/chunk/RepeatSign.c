@@ -32,7 +32,7 @@ cbRepeatSignStart(NIFFIOChunkContext *pctxChunk, niffRepeatSign *p)
     symbol_p	s;
 
     cbChunkStart(pctxChunk);
-    VPRINTF((" graphical = %d logical = %d", p->graphicalCode, p->logicalCode));
+    VPRINTF(" graphical = %d logical = %d", p->graphicalCode, p->logicalCode);
 
     s = repeat_create();
     s->symbol.repeat.graphic = p->graphicalCode;

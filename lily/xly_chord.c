@@ -67,18 +67,18 @@ do_staff_chording(staff_p f, int do_chording)
 	}
 
 	if (scan->prev != NULL && mpq_equal(scan->start, scan->prev->start)) {
-	    VPRINTF(("\nInspect note start "));
+	    VPRINTF("\nInspect note start ");
 	    VPRINT_MPQ(scan->start);
-	    VPRINTF((" step %d length ", scan->symbol.note.value));
+	    VPRINTF(" step %d length ", scan->symbol.note.value);
 	    VPRINT_MPQ(scan->symbol.note.duration);
 	}
 	for (chord = scan->prev;
 		chord != NULL && mpq_equal(scan->start, chord->start);
 		chord = chord->prev) {
 	    if (chord->type == scan->type) {
-		VPRINTF((" against chord start "));
+		VPRINTF(" against chord start ");
 		VPRINT_MPQ(chord->start);
-		VPRINTF((" step %d length ", chord->symbol.note.value));
+		VPRINTF(" step %d length ", chord->symbol.note.value);
 		VPRINT_MPQ(chord->symbol.note.duration);
 	    }
 	    if (! (scan->symbol.note.flags & FLAG_REST) &&
@@ -88,7 +88,7 @@ do_staff_chording(staff_p f, int do_chording)
                               scan->symbol.note.duration)
 		) {
                 /* OK, it is a chord continuation, as far as we can tell */
-                VPRINTF(("\nFound a chord note"));
+                VPRINTF("\nFound a chord note");
                 if (do_chording) {
                     q_remove(&f->unvoiced, scan);
                     scan->symbol.note.chord = chord->symbol.note.chord;
@@ -105,14 +105,14 @@ do_staff_chording(staff_p f, int do_chording)
                     // are slurs or ties to duplicate
                     if (stem->slur_start != -1) {
                         int dupl_slur = slur_dupl_create(stem->slur_start);
-                        VPRINTF(("Duplicate its slur %d -> %d\n",
-                                 stem->slur_start, dupl_slur));
+                        VPRINTF("Duplicate its slur %d -> %d\n",
+                                 stem->slur_start, dupl_slur);
                         stem->slur_start = dupl_slur;
                     }
                     if (stem->slur_end != -1) {
                         int dupl_slur = slur_dupl_lookup(stem->slur_end);
-                        VPRINTF(("Finish its duplicate slur %d -> %d\n",
-                                 stem->slur_start, dupl_slur));
+                        VPRINTF("Finish its duplicate slur %d -> %d\n",
+                                 stem->slur_start, dupl_slur);
                         stem->slur_end = dupl_slur;
                     }
 

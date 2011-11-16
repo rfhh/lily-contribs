@@ -22,7 +22,7 @@ cbNumberOfFlags(NIFFIOTagContext *pctxTag, niffNumberOfFlags *p)
     assert(pctxTag->pchunkParent != 0);
 
     if (cbTagStart(pctxTag, p, cbNumberOfFlags)) {
-	VPRINTF((" = %d", *p));
+	VPRINTF(" = %d", *p);
     }
     cbTagEnd(pctxTag);
 

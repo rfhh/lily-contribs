@@ -21,7 +21,7 @@ int mpq_dump(const mpq_t t);
 
 
 extern int	xly_verbose;
-#define VPRINTF(s)      ((xly_verbose) ? verbose_printf s : RIFFIO_OK)
+#define VPRINTF(...)    ((xly_verbose) ? verbose_printf(__VA_ARGS__) : RIFFIO_OK)
 #define VPRINT_MPQ(t)   ((xly_verbose) ? mpq_out_str(stderr, 10, t) : RIFFIO_OK)
 #else
 #define VPRINTF(s)
@@ -177,6 +177,7 @@ struct note {
     note_p		chord;
     int			tie_start;
     int			tie_end;
+    int			tuplet;
 };
 
 

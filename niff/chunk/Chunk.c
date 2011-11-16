@@ -95,8 +95,8 @@ cbChunkStart(NIFFIOChunkContext *pctxChunk)
 
     RIFFIOFOURCCToString(pctxChunk->pchunk->fccId, strId);
 
-    VPRINTF(("\nchunk %s (", NIFFIONameChunkId(pctxChunk->pchunk->fccId)));
-    // VPRINTF(("'%s' sizeData=%lu ", strId, pctxChunk->pchunk->sizeData));
+    VPRINTF("\nchunk %s (", NIFFIONameChunkId(pctxChunk->pchunk->fccId));
+    // VPRINTF("'%s' sizeData=%lu ", strId, pctxChunk->pchunk->sizeData);
 
     return RIFFIO_OK;
 }
@@ -110,8 +110,8 @@ cbChunkStart(NIFFIOChunkContext *pctxChunk)
 RIFFIOSuccess
 cbChunkEnd(NIFFIOChunkContext *pctxChunk)
 {
-    // VPRINTF((")) end CHUNK %s ", NIFFIONameChunkId(pctxChunk->pchunk->fccId));
-    VPRINTF((")"));
+    // VPRINTF(")) end CHUNK %s ", NIFFIONameChunkId(pctxChunk->pchunk->fccId);
+    VPRINTF(")");
 
     tag_activate_apply();
     tags_reset();

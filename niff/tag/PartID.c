@@ -24,7 +24,7 @@ cbPartID(NIFFIOTagContext *pctxTag, niffPartID *p)
 
 fprintf(stderr, "%s: *p %d\n", __func__, *p);
     if (cbTagStart(pctxTag, p, cbPartID)) {
-	VPRINTF(("=%d", *p));
+	VPRINTF("=%d", *p);
 
 	partID_current = *p;
 	part_current  = &part[*p];

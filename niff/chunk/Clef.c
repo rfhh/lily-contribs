@@ -53,7 +53,7 @@ clef_create(niffClef *p)
         break;
     }
 
-    VPRINTF(("Insert a clef shape %d offset %d\n", c->shape, c->offset));
+    VPRINTF("Insert a clef shape %d offset %d\n", c->shape, c->offset);
 
     return s;
 }

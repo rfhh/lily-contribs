@@ -29,7 +29,7 @@ cbLogicalPlacement(NIFFIOTagContext *pctxTag, niffLogicalPlacement *p)
 		symbol_current->symbol.stem.flags |= FLAG_STEM_UP;
 	    }
 	} else {
-	    VPRINTF((" = (%d,%d) (proximity %d)", p->horizontal, p->vertical, p->proximity));
+	    VPRINTF(" = (%d,%d) (proximity %d)", p->horizontal, p->vertical, p->proximity);
 	}
     }
     cbTagEnd(pctxTag);

@@ -237,8 +237,8 @@ cbTagStart(NIFFIOTagContext *pctxTag, void *p, void *callback)
 	return 0;
     }
 
-    VPRINTF((" /%s", NIFFIONameTagId(pctxTag->ptag->tagid)));
-    // VPRINTF(("%uC sizeData = %d", pctxTag->ptag->tagid, pctxTag->ptag->tagsizeData));
+    VPRINTF(" /%s", NIFFIONameTagId(pctxTag->ptag->tagid));
+    // VPRINTF("%uC sizeData = %d", pctxTag->ptag->tagid, pctxTag->ptag->tagsizeData);
 
     return 1;
 }
@@ -247,7 +247,7 @@ cbTagStart(NIFFIOTagContext *pctxTag, void *p, void *callback)
 RIFFIOSuccess
 cbTagEnd(NIFFIOTagContext *pctxTag)
 {
-    VPRINTF((";"));
+    VPRINTF(";");
 
     return RIFFIO_OK;
 }
@@ -261,7 +261,7 @@ static RIFFIOSuccess
 cbTag(NIFFIOTagContext *pctxTag)
 {
     if (cbTagStart(pctxTag, NULL, cbTag)) {
-	VPRINTF((" unknown meaning"));
+	VPRINTF(" unknown meaning");
     }
 
     return cbTagEnd(pctxTag);

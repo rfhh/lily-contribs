@@ -32,6 +32,7 @@ static const char rcsid[] =
 
 part_p		part_current;
 symbol_p	symbol_current;
+symbol_p        note_current;
 
 symbol_q_p	voice_current;
 symbol_q_p	voice_previous;
@@ -49,33 +50,33 @@ stem_p		stem_current;		/* Remember for chording and voicing */
 void
 printSHORT(SHORT h, const char *strComment)
 {
-    VPRINTF((" %s=%d", strComment, h));
+    VPRINTF(" %s=%d", strComment, h);
 }
 
 
 void
 printSTROFFSET(STROFFSET offset, const char *strComment)
 {
-    VPRINTF((" // %s\n", strComment));
+    VPRINTF(" // %s\n", strComment);
 }
 
 void
 printRATIONAL(RATIONAL r, const char *strComment)
 {
-    VPRINTF((" %s=%d/%d", strComment, r.numerator, r.denominator));
+    VPRINTF(" %s=%d/%d", strComment, r.numerator, r.denominator);
 }
 
 void
 printBYTE(BYTE b, const char *strComment)
 {
-    VPRINTF((" %s=%u", strComment, b));
+    VPRINTF(" %s=%u", strComment, b);
 }
 
 
 void
 printSIGNEDBYTE(SIGNEDBYTE sb, const char *strComment)
 {
-    VPRINTF((" %s=%d", strComment, sb));
+    VPRINTF(" %s=%d", strComment, sb);
 }
 
 
@@ -88,13 +89,13 @@ printSymbol( const char * (decoder(BYTE)),
     /* Do we know about this value */
     if (! decoder(symbol))
     {
-        VPRINTF((" WARNING: UNKNOWN VALUE for %s:", strComment));
+        VPRINTF(" WARNING: UNKNOWN VALUE for %s:", strComment);
         printBYTE(symbol, strComment);
-        VPRINTF(("]"));
+        VPRINTF("]");
 	return;
     }
 
-    VPRINTF((" %s=%s", strComment, decoder(symbol)));
+    VPRINTF(" %s=%s", strComment, decoder(symbol));
 }
 
 

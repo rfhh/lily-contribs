@@ -8,7 +8,7 @@
 
 #define UNIMPLEMENTED_CHUNK(name) \
 	do { \
-	    VPRINTF(("Unimplemented chunk %s", name)); \
+	    VPRINTF("Unimplemented chunk %s", name); \
 	    return RIFFIO_OK; \
 	} while (0)
 

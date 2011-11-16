@@ -9,7 +9,7 @@
 
 #define UNIMPLEMENTED_TAG(name) \
 	do { \
-	    VPRINTF((" /unimplemented tag %s;", name)); \
+	    VPRINTF(" /unimplemented tag %s;", name); \
 	    return RIFFIO_OK; \
 	} while (0)
 

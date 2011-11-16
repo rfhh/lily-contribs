@@ -52,7 +52,7 @@ cbPartStart(NIFFIOChunkContext *pctxChunk, niffPart *np)
     printSIGNEDBYTE(np->midiChannel,    "MIDI channel");
     printSIGNEDBYTE(np->midiCable,      "MIDI cable");
     printSIGNEDBYTE(np->transpose,      "transpose");
-    VPRINTF(("\n"));
+    VPRINTF("\n");
 
     return RIFFIO_OK;
 }

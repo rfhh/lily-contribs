@@ -28,7 +28,7 @@ cbFormStart(NIFFIOChunkContext *pctxChunk)
     RIFFIOFOURCCToString(pctxChunk->pchunk->fccId, strId);
     RIFFIOFOURCCToString(pctxChunk->pchunk->fccType, strType);
 
-    VPRINTF(("Start NIFF form %s ( %s size %ld", strId, strType, pctxChunk->pchunk->sizeData));
+    VPRINTF("Start NIFF form %s ( %s size %ld", strId, strType, pctxChunk->pchunk->sizeData);
 
     return RIFFIO_OK;
 }
@@ -41,7 +41,7 @@ cbFormEnd(NIFFIOChunkContext *pctxChunk)
     assert (pctxChunk->pnf != 0);
     assert (pctxChunk->pchunk != 0);
 
-    VPRINTF(("\n end NIFF form\n"));
+    VPRINTF("\n end NIFF form\n");
 
     return RIFFIO_OK;
 

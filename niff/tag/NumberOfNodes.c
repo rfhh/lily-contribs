@@ -21,7 +21,7 @@ static RIFFIOSuccess
 cbNumberOfNodes(NIFFIOTagContext *pctxTag, niffNumberOfNodes *p)
 {
     if (cbTagStart(pctxTag, p, cbNumberOfNodes)) {
-	VPRINTF((" = %d", *p));
+	VPRINTF(" = %d", *p);
 	MultiN = *p;
     }
     cbTagEnd(pctxTag);

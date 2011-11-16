@@ -67,9 +67,9 @@ xly_partial(void)
     }
     mpq_clear(t);
 
-    VPRINTF(("Partial = "));
+    VPRINTF("Partial = ");
     VPRINT_MPQ(xly_t_partial);
-    VPRINTF(("\n"));
+    VPRINTF("\n");
 }
 
 
