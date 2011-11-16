@@ -29,7 +29,7 @@ mpq_dump(const mpq_t t)
 }
 
 
-static const char *
+const char *
 SYMBOL_TYPE_string(symbol_type_t s)
 {
     switch (s) {
@@ -140,7 +140,7 @@ mpq_zero(mpq_t t)
 
 #if VERBOSE
 
-int	verbose = 0;
+int	xly_verbose = 0;
 
 #include <stdarg.h>
 

@@ -286,7 +286,12 @@ dumpSkip(mpq_t *t, const symbol_t *scan)
     }
 
     if (mpq_cmp(*t, scan->start) > 0) {
-	fprintf(stderr, "Uh oh -- start time is too low -- is your voice analysis correct?\n");
+	fprintf(stderr, "Uh oh -- start time ");
+        mpq_out_str(stderr, 10, scan->start);
+        fprintf(stderr, " is too low, should be ");
+        mpq_out_str(stderr, 10, *t);
+        fprintf(stderr, " -- is your voice analysis correct?\n");
+        return;
     }
     mpq_sub(dt, scan->start, *t);
     mpq_get_num(znu, dt);
@@ -1036,20 +1041,12 @@ dumpVoice(voice_p voice)
 static char *
 i2count(int i)
 {
-    switch (i + 1) {
+    switch ((i + 1) % 4) {
     case 0:	return "Nul";
     case 1:	return "One";
     case 2:	return "Two";
     case 3:	return "Three";
-    case 4:	return "Four";
-    case 5:	return "One";
-    case 6:	return "Two";
-    case 7:	return "Three";
-    case 8:	return "Four";
-    case 9:	return "One";
-    case 10:	return "Two";
-    default:	fprintf(stderr, "Uh oh -- support for more voices needed... %d\n", i);
-		return NULL;
+    default:    return "Error";
     }
 }
 

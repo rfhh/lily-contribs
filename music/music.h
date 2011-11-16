@@ -20,9 +20,9 @@ int mpq_printf(FILE *f, const mpq_t t);
 int mpq_dump(const mpq_t t);
 
 
-extern int	verbose;
-#define VPRINTF(s)      ((verbose) ? verbose_printf s : RIFFIO_OK)
-#define VPRINT_MPQ(t)   ((verbose) ? mpq_out_str(stderr, 10, t) : RIFFIO_OK)
+extern int	xly_verbose;
+#define VPRINTF(s)      ((xly_verbose) ? verbose_printf s : RIFFIO_OK)
+#define VPRINT_MPQ(t)   ((xly_verbose) ? mpq_out_str(stderr, 10, t) : RIFFIO_OK)
 #else
 #define VPRINTF(s)
 #define VPRINT_MPQ(t)
@@ -389,6 +389,8 @@ int  mpq_zero(mpq_t t);
 symbol_p symbol_create(mpq_t t_current);
 symbol_p symbol_clone(symbol_p s);
 void symbol_clear(symbol_p s);
+
+const char *SYMBOL_TYPE_string(symbol_type_t s);
 
 void nf2_music_init(void);
 void nf2_music_end(void);

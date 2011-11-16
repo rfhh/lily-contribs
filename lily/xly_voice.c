@@ -296,7 +296,7 @@ report_note(const symbol_p scan)
 {
     const note_p note = &scan->symbol.note;
 
-    VPRINTF(("Test for contiguous append: t = "));
+    VPRINTF(("Test %p for contiguous append: t = ", scan));
     VPRINT_MPQ(scan->start);
     if (note->flags & FLAG_REST) {
         VPRINTF((" rest"));
@@ -323,6 +323,21 @@ report_note(const symbol_p scan)
 }
 
 
+void report_symbol(const symbol_p scan, int verbos);
+void
+report_symbol(const symbol_p scan, int verbos)
+{
+    if (verbos && scan->type == SYM_NOTE) {
+        report_note(scan);
+    } else {
+        VPRINTF(("At t = "));
+        VPRINT_MPQ(scan->start);
+        VPRINTF((" symbol %p %s: ", scan, SYMBOL_TYPE_string(scan->type)));
+        VPRINTF(("\n"));
+    }
+}
+
+
 static int
 handle_simultaneous_notes(staff_p f,
                           symbol_p *c_scan,
@@ -339,9 +354,10 @@ handle_simultaneous_notes(staff_p f,
     mpq_init(now);
     mpq_set(now, (*c_scan)->start);
 
+    next = *c_next;
     for (scan = *c_scan;
              scan != NULL && mpq_equal(now, scan->start);
-            scan = next) {
+             scan = next) {
         int     i;
 
         next = scan->next;
@@ -447,6 +463,9 @@ handle_simultaneous_notes(staff_p f,
         if (i != f->n_voice) {
             if (scan == *c_scan) {
                 *c_scan = next;
+                *c_next = next->next;
+            } else if (scan == *c_next) {
+                *c_next = next->next;
             }
             if (recursing) {
                 scan = symbol_clone(scan);
@@ -543,6 +562,8 @@ do_staff_voicing(staff_p f, int recursing, symbol_p scan)
 	}
 
 	next = scan->next;
+        report_symbol(scan, 0);
+        VPRINTF(("%d scan %p next %p next->next %p\n", __LINE__, scan, next, (next != NULL) ? next->next : NULL));
 
         if (scan->type != SYM_NOTE) {
             // NOTEs have a special treatment because multiple simultaneous
@@ -589,6 +610,10 @@ do_staff_voicing(staff_p f, int recursing, symbol_p scan)
 	case SYM_CLEF:
 	case SYM_KEY_SIGN:
 	case SYM_TIME_SIGNATURE:
+            VPRINTF(("Symbol %s %p at t = ",
+                     SYMBOL_TYPE_string(scan->type), scan));
+            VPRINT_MPQ(scan->start);
+            VPRINTF(("; n_voice = %d\n", f->n_voice));
 	    for (i = 0; i < f->n_voice; i++) {
 		symbol_p c = symbol_clone(scan);
 		q_append(&f->voice[i].q, c);
@@ -600,9 +625,11 @@ do_staff_voicing(staff_p f, int recursing, symbol_p scan)
             if (! handle_simultaneous_notes(f, &scan, &next, recursing, 1)) {
                 return 0;
             }
+            VPRINTF(("%d scan %p next %p\n", __LINE__, scan, next));
             if (! handle_simultaneous_notes(f, &scan, &next, recursing, 0)) {
                 return 0;
             }
+            VPRINTF(("%d scan %p next %p\n", __LINE__, scan, next));
 
 	}
     }

@@ -100,7 +100,7 @@ main(int argc, char **argv)
 	if (0) {
 #if VERBOSE
 	} else if (strcmp(argv[i], "-v") == 0) {
-	    verbose = 1;
+	    xly_verbose = 1;
 #endif
 	} else if (strcmp(argv[i], "-o") == 0) {
 	    lily_file = argv[++i];
