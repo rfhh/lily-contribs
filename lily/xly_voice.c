@@ -288,7 +288,7 @@ append_note(staff_p s, int voice, symbol_p scan)
 
 
 static int
-is_constrained(const note_p note)
+is_constrained(const note_t *note)
 {
     return note->tie_end != -1 ||
                 note->stem->slur_end != -1 ||
@@ -339,6 +339,24 @@ report_note(const symbol_p scan)
 }
 
 
+static void
+report_voice_tail(const staff_p f, int i)
+{
+    voice_p v = &f->voice[i];
+    note_p tail = v->tail;
+
+    VPRINTF(" voice[%d].t_finish = ", i);
+    VPRINT_MPQ(v->t_finish);
+    if (tail == NULL) {
+        VPRINTF(" beam <nope>\n");
+    } else {
+        VPRINTF(" beam %p %d [%d,%d]\n", tail->stem,
+                tail->stem->beam, tail->stem->beam_left,
+                tail->stem->beam_left);
+    }
+}
+
+
 void report_symbol(const symbol_p scan, int verbos);
 void
 report_symbol(const symbol_p scan, int verbos)
@@ -354,18 +372,43 @@ report_symbol(const symbol_p scan, int verbos)
 }
 
 
+#ifdef UNUSED
 static int
-handle_simultaneous_notes(staff_p f,
-                          mpq_t now,
-                          symbol_p *c_scan,
-                          symbol_p *c_next,
-                          int recursing,
-                          int require_constrained)
+n_simultaneous(const staff_p f,
+               mpq_t now,
+               const symbol_t *front,
+               int require_constrained)
+{
+    const symbol_t *scan;
+    int         n = 0;
+
+    for (scan = front;
+             scan != NULL && mpq_equal(now, scan->start);
+             scan = scan->next) {
+        if (scan->type != SYM_NOTE) {
+            continue;
+        }
+
+        if (require_constrained == is_constrained(&scan->symbol.note)) {
+            n++;
+        }
+    }
+
+    return n;
+}
+#endif
+
+
+static int
+handle_simultaneous_constrained_notes(staff_p f,
+                                      mpq_t now,
+                                      symbol_p *c_scan,
+                                      symbol_p *c_next,
+                                      int recursing)
 {
     symbol_p    scan;
     symbol_p    next;
     int         r = 1;
-    symbol_p    first_unconstrained = NULL;
 
     next = *c_next;
     for (scan = *c_scan;
@@ -379,11 +422,7 @@ handle_simultaneous_notes(staff_p f,
         }
 
         note_p	note = &scan->symbol.note;
-        int     constrained = is_constrained(note);
-        if (require_constrained && ! constrained) {
-            if (first_unconstrained == NULL) {
-                first_unconstrained = scan;
-            }
+        if (! is_constrained(note)) {
             continue;
         }
 
@@ -396,22 +435,14 @@ handle_simultaneous_notes(staff_p f,
             voice_p v = &f->voice[i];
             note_p tail = v->tail;
 
-            VPRINTF(" voice[%d].t_finish = ", i);
-            VPRINT_MPQ(v->t_finish);
-            if (tail == NULL) {
-                VPRINTF(" beam <nope>\n");
-            } else {
-                VPRINTF(" beam %p %d [%d,%d]\n", tail->stem,
-                         tail->stem->beam, tail->stem->beam_left,
-                         tail->stem->beam_left);
-            }
+            report_voice_tail(f, i);
 
-            // Do this nested if() for the debugger. Later? restore it to
-            // an &&-ing of the expressions.
-            if (tie_match(tail, note)) {
-                if (beam_match(tail, note)) {
-                    if (slur_match(v, note)) {
-                        if (mpq_equal(scan->start, v->t_finish)) {
+            if (mpq_equal(scan->start, v->t_finish)) {
+                // Do this nested if() for the debugger. Later? restore it to
+                // an &&-ing of the expressions.
+                if (tie_match(tail, note)) {
+                    if (beam_match(tail, note)) {
+                        if (slur_match(v, note)) {
                             VPRINTF("Append note contiguously to voice %d\n", i);
                             break;
                         }
@@ -420,13 +451,10 @@ handle_simultaneous_notes(staff_p f,
             }
         }
 
-        if (i == f->n_voice) {
-            if (constrained) {
-                fprintf(stderr,
-                        "Ooooppss, constrained note but cannot connect to voice\n");
-            }
+        if (i == f->n_voice) {          /* Could not append */
+            fprintf(stderr,
+                    "Ooooppss, constrained note but cannot connect to voice\n");
 
-            /* Could not append */
             for (i = 0; i < f->n_voice; i++) {
                 if (mpq_cmp(scan->start, f->voice[i].t_finish) > 0) {
                     VPRINTF("Append note non-contiguously, t = ");
@@ -440,19 +468,199 @@ handle_simultaneous_notes(staff_p f,
         }
 
         if (i == f->n_voice) {		/* Could not append */
-            if (require_constrained) {
-                fprintf(stderr, "Oooppss, meet the combinatorial case...\n");
+            fprintf(stderr, "Oooppss, meet the combinatorial case...\n");
+
+            VPRINTF("Append note to new voice[%d]\n", f->n_voice);
+#if VERBOSE
+            {
+                int v;
+
+                for (v = 0; v < f->n_voice; v++) {
+                    VPRINTF("voice[%d] finish ", v);
+                    VPRINT_MPQ(f->voice[v].t_finish);
+                    VPRINTF("\n");
+                }
+            }
+#endif
+            voice_increase(f);
+        }
+
+        if (i != f->n_voice) {
+            if (scan == *c_scan) {
+                *c_scan = next;
+                *c_next = next->next;
+            } else if (scan == *c_next) {
+                *c_next = next->next;
+            }
+            if (recursing) {
+                scan = symbol_clone(scan);
             } else {
-                if (recursing) {
-                    fprintf(stderr, "No assignment found and recursing. What now?\n");
-                    for (i = 0; i < f->n_voice; i++) {
-                        int s;
-                        for (s = 0; s < f->voice[i].n_slur; s++) {
-                            if (note->stem->slur_end == f->voice[i].slur[s]) {
-                                /* this note ends a slur, but the voice
-                                 * assignment does not match. Bail out. */
-                                fprintf(stderr, "No assignment found, constrained, and recursing. What now?\n");
-                            }
+                q_remove(&f->unvoiced, scan);
+            }
+            append_note(f, i, scan);
+        }
+
+#if 0
+    if (f->slur_pending > 0 &&
+        (n_note = multiple_notes(f, scan, next)) > 1) {
+        /* If a slur is pending we usually cannot immediately decide
+         * which voice the notes are on. We need to look forward to
+         * the note that closes the voice, and investigate all possible
+         * voice assignment combinations. */
+        /* Alas, must take backtracking path */
+
+        while (f->n_voice < n_note) {
+            voice_increase(f);
+        }
+
+        for (i = 0; i < n_note; i++) {
+            staff_t	back_staff;
+
+            VPRINTF("\nRecurse: try %d'th of %d note at t = ",
+                     i, n_note);
+            VPRINT_MPQ(scan->start);
+            VPRINTF("\n");
+            staff_clone(&back_staff, f);
+            back_staff.start_backtrack = next;
+            append_note(&back_staff, i, scan);
+            if (do_staff_voicing(&back_staff, 1, next)) {
+                /* Success! Can commit the backtrack and continue
+                 * our way. */
+                VPRINTF("Commit: %d'th of %d note at t = ",
+                         i, n_note);
+                VPRINT_MPQ(scan->start);
+                VPRINTF("\n");
+                staff_commit(f, &back_staff, recursing, &next);
+                staff_cleanup(&back_staff);
+                break;
+            }
+            staff_cleanup(&back_staff);
+        }
+
+        if (i == n_note) {
+            /* No luck in backtracking... try further backwards */
+            if (recursing) {
+                r = 0;
+                goto exit;
+            }
+            fprintf(stderr,
+                    "Cannot find a matching voicing for the slur stuff.\n"
+                    "Repair the slurs in the lilypond file by hand...\n");
+        } else {
+            break;
+        }
+    }
+
+    append_note(f, i, scan);
+#endif
+    }
+
+    // update it now, at the end...
+    *c_next = (*c_scan)->next;
+
+    return r;
+}
+
+
+static int
+handle_simultaneous_unconstrained_notes(staff_p f,
+                                        mpq_t now,
+                                        symbol_p *c_scan,
+                                        symbol_p *c_next,
+                                        int recursing)
+{
+    symbol_p    scan;
+    symbol_p    next;
+    int         r = 1;
+    // int         n_unconstrained = n_simultaneous(f, now, *c_scan, 0);
+    int         n_match = 0;
+    int         stem_match = 0;
+
+    next = *c_next;
+    for (scan = *c_scan;
+             scan != NULL && mpq_equal(now, scan->start);
+             scan = scan->next) {
+        int     i;
+
+        if (scan->type != SYM_NOTE) {
+            continue;
+        }
+        if (is_constrained(&scan->symbol.note)) {
+            fprintf(stderr, "OOOOPPPPSSSSS constrained note not assigned\n");
+        }
+
+        for (i = 0; i < f->n_voice; i++) {
+            voice_p v = &f->voice[i];
+
+            report_voice_tail(f, i);
+
+            if (mpq_equal(scan->start, v->t_finish)) {
+                note_p tail = v->tail;
+
+                VPRINTF("Voice %d matches\n", i);
+                n_match++;
+                if ((scan->symbol.note.stem->flags & FLAG_STEM_UP) ==
+                        (tail->stem->flags & FLAG_STEM_UP)) {
+                    stem_match++;
+                }
+            }
+        }
+    }
+
+    next = *c_next;
+    for (scan = *c_scan;
+             scan != NULL && mpq_equal(now, scan->start);
+             scan = next) {
+        int     i;
+
+        next = scan->next;
+        if (scan->type != SYM_NOTE) {
+            continue;
+        }
+
+        note_p	note = &scan->symbol.note;
+
+        report_note(scan);
+        VPRINTF(" recursing %d", recursing);
+
+        debugMeAt(scan->start);
+
+        for (i = 0; i < f->n_voice; i++) {
+            voice_p v = &f->voice[i];
+
+            report_voice_tail(f, i);
+
+            // Do this nested if() for the debugger. Later? restore it to
+            // an &&-ing of the expressions.
+            if (mpq_equal(scan->start, v->t_finish)) {
+                VPRINTF("Append note contiguously to voice %d\n", i);
+                break;
+            }
+        }
+
+        if (i == f->n_voice) {          /* Could not append */
+            for (i = 0; i < f->n_voice; i++) {
+                if (mpq_cmp(scan->start, f->voice[i].t_finish) > 0) {
+                    VPRINTF("Append note non-contiguously, t = ");
+                    VPRINT_MPQ(scan->start);
+                    VPRINTF(" voice[%d].t_finish = ", i);
+                    VPRINT_MPQ(f->voice[i].t_finish);
+                    VPRINTF(" to voice %d\n", i);
+                    break;
+                }
+            }
+        }
+
+        if (i == f->n_voice) {		/* Could not append */
+            if (recursing) {
+                fprintf(stderr, "No assignment found and recursing. What now?\n");
+                for (i = 0; i < f->n_voice; i++) {
+                    int s;
+                    for (s = 0; s < f->voice[i].n_slur; s++) {
+                        if (note->stem->slur_end == f->voice[i].slur[s]) {
+                            /* this note ends a slur, but the voice
+                             * assignment does not match. Bail out. */
+                            fprintf(stderr, "No assignment found, constrained, and recursing. What now?\n");
                         }
                     }
                 }
@@ -544,11 +752,7 @@ handle_simultaneous_notes(staff_p f,
     }
 
     // update it now, at the end...
-    if (require_constrained) {
-        *c_next = (*c_scan)->next;
-    } else {
-        *c_next = *c_scan;
-    }
+    *c_next = *c_scan;
 
     return r;
 }
@@ -640,26 +844,24 @@ do_staff_voicing(staff_p f, int recursing, symbol_p scan)
 	    break;
 
 	case SYM_NOTE:
-            if (! handle_simultaneous_notes(f,
-                                            now,
-                                            &scan,
-                                            &next,
-                                            recursing,
-                                            1)) {
+            if (! handle_simultaneous_constrained_notes(f,
+                                                        now,
+                                                        &scan,
+                                                        &next,
+                                                        recursing)) {
                 r = 0;
                 goto exit;
             }
-            VPRINTF("%d scan %p next %p\n", __LINE__, scan, next);
-            if (! handle_simultaneous_notes(f,
-                                            now,
-                                            &scan,
-                                            &next,
-                                            recursing,
-                                            0)) {
+            // VPRINTF("%d scan %p next %p\n", __LINE__, scan, next);
+            if (! handle_simultaneous_unconstrained_notes(f,
+                                                          now,
+                                                          &scan,
+                                                          &next,
+                                                          recursing)) {
                 r = 0;
                 goto exit;
             }
-            VPRINTF("%d scan %p next %p\n", __LINE__, scan, next);
+            // VPRINTF("%d scan %p next %p\n", __LINE__, scan, next);
 
 	}
     }

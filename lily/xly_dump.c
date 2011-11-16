@@ -1132,6 +1132,10 @@ dump_notes(void)
 
     fprintf(stderr, "Now write parts...\n");
     for (p = 0; p < n_part; p++) {
+        if (p != 1) {
+            fprintf(stderr, "Skip staff %d, do only staff 1\n", p);
+            continue;
+        }
 	fprintf(stderr, "      ........ part %d, ", p);
 	for (f = 0; f < part[p].n_staff; f++) {
 	    fprintf(stderr, "staff %d, ", f);
@@ -1169,6 +1173,10 @@ dump_score(void)
 
     staff = 0;
     for (p = 0; p < n_part; p++) {
+        if (p != 1) {
+            continue;
+            fprintf(stderr, "Skip staff %d, do only staff 1\n", p);
+        }
 	for (f = 0; f < part[p].n_staff; f++) {
 	    fprintf(lily_out, "\\context Staff = staff%c <", 'A' + staff);
 	    staff++;
