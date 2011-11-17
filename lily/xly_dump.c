@@ -33,6 +33,9 @@ static FILE    *lily_out;
 static int	indentation;
 
 
+#define ONLY    -1       /* make this -1 if you don't want just 1 staff */
+
+
 static void
 newline(void)
 {
@@ -58,6 +61,24 @@ indown(void)
 {
     indentation -= INDENT;
     newline();
+}
+
+
+static int	dump_tuplet_current;
+
+
+static void
+tuplet_push(int *s, int t)
+{
+    global_tuplet[t].next = *s;
+    *s = t;
+}
+
+
+static void
+tuplet_pop(int *s)
+{
+    *s = global_tuplet[*s].next;
 }
 
 
@@ -287,6 +308,12 @@ dumpSkip(mpq_t *t, const symbol_t *scan)
 	return;
     }
 
+    while (dump_tuplet_current != NO_ID) {
+        /* stop */
+        fprintf(lily_out, " }");
+        tuplet_pop(&dump_tuplet_current);
+    }
+
     if (mpq_cmp(*t, scan->start) > 0) {
 	fprintf(stderr, "Uh oh -- start time ");
         mpq_out_str(stderr, 10, scan->start);
@@ -307,12 +334,13 @@ dumpSkip(mpq_t *t, const symbol_t *scan)
     }
     if (! is_two_pow(de)) {
 	fprintf(stderr, "Uh oh -- skip now already a tuplet %d/%d??\n", nu, de);
+        fprintf(lily_out, " s1*%d/%d", nu, de);
     } else {
         if (nu != 0) {
             fprintf(lily_out, " s%d*%d", de, nu);
         }
-	last_dumped_symbol = &sym_any_skip;
     }
+    last_dumped_symbol = &sym_any_skip;
     mpq_set(*t, scan->start);
     VPRINTF(" skip to t = ");
     VPRINT_MPQ(*t);
@@ -376,24 +404,6 @@ dumpArticulation(symbol_p s)
     default:
 	fprintf(stderr, "Undefined articulation %d\n", a->shape);
     }
-}
-
-
-static int	dump_tuplet_current;
-
-
-static void
-tuplet_push(int *s, int t)
-{
-    global_tuplet[t].next = *s;
-    *s = t;
-}
-
-
-static void
-tuplet_pop(int *s)
-{
-    *s = global_tuplet[*s].next;
 }
 
 
@@ -1132,8 +1142,8 @@ dump_notes(void)
 
     fprintf(stderr, "Now write parts...\n");
     for (p = 0; p < n_part; p++) {
-        if (p != 1) {
-            fprintf(stderr, "Skip staff %d, do only staff 1\n", p);
+        if (ONLY != -1 && p != ONLY) {
+            fprintf(stderr, "Skip staff %d, do only staff %d\n", p, ONLY);
             continue;
         }
 	fprintf(stderr, "      ........ part %d, ", p);
@@ -1173,9 +1183,9 @@ dump_score(void)
 
     staff = 0;
     for (p = 0; p < n_part; p++) {
-        if (p != 1) {
+        if (ONLY != -1 && p != ONLY) {
             continue;
-            fprintf(stderr, "Skip staff %d, do only staff 1\n", p);
+            fprintf(stderr, "Skip staff %d, do only staff %d\n", p, ONLY);
         }
 	for (f = 0; f < part[p].n_staff; f++) {
 	    fprintf(lily_out, "\\context Staff = staff%c <", 'A' + staff);

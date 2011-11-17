@@ -29,7 +29,7 @@ void debugMeAt(mpq_t t)
 
     if (! initialized) {
         mpq_init(t_debug);
-        mpq_set_ui(t_debug, 749, 8);
+        mpq_set_ui(t_debug, 747, 8);
     }
 
     if (mpq_equal(t_debug, t)) {
@@ -76,12 +76,15 @@ chord_tie_match(note_p tail, note_p note)
 static int
 tie_match(note_p tail, note_p note)
 {
-    note_p	save_tail = tail;
+    if (note->tie_end == NO_ID) {
+        return 0;
+    }
 
     if (tail == NULL) {
 	return 1;
     }
 
+    note_p	save_tail = tail;
     while (tail != NULL) {
 	if (chord_tie_match(tail, note)) {
 	    return 1;
@@ -98,6 +101,10 @@ beam_match(note_p tail, note_p note)
 {
     if (note->flags & FLAG_REST) {
 	return 1;
+    }
+
+    if (note->stem->beam_left == 0) {
+        return 0;
     }
 
     if (tail == NULL) {
@@ -223,7 +230,7 @@ slur_match(voice_p v, note_p note)
     int		i;
 
     if (note->stem->slur_end == NO_ID) {
-	return 1;
+	return 0;
     }
 
     for (i = 0; i < v->n_slur; i++) {
@@ -400,11 +407,11 @@ n_simultaneous(const staff_p f,
 
 
 static int
-handle_simultaneous_constrained_notes(staff_p f,
-                                      mpq_t now,
-                                      symbol_p *c_scan,
-                                      symbol_p *c_next,
-                                      int recursing)
+notes_simultaneous_constrained(staff_p f,
+                               mpq_t now,
+                               symbol_p *c_scan,
+                               symbol_p *c_next,
+                               int recursing)
 {
     symbol_p    scan;
     symbol_p    next;
@@ -437,20 +444,25 @@ handle_simultaneous_constrained_notes(staff_p f,
 
             report_voice_tail(f, i);
 
-            if (mpq_equal(scan->start, v->t_finish)) {
-                // Do this nested if() for the debugger. Later? restore it to
-                // an &&-ing of the expressions.
+            if (mpq_cmp(scan->start, f->voice[i].t_finish) >= 0) {
                 if (tie_match(tail, note)) {
-                    if (beam_match(tail, note)) {
-                        if (slur_match(v, note)) {
-                            VPRINTF("Append note contiguously to voice %d\n", i);
-                            break;
-                        }
-                    }
+                    VPRINTF("Append note contiguously/tie to voice %d\n", i);
+                    break;
+                }
+                if (beam_match(tail, note)) {
+                    VPRINTF("Append note contiguously/beam to voice %d\n", i);
+                    break;
+                }
+                if (slur_match(v, note)) {
+                    VPRINTF("Append note contiguously/slur to voice %d\n", i);
+                    break;
                 }
             }
         }
 
+        if (i != f->n_voice && ! mpq_equal(scan->start, f->voice[i].t_finish)) {
+            fprintf(stderr, "Weird, a constrained note with a time gap\n");
+        }
         if (i == f->n_voice) {          /* Could not append */
             fprintf(stderr,
                     "Ooooppss, constrained note but cannot connect to voice\n");
@@ -563,11 +575,11 @@ handle_simultaneous_constrained_notes(staff_p f,
 
 
 static int
-handle_simultaneous_unconstrained_notes(staff_p f,
-                                        mpq_t now,
-                                        symbol_p *c_scan,
-                                        symbol_p *c_next,
-                                        int recursing)
+notes_simultaneous_unconstrained(staff_p f,
+                                 mpq_t now,
+                                 symbol_p *c_scan,
+                                 symbol_p *c_next,
+                                 int recursing)
 {
     symbol_p    scan;
     symbol_p    next;
@@ -599,8 +611,9 @@ handle_simultaneous_unconstrained_notes(staff_p f,
 
                 VPRINTF("Voice %d matches\n", i);
                 n_match++;
-                if ((scan->symbol.note.stem->flags & FLAG_STEM_UP) ==
-                        (tail->stem->flags & FLAG_STEM_UP)) {
+                if (tail != NULL &&
+                        (scan->symbol.note.stem->flags & FLAG_STEM_UP) ==
+                            (tail->stem->flags & FLAG_STEM_UP)) {
                     stem_match++;
                 }
             }
@@ -844,20 +857,20 @@ do_staff_voicing(staff_p f, int recursing, symbol_p scan)
 	    break;
 
 	case SYM_NOTE:
-            if (! handle_simultaneous_constrained_notes(f,
-                                                        now,
-                                                        &scan,
-                                                        &next,
-                                                        recursing)) {
+            if (! notes_simultaneous_constrained(f,
+                                                 now,
+                                                 &scan,
+                                                 &next,
+                                                 recursing)) {
                 r = 0;
                 goto exit;
             }
             // VPRINTF("%d scan %p next %p\n", __LINE__, scan, next);
-            if (! handle_simultaneous_unconstrained_notes(f,
-                                                          now,
-                                                          &scan,
-                                                          &next,
-                                                          recursing)) {
+            if (! notes_simultaneous_unconstrained(f,
+                                                   now,
+                                                   &scan,
+                                                   &next,
+                                                   recursing)) {
                 r = 0;
                 goto exit;
             }
