@@ -193,7 +193,7 @@ xly_chord(int do_chording)
     for (i = 0; i < n_ties; i++) {
         ties_duplicate[i] = -1;
     }
-    slurs_duplicate = malloc(n_ties * sizeof *slurs_duplicate);
+    slurs_duplicate = malloc(n_slurs * sizeof *slurs_duplicate);
     if (slurs_duplicate == NULL) {
         fprintf(stderr, "%s:%d malloc(%zd) fails\n", __FILE__, __LINE__,
                 n_slurs * sizeof *slurs_duplicate);
