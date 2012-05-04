@@ -52,7 +52,7 @@ subdirs:	$(SUBDIRS:%=%_dir)
 		cd $(@:%_dir=%); $(MAKE) $(MFLAGS)
 
 clean:
-		-rm -f $(OBJ) $(MAIN:%.c=%.o) $(DEPS)
+		-rm -f $(OBJ) $(MAIN:%.c=%.o) $(DEPS) $(LIB)
 		-for d in $(SUBDIRS); do \
 			(cd $$d; $(MAKE) $(MFLAGS) clean); \
 		done

@@ -17,6 +17,7 @@ Before building niff2ly, you need two other packages:
 
 1. The NIFF sdk from
    http://www.musique.umontreal.ca/personnel/Belkin/NIFF.doc.html
+   or cached at http://www.cs.vu.nl/~rutger/software/niff-1.02.tbz2
 2. The GNU abritrary precision package gmp from a GNU mirror.
    Start from www.gnu.org.
 
