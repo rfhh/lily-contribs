@@ -28,7 +28,6 @@ cbStaffStart(NIFFIOChunkContext *pctxChunk)
     voice_current = &voice_unparted;
     staff_current++;
     staff_partID = NO_PART_ID;
-fprintf(stderr, "%s partID %d\n", __func__, staff_current);
 
     return RIFFIO_OK;
 }

@@ -34,16 +34,21 @@ cbTieEnd(NIFFIOChunkContext *pctxChunk)
     tie = &ties[ID_current];
     tie->occurred++;
 
-    assert(symbol_current->type == SYM_NOTE);
+    if (symbol_current == NULL) {
+        fprintf(stderr, "Your niff file is incorrect. Did you repair all rythmic flaws (blue triangles) in SharpEye?\n");
+        exit(33);
+    } else {
+        assert(symbol_current->type == SYM_NOTE);
 
-    if (tie->occurred == 1) {
-	tie->occur = MultiN;
-	symbol_current->symbol.note.tie_start = ID_current;
-	tie->notes = calloc(tie->occur, sizeof(*tie->notes));
-    } else if (tie->occur == tie->occurred) {
-	symbol_current->symbol.note.tie_end = ID_current;
+        if (tie->occurred == 1) {
+            tie->occur = MultiN;
+            symbol_current->symbol.note.tie_start = ID_current;
+            tie->notes = calloc(tie->occur, sizeof(*tie->notes));
+        } else if (tie->occur == tie->occurred) {
+            symbol_current->symbol.note.tie_end = ID_current;
+        }
+        tie->notes[tie->occurred - 1] = &symbol_current->symbol.note;
     }
-    tie->notes[tie->occurred - 1] = &symbol_current->symbol.note;
 
     cbChunkEnd(pctxChunk);
 

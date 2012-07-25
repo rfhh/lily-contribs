@@ -22,7 +22,6 @@ cbPartID(NIFFIOTagContext *pctxTag, niffPartID *p)
 {
     staff_p	s;
 
-fprintf(stderr, "%s: *p %d\n", __func__, *p);
     if (cbTagStart(pctxTag, p, cbPartID)) {
 	VPRINTF("=%d", *p);
 

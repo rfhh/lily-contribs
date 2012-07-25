@@ -104,12 +104,12 @@ main(int argc, char **argv)
 #endif
 	} else if (strcmp(argv[i], "-o") == 0) {
 	    lily_file = argv[++i];
-    } else if (strcmp(argv[i], "--no-chords") == 0) {
-        do_chording = 0;
-	} else if (option == 0) {
-	    strNiffFile = argv[i];
-	    option++;
-	}
+        } else if (strcmp(argv[i], "--no-chords") == 0) {
+            do_chording = 0;
+        } else if (option == 0) {
+            strNiffFile = argv[i];
+            option++;
+        }
     }
 
     /*
@@ -124,6 +124,19 @@ main(int argc, char **argv)
 	    perror("Can't open NIFF File");
 	    return 1;
 	}
+
+        if (lily_file == NULL) {
+            char *f = strdup(strNiffFile);
+            char *dot = strrchr(strNiffFile, '.');
+            if (dot != NULL) {
+                if (strcasecmp(dot, ".nif") == 0 ||
+                        strcasecmp(dot, ".niff") == 0) {
+                    strcpy(dot, ".ly");
+                    lily_file = f;
+                    fprintf(stderr, "Output to file %s\n", lily_file);
+                }
+            }
+        }
     }
     
     /* 
@@ -159,14 +172,14 @@ main(int argc, char **argv)
 	    strNiffFile == NULL ? "-" : strNiffFile);
     NIFFIOParseFile(pparser, pnf,  0, 0 );
 
-    if (lily_file != NULL) {
-	lily_out = fopen(lily_file, "w");
-	if (lily_out == NULL) {
-	    perror("Can't create lily file");
-	    return 2;
-	}
-        fprintf(lily_out, "\\version \"1.8.0\"\n");
+    if (lily_file != NULL && strcmp(lily_file, "-") != 0) {
+        lily_out = fopen(lily_file, "w");
+        if (lily_out == NULL) {
+            perror("Can't create lily file");
+            return 2;
+        }
     }
+    fprintf(lily_out, "\\version \"1.8.0\"\n");
 
     fprintf(stderr, "Now generate lily output... \n");
     xly_dump(lily_out, do_chording);
