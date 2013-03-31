@@ -904,6 +904,9 @@ static void
 dumpBarStart(mpq_t *t, symbol_p s)
 {
     VPRINTF("OK, a bar start\n");
+printf("Bar start: t = ");
+mpq_out_str(stdout, 10, *t);
+printf("\n");
 
     memset(measure_accidental - NOTE_VALUES, 0,
             (2 * NOTE_VALUES + 1) * sizeof(*measure_accidental));
@@ -927,6 +930,11 @@ dumpBarStart(mpq_t *t, symbol_p s)
 
         num = bar_number(t, remain);
         if (mpq_zero(remain) || last_dumped_symbol->type != SYM_REPEAT) {
+printf("Print bar line: t = ");
+mpq_out_str(stdout, 10, *t);
+printf(" remain = ");
+mpq_out_str(stdout, 10, remain);
+printf("\n");
             fprintf(lily_out, " |");
             fprintf(lily_out, " %% bar %d", num);
             last_dumped_symbol = s;

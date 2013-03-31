@@ -109,7 +109,15 @@ main(int argc, char **argv)
         } else if (option == 0) {
             strNiffFile = argv[i];
             option++;
-        }
+        } else {
+			fprintf(stderr, "No such option: \"%s\"\n", argv[i]);
+			fprintf(stderr, "Usage:\n");
+#if VERBOSE
+			fprintf(stderr, "\t-v\tverbose\n");
+#endif
+			fprintf(stderr, "\t-o <file>\toutput file name\n");
+			fprintf(stderr, "\t--no-chords\tvoices i.s.o. chords\n");
+		}
     }
 
     /*
@@ -127,7 +135,7 @@ main(int argc, char **argv)
 
         if (lily_file == NULL) {
             char *f = strdup(strNiffFile);
-            char *dot = strrchr(strNiffFile, '.');
+            char *dot = strrchr(f, '.');
             if (dot != NULL) {
                 if (strcasecmp(dot, ".nif") == 0 ||
                         strcasecmp(dot, ".niff") == 0) {
