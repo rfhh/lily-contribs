@@ -7,21 +7,21 @@
 
 #include "music/music.h"
 
-extern part_p		part_current;
-extern symbol_p		symbol_current;
+extern part_p           part_current;
+extern symbol_p         symbol_current;
 extern symbol_p         note_current;
 
-extern symbol_q_p	voice_current;
-extern symbol_q_p	voice_previous;
-extern symbol_q_t	voice_unparted;
+extern symbol_q_p       voice_current;
+extern symbol_q_p       voice_previous;
+extern symbol_q_t       voice_unparted;
 
 extern symbol_q_p      *voice_index;
 
-extern time_signature_p	time_sig_current;
+extern time_signature_p time_sig_current;
 
-extern mpq_t		t_measure_start;	/* Most recent measure start */
-extern mpq_t		t_current;		/* Most recent time slice */
-extern stem_p		stem_current;		/* For chording and voicing */
+extern mpq_t            t_measure_start;        /* Most recent measure start */
+extern mpq_t            t_current;              /* Most recent time slice */
+extern stem_p           stem_current;           /* For chording and voicing */
 
 
 void printSHORT(SHORT h, const char *strComment);

@@ -7,10 +7,10 @@
 #include "niff/frontend.h"
 
 #define UNIMPLEMENTED_CHUNK(name) \
-	do { \
-	    VPRINTF("Unimplemented chunk %s", name); \
-	    return RIFFIO_OK; \
-	} while (0)
+        do { \
+            VPRINTF("Unimplemented chunk %s", name); \
+            return RIFFIO_OK; \
+        } while (0)
 
 RIFFIOSuccess cbChunkStart(NIFFIOChunkContext *pctxChunk);
 RIFFIOSuccess cbChunkEnd(NIFFIOChunkContext *pctxChunk);

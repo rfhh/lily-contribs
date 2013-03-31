@@ -41,8 +41,8 @@ void debugMeAt(mpq_t t)
 static void
 voice_increase(staff_p f)
 {
-    symbol_p	scan;
-    voice_p	v;
+    symbol_p    scan;
+    voice_p     v;
 
     f->n_voice++;
     f->voice = realloc(f->voice, f->n_voice * sizeof(*f->voice));
@@ -50,11 +50,11 @@ voice_increase(staff_p f)
     memset(v, 0, sizeof(*f->voice));
     mpq_init(v->t_finish);
     mpq_set_ui(v->t_finish, 0, 1);
-    v->key_previous_current = KEY_RESET;	/* previous key */
+    v->key_previous_current = KEY_RESET;        /* previous key */
 
     for (scan = f->replicated.front; scan != NULL; scan = scan->next) {
-	symbol_p c = symbol_clone(scan);
-	q_insert(&v->q, c);
+        symbol_p c = symbol_clone(scan);
+        q_insert(&v->q, c);
     }
 }
 
@@ -63,10 +63,10 @@ static int
 chord_tie_match(note_p tail, note_p note)
 {
     while (note != NULL) {
-	if (tail->tie_start != -1 && tail->tie_start == note->tie_end) {
-	    return 1;
-	}
-	note = note->chord;
+        if (tail->tie_start != -1 && tail->tie_start == note->tie_end) {
+            return 1;
+        }
+        note = note->chord;
     }
 
     return 0;
@@ -81,15 +81,15 @@ tie_match(note_p tail, note_p note)
     }
 
     if (tail == NULL) {
-	return 1;
+        return 1;
     }
 
-    note_p	save_tail = tail;
+    note_p      save_tail = tail;
     while (tail != NULL) {
-	if (chord_tie_match(tail, note)) {
-	    return 1;
-	}
-	tail = tail->chord;
+        if (chord_tie_match(tail, note)) {
+            return 1;
+        }
+        tail = tail->chord;
     }
 
     return save_tail->tie_start == note->tie_end;
@@ -100,7 +100,7 @@ static int
 beam_match(note_p tail, note_p note)
 {
     if (note->flags & FLAG_REST) {
-	return 1;
+        return 1;
     }
 
     if (note->stem->beam_left == 0) {
@@ -108,15 +108,15 @@ beam_match(note_p tail, note_p note)
     }
 
     if (tail == NULL) {
-	return note->stem->beam_left == 0;
+        return note->stem->beam_left == 0;
     }
 
     if (tail->flags & FLAG_REST) {
-	return 1;
+        return 1;
     }
 
     return (tail->stem->beam_right == 0 && note->stem->beam_left == 0) ||
-	     note->stem->beam == tail->stem->beam;
+             note->stem->beam == tail->stem->beam;
 }
 
 
@@ -136,7 +136,7 @@ voice_copy(voice_p to, voice_p from)
 static void
 staff_clone(staff_p to, staff_p from)
 {
-    int		i;
+    int         i;
 
     *to = *from;
 
@@ -145,9 +145,9 @@ staff_clone(staff_p to, staff_p from)
     memset(&to->replicated, 0, sizeof(to->replicated));
     to->voice = malloc(to->n_voice * sizeof(*to->voice));
     for (i = 0; i < to->n_voice; i++) {
-	mpq_init(to->voice[i].t_finish);
-	memset(&to->voice[i].q, 0, sizeof(to->voice[i].q));
-	voice_copy(&to->voice[i], &from->voice[i]);
+        mpq_init(to->voice[i].t_finish);
+        memset(&to->voice[i].q, 0, sizeof(to->voice[i].q));
+        voice_copy(&to->voice[i], &from->voice[i]);
     }
 }
 
@@ -155,10 +155,10 @@ staff_clone(staff_p to, staff_p from)
 static void
 staff_cleanup(staff_p s)
 {
-    int		i;
+    int         i;
 
     for (i = 0; i < s->n_voice; i++) {
-	mpq_clear(s->voice[i].t_finish);
+        mpq_clear(s->voice[i].t_finish);
     }
     free(s->voice);
 }
@@ -170,35 +170,35 @@ staff_cleanup(staff_p s)
 static void
 staff_commit(staff_p f, staff_p back_staff, int recursing, symbol_p *next)
 {
-    symbol_p	scan;
-    symbol_p	n;
-    int		i;
+    symbol_p    scan;
+    symbol_p    n;
+    int         i;
 
     if (! recursing) {
-	for (scan = back_staff->start_backtrack;
-		scan != back_staff->next_after_backtrack;
-		scan = n) {
-	    assert(scan != NULL);
-	    n = scan->next;
-	    q_remove(&f->unvoiced, scan);
-	}
+        for (scan = back_staff->start_backtrack;
+                scan != back_staff->next_after_backtrack;
+                scan = n) {
+            assert(scan != NULL);
+            n = scan->next;
+            q_remove(&f->unvoiced, scan);
+        }
     }
 
     while (f->n_voice < back_staff->n_voice) {
-	voice_increase(f);
+        voice_increase(f);
     }
 
     for (i = 0; i < back_staff->n_voice; i++) {
-	while ((scan = back_staff->voice[i].q.front) != NULL) {
-	    q_remove(&back_staff->voice[i].q, scan);
-	    q_append(&f->voice[i].q, scan);
-	}
-	voice_copy(&f->voice[i], &back_staff->voice[i]);
+        while ((scan = back_staff->voice[i].q.front) != NULL) {
+            q_remove(&back_staff->voice[i].q, scan);
+            q_append(&f->voice[i].q, scan);
+        }
+        voice_copy(&f->voice[i], &back_staff->voice[i]);
     }
 
     while ((scan = back_staff->replicated.front) != NULL) {
-	q_remove(&back_staff->replicated, scan);
-	q_append(&f->replicated, scan);
+        q_remove(&back_staff->replicated, scan);
+        q_append(&f->replicated, scan);
     }
 
     f->slur_pending = back_staff->slur_pending;
@@ -210,13 +210,13 @@ staff_commit(staff_p f, staff_p back_staff, int recursing, symbol_p *next)
 static int
 multiple_notes(staff_p f, symbol_p scan, symbol_p next)
 {
-    int		notes = 1;
+    int         notes = 1;
 
     while (mpq_equal(next->start, scan->start)) {
-	if (next->type == SYM_NOTE) {
-	    notes++;
-	}
-	next = next->next;
+        if (next->type == SYM_NOTE) {
+            notes++;
+        }
+        next = next->next;
     }
 
     return notes;
@@ -227,16 +227,16 @@ multiple_notes(staff_p f, symbol_p scan, symbol_p next)
 static int
 slur_match(voice_p v, note_p note)
 {
-    int		i;
+    int         i;
 
     if (note->stem->slur_end == NO_ID) {
-	return 0;
+        return 0;
     }
 
     for (i = 0; i < v->n_slur; i++) {
-	if (note->stem->slur_end == v->slur[i]) {
-	    return 1;
-	}
+        if (note->stem->slur_end == v->slur[i]) {
+            return 1;
+        }
     }
 
     return 0;
@@ -246,15 +246,15 @@ slur_match(voice_p v, note_p note)
 static void
 append_note(staff_p s, int voice, symbol_p scan)
 {
-    voice_p	v = &s->voice[voice];
-    note_p	note = &scan->symbol.note;
-    int		u;
-    static mpq_t	t;
-    static int	initialized = 0;
+    voice_p     v = &s->voice[voice];
+    note_p      note = &scan->symbol.note;
+    int         u;
+    static mpq_t        t;
+    static int  initialized = 0;
 
     if (! initialized) {
-	mpq_init(t);
-	initialized = 1;
+        mpq_init(t);
+        initialized = 1;
     }
 
     q_append(&v->q, scan);
@@ -267,29 +267,29 @@ append_note(staff_p s, int voice, symbol_p scan)
         }
     }
     for (u = note->tuplet; u != -1; u = global_tuplet[u].next) {
-	mpq_mul(t, t, global_tuplet[u].ratio);
+        mpq_mul(t, t, global_tuplet[u].ratio);
     }
     mpq_add(v->t_finish, scan->start, t);
 
     if (note->stem->slur_end != NO_ID) {
-	int	i;
+        int     i;
 
-	for (i = 0; i < v->n_slur; i++) {
-	    if (note->stem->slur_end == v->slur[i]) {
-		v->n_slur--;
-		v->slur[i] = v->slur[v->n_slur];
-		break;
-	    }
-	}
-	s->slur_pending--;
+        for (i = 0; i < v->n_slur; i++) {
+            if (note->stem->slur_end == v->slur[i]) {
+                v->n_slur--;
+                v->slur[i] = v->slur[v->n_slur];
+                break;
+            }
+        }
+        s->slur_pending--;
     }
     if (note->stem->slur_start != NO_ID) {
-	v->n_slur++;
-	if (v->n_slur == MAX_CONCURRENT_SLURS) {
-	    fprintf(stderr, "Can only support %d concurrent slurs -- see for yourself what rests now\n", MAX_CONCURRENT_SLURS);
-	}
-	v->slur[v->n_slur - 1] = note->stem->slur_start;
-	s->slur_pending++;
+        v->n_slur++;
+        if (v->n_slur == MAX_CONCURRENT_SLURS) {
+            fprintf(stderr, "Can only support %d concurrent slurs -- see for yourself what rests now\n", MAX_CONCURRENT_SLURS);
+        }
+        v->slur[v->n_slur - 1] = note->stem->slur_start;
+        s->slur_pending++;
     }
 }
 
@@ -307,14 +307,14 @@ static void
 report_note(const symbol_p scan)
 {
     const note_p note = &scan->symbol.note;
-    int		u;
+    int         u;
 
     VPRINTF("Test %p for contiguous append: t = ", scan);
     VPRINT_MPQ(scan->start);
     if (note->flags & FLAG_REST) {
         VPRINTF(" rest");
     } else if (note->chord != NULL) {
-        note_p	chord;
+        note_p  chord;
         VPRINTF(" step <");
         VPRINTF("%d ", note->value);
         for (chord = note->chord; chord != NULL; chord = chord->chord) {
@@ -334,7 +334,7 @@ report_note(const symbol_p scan)
     }
     for (u = note->tuplet; u != -1; u = global_tuplet[u].next) {
         VPRINTF("*");
-	VPRINT_MPQ(global_tuplet[u].ratio);
+        VPRINT_MPQ(global_tuplet[u].ratio);
     }
     VPRINTF(" beam %p %d %s [%d,%d]", note->stem, note->stem->beam,
              (note->stem->flags & FLAG_STEM_UP) ? "up" : "down",
@@ -428,7 +428,7 @@ notes_simultaneous_constrained(staff_p f,
             continue;
         }
 
-        note_p	note = &scan->symbol.note;
+        note_p  note = &scan->symbol.note;
         if (! is_constrained(note)) {
             continue;
         }
@@ -479,7 +479,7 @@ notes_simultaneous_constrained(staff_p f,
             }
         }
 
-        if (i == f->n_voice) {		/* Could not append */
+        if (i == f->n_voice) {          /* Could not append */
             fprintf(stderr, "Oooppss, meet the combinatorial case...\n");
 
             VPRINTF("Append note to new voice[%d]\n", f->n_voice);
@@ -526,7 +526,7 @@ notes_simultaneous_constrained(staff_p f,
         }
 
         for (i = 0; i < n_note; i++) {
-            staff_t	back_staff;
+            staff_t     back_staff;
 
             VPRINTF("\nRecurse: try %d'th of %d note at t = ",
                      i, n_note);
@@ -631,7 +631,7 @@ notes_simultaneous_unconstrained(staff_p f,
             continue;
         }
 
-        note_p	note = &scan->symbol.note;
+        note_p  note = &scan->symbol.note;
 
         report_note(scan);
         VPRINTF(" recursing %d", recursing);
@@ -664,7 +664,7 @@ notes_simultaneous_unconstrained(staff_p f,
             }
         }
 
-        if (i == f->n_voice) {		/* Could not append */
+        if (i == f->n_voice) {          /* Could not append */
             if (recursing) {
                 fprintf(stderr, "No assignment found and recursing. What now?\n");
                 for (i = 0; i < f->n_voice; i++) {
@@ -723,7 +723,7 @@ notes_simultaneous_unconstrained(staff_p f,
         }
 
         for (i = 0; i < n_note; i++) {
-            staff_t	back_staff;
+            staff_t     back_staff;
 
             VPRINTF("\nRecurse: try %d'th of %d note at t = ",
                      i, n_note);
@@ -774,8 +774,8 @@ notes_simultaneous_unconstrained(staff_p f,
 static int
 do_staff_voicing(staff_p f, int recursing, symbol_p scan)
 {
-    symbol_p	next;
-    int		i;
+    symbol_p    next;
+    int         i;
     mpq_t       now;
     int         r = 1;
 
@@ -788,15 +788,15 @@ do_staff_voicing(staff_p f, int recursing, symbol_p scan)
 
     for (; scan != NULL; scan = next) {
 
-	if (recursing && f->slur_pending == 0) {
+        if (recursing && f->slur_pending == 0) {
             VPRINTF("Terminate this recursion path...\n");
-	    f->next_after_backtrack = scan;
+            f->next_after_backtrack = scan;
             goto exit;
-	}
+        }
 
         mpq_set(now, scan->start);
 
-	next = scan->next;
+        next = scan->next;
         report_symbol(scan, 0);
         VPRINTF("%d scan %p next %p next->next %p\n", __LINE__, scan, next, (next != NULL) ? next->next : NULL);
 
@@ -810,53 +810,53 @@ do_staff_voicing(staff_p f, int recursing, symbol_p scan)
             }
         }
 
-	switch (scan->type) {
+        switch (scan->type) {
 
         default:
-	case SYM_STEM:
-	    abort();
+        case SYM_STEM:
+            abort();
 
-	case SYM_ARPEGGIO:
-	case SYM_ARTICULATION:
-	case SYM_BARLINE:
-	case SYM_CHORD:
-	case SYM_DYNAMIC:
-	case SYM_GLISSANDO:
-	case SYM_HAIRPIN:
-	case SYM_MEASURE_NUMBERING:
-	case SYM_MIDI:
-	case SYM_OTTAVA:
-	case SYM_ORNAMENT:
-	case SYM_PARENTH:
-	case SYM_PEDAL:
-	case SYM_PORTAMENTO:
-	case SYM_REHEARSAL_MARK:
-	case SYM_REPEAT:
-	case SYM_TEMPO:
-	case SYM_TEXT:
-	case SYM_TIE:
-	case SYM_TREMOLO:
-	case SYM_TUPLET:
-	case SYM_NUMBER:
-	    q_append(&f->voice[0].q, scan);
-	    break;
+        case SYM_ARPEGGIO:
+        case SYM_ARTICULATION:
+        case SYM_BARLINE:
+        case SYM_CHORD:
+        case SYM_DYNAMIC:
+        case SYM_GLISSANDO:
+        case SYM_HAIRPIN:
+        case SYM_MEASURE_NUMBERING:
+        case SYM_MIDI:
+        case SYM_OTTAVA:
+        case SYM_ORNAMENT:
+        case SYM_PARENTH:
+        case SYM_PEDAL:
+        case SYM_PORTAMENTO:
+        case SYM_REHEARSAL_MARK:
+        case SYM_REPEAT:
+        case SYM_TEMPO:
+        case SYM_TEXT:
+        case SYM_TIE:
+        case SYM_TREMOLO:
+        case SYM_TUPLET:
+        case SYM_NUMBER:
+            q_append(&f->voice[0].q, scan);
+            break;
 
-	case SYM_BAR_START:
-	case SYM_CLEF:
-	case SYM_KEY_SIGN:
-	case SYM_TIME_SIGNATURE:
+        case SYM_BAR_START:
+        case SYM_CLEF:
+        case SYM_KEY_SIGN:
+        case SYM_TIME_SIGNATURE:
             VPRINTF("Symbol %s %p at t = ",
                      SYMBOL_TYPE_string(scan->type), scan);
             VPRINT_MPQ(scan->start);
             VPRINTF("; n_voice = %d\n", f->n_voice);
-	    for (i = 0; i < f->n_voice; i++) {
-		symbol_p c = symbol_clone(scan);
-		q_append(&f->voice[i].q, c);
-	    }
-	    q_append(&f->replicated, scan);
-	    break;
+            for (i = 0; i < f->n_voice; i++) {
+                symbol_p c = symbol_clone(scan);
+                q_append(&f->voice[i].q, c);
+            }
+            q_append(&f->replicated, scan);
+            break;
 
-	case SYM_NOTE:
+        case SYM_NOTE:
             if (! notes_simultaneous_constrained(f,
                                                  now,
                                                  &scan,
@@ -876,18 +876,18 @@ do_staff_voicing(staff_p f, int recursing, symbol_p scan)
             }
             // VPRINTF("%d scan %p next %p\n", __LINE__, scan, next);
 
-	}
+        }
     }
 
     if (! recursing) {
-	for (scan = f->unvoiced.front; scan != NULL; scan = next) {
-	    next = scan->next;
-	    assert(scan->type != SYM_NOTE);
-	    VPRINTF("Skip this non-note symbol (t_start = ");
-	    VPRINT_MPQ(scan->start);
-	    VPRINTF(" on voice 0\n");
-	    q_remove(&f->unvoiced, scan);
-	}
+        for (scan = f->unvoiced.front; scan != NULL; scan = next) {
+            next = scan->next;
+            assert(scan->type != SYM_NOTE);
+            VPRINTF("Skip this non-note symbol (t_start = ");
+            VPRINT_MPQ(scan->start);
+            VPRINTF(" on voice 0\n");
+            q_remove(&f->unvoiced, scan);
+        }
     }
 
 exit:
@@ -901,26 +901,26 @@ exit:
 void
 xly_voice(void)
 {
-    int		p;
-    int		f;
-    int		v;
-    int		n_voices;
+    int         p;
+    int         f;
+    int         v;
+    int         n_voices;
 
     fprintf(stderr, "Voice analysis...\n");
     for (p = 0; p < n_part; p++) {
-	for (f = 0; f < part[p].n_staff; f++) {
-	    fprintf(stderr, "      ........ part %d, staff %d\n", p, f);
-	    do_staff_voicing(&part[p].staff[f], 0, part[p].staff[f].unvoiced.front);
-	}
+        for (f = 0; f < part[p].n_staff; f++) {
+            fprintf(stderr, "      ........ part %d, staff %d\n", p, f);
+            do_staff_voicing(&part[p].staff[f], 0, part[p].staff[f].unvoiced.front);
+        }
     }
 
     n_voices = 0;
     for (p = 0; p < n_part; p++) {
-	for (f = 0; f < part[p].n_staff; f++) {
-	    for (v = 0; v < part[p].staff[f].n_voice; v++) {
-		part[p].staff[f].voice[v].id = n_voices++;
-	    }
-	}
+        for (f = 0; f < part[p].n_staff; f++) {
+            for (v = 0; v < part[p].staff[f].n_voice; v++) {
+                part[p].staff[f].voice[v].id = n_voices++;
+            }
+        }
     }
 }
 

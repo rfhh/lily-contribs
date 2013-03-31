@@ -14,35 +14,35 @@
 #include "niff/list/Staff.h"
 #include "PartID.h"
 
-int		partID_current;		/* PartID tag seen */
+int             partID_current;         /* PartID tag seen */
 
 
 static RIFFIOSuccess
 cbPartID(NIFFIOTagContext *pctxTag, niffPartID *p)
 {
-    staff_p	s;
+    staff_p     s;
 
     if (cbTagStart(pctxTag, p, cbPartID)) {
-	VPRINTF("=%d", *p);
+        VPRINTF("=%d", *p);
 
-	partID_current = *p;
-	part_current  = &part[*p];
-	s = part_current->staff;
-	if (voice_current == &voice_unparted) {
-	    symbol_p	scan;
+        partID_current = *p;
+        part_current  = &part[*p];
+        s = part_current->staff;
+        if (voice_current == &voice_unparted) {
+            symbol_p    scan;
 
-	    if (staff_current != 0 &&
-		voice_previous != &s[staff_current - 1].unvoiced) {
-		staff_current = 0;
-	    }
-	    voice_current = &s[staff_current].unvoiced;
-	    voice_previous = voice_current;
+            if (staff_current != 0 &&
+                voice_previous != &s[staff_current - 1].unvoiced) {
+                staff_current = 0;
+            }
+            voice_current = &s[staff_current].unvoiced;
+            voice_previous = voice_current;
 
-	    while ((scan = voice_unparted.front) != NULL) {
-		q_remove(&voice_unparted, scan);
-		q_insert(voice_current, scan);
-	    }
-	}
+            while ((scan = voice_unparted.front) != NULL) {
+                q_remove(&voice_unparted, scan);
+                q_insert(voice_current, scan);
+            }
+        }
     }
     cbTagEnd(pctxTag);
     return RIFFIO_OK;

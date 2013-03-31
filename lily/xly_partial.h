@@ -3,7 +3,7 @@
 
 #include <gmp.h>
 
-extern mpq_t	xly_t_partial;
+extern mpq_t    xly_t_partial;
 
 void xly_partial(void);
 

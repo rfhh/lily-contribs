@@ -17,7 +17,7 @@
 static symbol_p
 articulation_create(void)
 {
-    symbol_p	s;
+    symbol_p    s;
 
     s = symbol_create(t_current);
     s->type = SYM_ARTICULATION;
@@ -31,7 +31,7 @@ articulation_create(void)
 static RIFFIOSuccess
 cbArticulationStart(NIFFIOChunkContext *pctxChunk, niffArticulation *p)
 {
-    symbol_p	s;
+    symbol_p    s;
 
     s = articulation_create();
     s->symbol.articulation.shape = p->shape;

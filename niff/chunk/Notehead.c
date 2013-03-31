@@ -20,15 +20,15 @@
 static symbol_p
 note_create(niffNotehead *p)
 {
-    symbol_p	s = symbol_create(t_current);
-    note_p	n = &s->symbol.note;
+    symbol_p    s = symbol_create(t_current);
+    note_p      n = &s->symbol.note;
 
     mpq_init(n->duration);
     rat2mpq(n->duration, &p->duration);
 
     if (stem_current == NULL) {
-	fprintf(stderr, "\n ****** Get a NoteHead chunk without stem chunk??");
-	stem_current = &stem_create()->symbol.stem;
+        fprintf(stderr, "\n ****** Get a NoteHead chunk without stem chunk??");
+        stem_current = &stem_create()->symbol.stem;
     }
 
     s->type = SYM_NOTE;

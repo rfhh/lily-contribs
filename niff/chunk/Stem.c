@@ -17,8 +17,8 @@
 symbol_p
 stem_create(void)
 {
-    symbol_p	y = symbol_create(t_current);
-    stem_p	s = &y->symbol.stem;
+    symbol_p    y = symbol_create(t_current);
+    stem_p      s = &y->symbol.stem;
 
     y->type = SYM_STEM;
     mpq_init(s->t);
@@ -36,7 +36,7 @@ stem_create(void)
 static RIFFIOSuccess
 cbStemStart(NIFFIOChunkContext *pctxChunk)
 {
-    symbol_p	s;
+    symbol_p    s;
 
     cbChunkStart(pctxChunk);
 

@@ -8,7 +8,7 @@
 #include <stddef.h>
 
 
-#define VERBOSE		1
+#define VERBOSE         1
 
 #if VERBOSE
 
@@ -20,7 +20,7 @@ int mpq_printf(FILE *f, const mpq_t t);
 int mpq_dump(const mpq_t t);
 
 
-extern int	xly_verbose;
+extern int      xly_verbose;
 #define VPRINTF(...)    ((xly_verbose) ? verbose_printf(__VA_ARGS__) : RIFFIO_OK)
 #define VPRINT_MPQ(t)   ((xly_verbose) ? mpq_out_str(stderr, 10, t) : RIFFIO_OK)
 #else
@@ -29,10 +29,10 @@ extern int	xly_verbose;
 #endif
 
 
-#define OCTAVE_DIATON	7
-#define OCTAVE_CHROM	11
+#define OCTAVE_DIATON   7
+#define OCTAVE_CHROM    11
 
-#define NOTE_VALUES	256	/* Support these line values for notes */
+#define NOTE_VALUES     256     /* Support these line values for notes */
 
 
 
@@ -105,7 +105,7 @@ struct arpeggio {
 
 
 struct articulation {
-    int			shape;
+    int                 shape;
 };
 
 
@@ -122,10 +122,10 @@ struct chord {
 
 
 struct clef {
-    int		shape;
-    int		step;
-    int		octave;
-    int		offset;
+    int         shape;
+    int         step;
+    int         octave;
+    int         offset;
 };
 
 
@@ -141,10 +141,10 @@ struct hairpin {
 };
 
 
-#define KEY_RESET	127
+#define KEY_RESET       127
 
 struct key_sign {
-    int		code;
+    int         code;
 };
 
 
@@ -157,27 +157,27 @@ struct midi {
 
 
 typedef enum NOTE_FLAGS {
-    FLAG_GRACE		= (0x1 << 0),
-    FLAG_SLASHED	= (0x1 << 1),
-    FLAG_SMALL		= (0x1 << 2),
-    FLAG_INVISIBLE	= (0x1 << 3),
-    FLAG_REST		= (0x1 << 4),
-    FLAG_STEM_EXPLICIT	= (0x1 << 5),
-    FLAG_STEM_UP	= (0x1 << 6)
+    FLAG_GRACE          = (0x1 << 0),
+    FLAG_SLASHED        = (0x1 << 1),
+    FLAG_SMALL          = (0x1 << 2),
+    FLAG_INVISIBLE      = (0x1 << 3),
+    FLAG_REST           = (0x1 << 4),
+    FLAG_STEM_EXPLICIT  = (0x1 << 5),
+    FLAG_STEM_UP        = (0x1 << 6)
 } note_flags_t, *note_flags_p;
 
 
 struct note {
-    mpq_t		duration;
-    int			value;
-    int			accidental;
-    int			voice;
-    stem_p		stem;
-    note_flags_t	flags;
-    note_p		chord;
-    int			tie_start;
-    int			tie_end;
-    int			tuplet;
+    mpq_t               duration;
+    int                 value;
+    int                 accidental;
+    int                 voice;
+    stem_p              stem;
+    note_flags_t        flags;
+    note_p              chord;
+    int                 tie_start;
+    int                 tie_end;
+    int                 tuplet;
 };
 
 
@@ -186,7 +186,7 @@ struct ottava {
 
 
 struct ornament {
-    int			shape;
+    int                 shape;
 };
 
 
@@ -207,24 +207,24 @@ struct rehearsal_mark {
 
 
 struct repeat {
-    int		graphic;
-    int		logic;
+    int         graphic;
+    int         logic;
 };
 
 
 struct stem {
-    mpq_t		t;
-    int			voiceID;
-    int			partID;
-    int			height;
-    note_flags_t	flags;
-    int			tuplet;
-    int			beam;
-    short int		beam_left;
-    short int		beam_right;
-    int			slur_start;
-    int			slur_end;
-    symbol_p		articulations;
+    mpq_t               t;
+    int                 voiceID;
+    int                 partID;
+    int                 height;
+    note_flags_t        flags;
+    int                 tuplet;
+    int                 beam;
+    short int           beam_left;
+    short int           beam_right;
+    int                 slur_start;
+    int                 slur_end;
+    symbol_p            articulations;
 };
 
 
@@ -237,16 +237,16 @@ struct text {
 
 
 struct tie {
-    int		occur;
-    int		occurred;
+    int         occur;
+    int         occurred;
     note_p     *notes;
 };
 
 
 struct time_signature {
-    int		top;
-    int		bottom;
-    mpq_t	duration;
+    int         top;
+    int         bottom;
+    mpq_t       duration;
 };
 
 
@@ -255,50 +255,50 @@ struct tremolo {
 
 
 struct tuplet {
-    int		num;
-    int		den;
-    mpq_t	ratio;		/* Multiply by this to get real time val */
-    BYTE	groupingSymbol;
-    int		ID;
-    int		next;
+    int         num;
+    int         den;
+    mpq_t       ratio;          /* Multiply by this to get real time val */
+    BYTE        groupingSymbol;
+    int         ID;
+    int         next;
 };
 
 
 
 struct SYMBOL {
-    symbol_type_t	type;
-    mpq_t		start;
+    symbol_type_t       type;
+    mpq_t               start;
     union {
-	arpeggio_t	arpeggio;
-	articulation_t	articulation;
-	barline_t	barline;
-	bar_start_t	bar_start;
-	chord_t		chord;
-	clef_t		clef;
-	dynamic_t	dynamic;
-	glissando_t	glissando;
-	hairpin_t	hairpin;
-	key_sign_t	key_sign;
-	measure_numbering_t	measure_numbering;
-	midi_t		midi;
-	note_t		note;
-	ottava_t	ottava;
-	ornament_t	ornament;
-	parenth_t	parenth;
-	pedal_t		pedal;
-	portamento_t	portamento;
-	rehearsal_mark_t	rehearsal_mark;
-	repeat_t	repeat;
-	stem_t		stem;
-	tempo_t		tempo;
-	text_t		text;
-	tie_t		tie;
-	time_signature_t	time_signature;
-	tremolo_t	tremolo;
-	tuplet_t	tuplet;
+        arpeggio_t      arpeggio;
+        articulation_t  articulation;
+        barline_t       barline;
+        bar_start_t     bar_start;
+        chord_t         chord;
+        clef_t          clef;
+        dynamic_t       dynamic;
+        glissando_t     glissando;
+        hairpin_t       hairpin;
+        key_sign_t      key_sign;
+        measure_numbering_t     measure_numbering;
+        midi_t          midi;
+        note_t          note;
+        ottava_t        ottava;
+        ornament_t      ornament;
+        parenth_t       parenth;
+        pedal_t         pedal;
+        portamento_t    portamento;
+        rehearsal_mark_t        rehearsal_mark;
+        repeat_t        repeat;
+        stem_t          stem;
+        tempo_t         tempo;
+        text_t          text;
+        tie_t           tie;
+        time_signature_t        time_signature;
+        tremolo_t       tremolo;
+        tuplet_t        tuplet;
     } symbol;
-    symbol_p		prev;
-    symbol_p		next;
+    symbol_p            prev;
+    symbol_p            next;
 };
 
 
@@ -306,73 +306,73 @@ struct SYMBOL {
 
 
 typedef struct symbol_q {
-    symbol_p	front;
-    symbol_p	tail;
+    symbol_p    front;
+    symbol_p    tail;
 } symbol_q_t, *symbol_q_p;
 
 
-#define MAX_CONCURRENT_SLURS	10
+#define MAX_CONCURRENT_SLURS    10
 
 typedef struct voice {
-    mpq_t	t_finish;
-    note_p	tail;
-    int		id;
-    symbol_q_t	q;
-    int		key_current;
-    int		key_previous_current;
-    int		n_slur;
-    int		slur[MAX_CONCURRENT_SLURS];
+    mpq_t       t_finish;
+    note_p      tail;
+    int         id;
+    symbol_q_t  q;
+    int         key_current;
+    int         key_previous_current;
+    int         n_slur;
+    int         slur[MAX_CONCURRENT_SLURS];
 } voice_t, *voice_p;
 
 
 typedef struct staff {
-    clef_p	clef;
-    int		n_voice;
-    int		slur_pending;
-    symbol_p	next_after_backtrack;
-    symbol_p	start_backtrack;
-    symbol_q_t	unvoiced;
-    symbol_q_t	replicated;
-    voice_p	voice;
+    clef_p      clef;
+    int         n_voice;
+    int         slur_pending;
+    symbol_p    next_after_backtrack;
+    symbol_p    start_backtrack;
+    symbol_q_t  unvoiced;
+    symbol_q_t  replicated;
+    voice_p     voice;
 } staff_t, *staff_p;
 
 
 typedef struct part {
-    int		n_staff;
-    staff_p	staff;
+    int         n_staff;
+    staff_p     staff;
 } part_t, *part_p;
 
 
 
 /*
  * Yes, a 3-dim array:
- * 	part[n_part]
- * 	part[p][n_staff]
- * 	part[p][f][n_voice]
+ *      part[n_part]
+ *      part[p][n_staff]
+ *      part[p][f][n_voice]
  */
-extern part_p		part;
+extern part_p           part;
 
-extern int		n_part;
+extern int              n_part;
 
-extern tuplet_p		tuplet_current;
+extern tuplet_p         tuplet_current;
 
-extern tuplet_p		global_tuplet;
-extern int		n_tuplet;
+extern tuplet_p         global_tuplet;
+extern int              n_tuplet;
 
 
-extern int		n_ties;
-extern tie_p		ties;
+extern int              n_ties;
+extern tie_p            ties;
 
 void ties_increase(int ID);
 
 
 typedef struct SLUR {
-    int		n;
-    int		pending;
+    int         n;
+    int         pending;
 } slur_t, *slur_p;
 
-extern slur_p	slur;
-extern int	n_slurs;
+extern slur_p   slur;
+extern int      n_slurs;
 
 void slurs_increase(int ID);
 

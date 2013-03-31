@@ -30,7 +30,7 @@ static void
 increase_tuplets(int ID)
 {
     if (ID < n_tuplet) {
-	return;
+        return;
     }
 
     n_tuplet = ID + 1;
@@ -49,16 +49,16 @@ tuplet_push(int *s, int t)
 static RIFFIOSuccess
 cbTupletEnd(NIFFIOChunkContext *pctxChunk)
 {
-    tuplet_p	t;
+    tuplet_p    t;
 
     if (tuplet_current != NULL) {
-	/* We met a TupletDescr tag */
-	increase_tuplets(ID_current);
-	t = &global_tuplet[ID_current];
-	tuplet_current->ID = ID_current;
-	*t = *tuplet_current;
-	free(tuplet_current);
-	tuplet_current = NULL;
+        /* We met a TupletDescr tag */
+        increase_tuplets(ID_current);
+        t = &global_tuplet[ID_current];
+        tuplet_current->ID = ID_current;
+        *t = *tuplet_current;
+        free(tuplet_current);
+        tuplet_current = NULL;
     }
 
     if (note_current != NULL) {

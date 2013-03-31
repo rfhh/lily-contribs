@@ -28,7 +28,7 @@ cbTieStart(NIFFIOChunkContext *pctxChunk)
 static RIFFIOSuccess
 cbTieEnd(NIFFIOChunkContext *pctxChunk)
 {
-    tie_p	tie;
+    tie_p       tie;
 
     ties_increase(ID_current);
     tie = &ties[ID_current];

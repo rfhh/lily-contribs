@@ -14,14 +14,14 @@
 #include "VoiceID.h"
 
 
-int		voiceID_current;	/* VoiceID tag seen */
+int             voiceID_current;        /* VoiceID tag seen */
 
 
 static RIFFIOSuccess
 cbVoiceID(NIFFIOTagContext *pctxTag, niffVoiceID *p)
 {
     if (cbTagStart(pctxTag, p, cbVoiceID)) {
-	voiceID_current = *p;
+        voiceID_current = *p;
     }
     cbTagEnd(pctxTag);
     UNIMPLEMENTED_TAG("VoiceID");

@@ -17,7 +17,7 @@
 static symbol_p
 repeat_create(void)
 {
-    symbol_p	s;
+    symbol_p    s;
 
     s = symbol_create(t_current);
     s->type = SYM_REPEAT;
@@ -29,7 +29,7 @@ repeat_create(void)
 static RIFFIOSuccess
 cbRepeatSignStart(NIFFIOChunkContext *pctxChunk, niffRepeatSign *p)
 {
-    symbol_p	s;
+    symbol_p    s;
 
     cbChunkStart(pctxChunk);
     VPRINTF(" graphical = %d logical = %d", p->graphicalCode, p->logicalCode);

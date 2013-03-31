@@ -4,10 +4,10 @@
 
 #include "niffio.h"
 
-#define NO_PART_ID	-1
+#define NO_PART_ID      -1
 
-extern int		staff_current;
-extern int		staff_partID;		/* PartID for whole staff */
+extern int              staff_current;
+extern int              staff_partID;           /* PartID for whole staff */
 
 void nf2_list_Staff_init(NIFFIOParser *pparser);
 void nf2_list_Staff_end(NIFFIOParser *pparser);

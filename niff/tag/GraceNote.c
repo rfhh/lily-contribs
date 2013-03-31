@@ -18,11 +18,11 @@ static RIFFIOSuccess
 cbGraceNote(NIFFIOTagContext *pctxTag, niffGraceNote *p)
 {
     if (cbTagStart(pctxTag, p, cbGraceNote)) {
-	if (symbol_current->type == SYM_NOTE) {
-	    symbol_current->symbol.note.flags |= FLAG_GRACE;
-	} else if (symbol_current->type == SYM_STEM) {
-	    symbol_current->symbol.stem.flags |= FLAG_GRACE;
-	}
+        if (symbol_current->type == SYM_NOTE) {
+            symbol_current->symbol.note.flags |= FLAG_GRACE;
+        } else if (symbol_current->type == SYM_STEM) {
+            symbol_current->symbol.stem.flags |= FLAG_GRACE;
+        }
     }
     cbTagEnd(pctxTag);
 

@@ -13,15 +13,15 @@
 
 #include "ID.h"
 
-int		ID_current;		/* ID tag seen */
+int             ID_current;             /* ID tag seen */
 
 
 static RIFFIOSuccess
 cbID(NIFFIOTagContext *pctxTag, niffID *p)
 {
     if (cbTagStart(pctxTag, p, cbID)) {
-	ID_current = *p;
-	VPRINTF(" = %d", *p);
+        ID_current = *p;
+        VPRINTF(" = %d", *p);
     }
     cbTagEnd(pctxTag);
     return RIFFIO_OK;

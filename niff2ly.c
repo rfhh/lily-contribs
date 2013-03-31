@@ -86,8 +86,8 @@ main(int argc, char **argv)
     unsigned long extraCount;
     FILE       *lily_out = stdout;
     char       *lily_file = NULL;
-    int		i;
-    int		option;
+    int         i;
+    int         option;
     int         do_chording = 1;
 
     Progname = argv[0];
@@ -97,13 +97,13 @@ main(int argc, char **argv)
      */
     option = 0;
     for (i = 1; i < argc; i++) {
-	if (0) {
+        if (0) {
 #if VERBOSE
-	} else if (strcmp(argv[i], "-v") == 0) {
-	    xly_verbose = 1;
+        } else if (strcmp(argv[i], "-v") == 0) {
+            xly_verbose = 1;
 #endif
-	} else if (strcmp(argv[i], "-o") == 0) {
-	    lily_file = argv[++i];
+        } else if (strcmp(argv[i], "-o") == 0) {
+            lily_file = argv[++i];
         } else if (strcmp(argv[i], "--no-chords") == 0) {
             do_chording = 0;
         } else if (option == 0) {
@@ -116,14 +116,14 @@ main(int argc, char **argv)
      * Open the riff file
      */
     if (strNiffFile == NULL) {
-	pFILENiff = stdin;
+        pFILENiff = stdin;
     } else {
-	pFILENiff = fopen(strNiffFile, "rb");
-	if (!pFILENiff)
-	{
-	    perror("Can't open NIFF File");
-	    return 1;
-	}
+        pFILENiff = fopen(strNiffFile, "rb");
+        if (!pFILENiff)
+        {
+            perror("Can't open NIFF File");
+            return 1;
+        }
 
         if (lily_file == NULL) {
             char *f = strdup(strNiffFile);
@@ -169,7 +169,7 @@ main(int argc, char **argv)
     NIFFIOParserSetTracing(pparser, 0);
 
     fprintf(stderr, "Now parse niff input %s\n",
-	    strNiffFile == NULL ? "-" : strNiffFile);
+            strNiffFile == NULL ? "-" : strNiffFile);
     NIFFIOParseFile(pparser, pnf,  0, 0 );
 
     if (lily_file != NULL && strcmp(lily_file, "-") != 0) {

@@ -8,10 +8,10 @@
 
 
 #define UNIMPLEMENTED_TAG(name) \
-	do { \
-	    VPRINTF(" /unimplemented tag %s;", name); \
-	    return RIFFIO_OK; \
-	} while (0)
+        do { \
+            VPRINTF(" /unimplemented tag %s;", name); \
+            return RIFFIO_OK; \
+        } while (0)
 
 void tag_activate_reset(void);
 void tag_activate_start(void);

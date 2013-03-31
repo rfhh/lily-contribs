@@ -19,7 +19,7 @@
 static RIFFIOSuccess
 cbStaffHeaderStart(NIFFIOChunkContext *pctxChunk)
 {
-    symbol_p	key;
+    symbol_p    key;
 
     cbChunkStart(pctxChunk);
     key = key_sign_create();
@@ -33,7 +33,7 @@ static RIFFIOSuccess
 cbStaffHeaderEnd(NIFFIOChunkContext *pctxChunk)
 {
     if (partID_current != NO_PART_ID) {
-	staff_partID = partID_current;
+        staff_partID = partID_current;
     }
     cbChunkEnd(pctxChunk);
     UNIMPLEMENTED_CHUNK("StaffHeaderEnd");

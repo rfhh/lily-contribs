@@ -30,21 +30,21 @@ static const char rcsid[] =
 #include "tag/Tag.h"
 
 
-part_p		part_current;
-symbol_p	symbol_current;
+part_p          part_current;
+symbol_p        symbol_current;
 symbol_p        note_current;
 
-symbol_q_p	voice_current;
-symbol_q_p	voice_previous;
-symbol_q_t	voice_unparted;
+symbol_q_p      voice_current;
+symbol_q_p      voice_previous;
+symbol_q_t      voice_unparted;
 
 symbol_q_p      *voice_index;
 
-time_signature_p	time_sig_current;
+time_signature_p        time_sig_current;
 
-mpq_t		t_measure_start;	/* Most recent measure start */
-mpq_t		t_current;		/* Most recent time slice */
-stem_p		stem_current;		/* Remember for chording and voicing */
+mpq_t           t_measure_start;        /* Most recent measure start */
+mpq_t           t_current;              /* Most recent time slice */
+stem_p          stem_current;           /* Remember for chording and voicing */
 
 
 void
@@ -92,7 +92,7 @@ printSymbol( const char * (decoder(BYTE)),
         VPRINTF(" WARNING: UNKNOWN VALUE for %s:", strComment);
         printBYTE(symbol, strComment);
         VPRINTF("]");
-	return;
+        return;
     }
 
     VPRINTF(" %s=%s", strComment, decoder(symbol));

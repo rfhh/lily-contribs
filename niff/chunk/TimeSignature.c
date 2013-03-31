@@ -17,7 +17,7 @@
 static symbol_p
 time_sig_create(void)
 {
-    symbol_p	s = symbol_create(t_current);
+    symbol_p    s = symbol_create(t_current);
 
     s->type = SYM_TIME_SIGNATURE;
     mpq_init(s->symbol.time_signature.duration);
@@ -29,8 +29,8 @@ time_sig_create(void)
 static RIFFIOSuccess
 cbTimeSignatureStart(NIFFIOChunkContext *pctxChunk, niffTimeSignature *p)
 {
-    symbol_p	s;
-    RATIONAL	r;
+    symbol_p    s;
+    RATIONAL    r;
 
     cbChunkStart(pctxChunk);
 
@@ -39,14 +39,14 @@ cbTimeSignatureStart(NIFFIOChunkContext *pctxChunk, niffTimeSignature *p)
     time_sig_current->top = p->topNumber;
     time_sig_current->bottom = p->bottomNumber;
     if (p->topNumber == -1) {
-	r.numerator = 4;
-	r.denominator = 4;
+        r.numerator = 4;
+        r.denominator = 4;
     } else if (p->topNumber == -2) {
-	r.numerator = 2;
-	r.denominator = 2;
+        r.numerator = 2;
+        r.denominator = 2;
     } else {
-	r.numerator = p->topNumber;
-	r.denominator = p->bottomNumber;
+        r.numerator = p->topNumber;
+        r.denominator = p->bottomNumber;
     }
     rat2mpq(time_sig_current->duration, &r);
 
@@ -68,8 +68,8 @@ cbTimeSignatureEnd(NIFFIOChunkContext *pctxChunk, niffTimeSignature *p)
 
 void nf2_chunk_TimeSignature_init(NIFFIOParser *pparser)
 {
-    symbol_p	s;
-    RATIONAL	r;
+    symbol_p    s;
+    RATIONAL    r;
 
     NIFFIORegisterChunkTimeSignature(pparser, cbTimeSignatureStart, cbTimeSignatureEnd);
 

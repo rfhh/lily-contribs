@@ -17,7 +17,7 @@
 symbol_p
 key_sign_create(void)
 {
-    symbol_p	s;
+    symbol_p    s;
 
     s = symbol_create(t_current);
     s->type = SYM_KEY_SIGN;
@@ -29,7 +29,7 @@ key_sign_create(void)
 static RIFFIOSuccess
 cbKeySignatureStart(NIFFIOChunkContext *pctxChunk, niffKeySignature *p)
 {
-    symbol_p	key;
+    symbol_p    key;
 
     key = key_sign_create();
     key->symbol.key_sign.code = p->standardCode;

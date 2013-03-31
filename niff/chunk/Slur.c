@@ -25,7 +25,7 @@ cbSlurStart(NIFFIOChunkContext *pctxChunk)
 static RIFFIOSuccess
 cbSlurEnd(NIFFIOChunkContext *pctxChunk)
 {
-    slur_p	s;
+    slur_p      s;
 
     if (ID_current >= n_slurs) {
         slurs_increase(ID_current);
@@ -34,16 +34,16 @@ cbSlurEnd(NIFFIOChunkContext *pctxChunk)
     s = &slur[ID_current];
 
     if (s->n == 0) {
-	s->n = MultiN;
-	s->pending = MultiN;
+        s->n = MultiN;
+        s->pending = MultiN;
     }
     s->pending--;
 
     if (s->pending == s->n - 1) {
-	stem_current->slur_start = ID_current;
+        stem_current->slur_start = ID_current;
     }
     if (s->pending == 0) {
-	stem_current->slur_end = ID_current;
+        stem_current->slur_end = ID_current;
     }
 
     return cbChunkEnd(pctxChunk);

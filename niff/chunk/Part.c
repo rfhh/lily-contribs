@@ -19,21 +19,21 @@ static void
 part_start(int p, int nst)
 {
     if (p >= n_part) {
-	int	old_n_part = n_part;
-	int	i;
+        int     old_n_part = n_part;
+        int     i;
 
-	n_part = p + 1;
-	part = realloc(part, n_part * sizeof(*part));
-	for (i = old_n_part; i < n_part; i++) {
-	    memset(&part[i], 0, sizeof(part[i]));
-	}
-	voice_index = realloc(voice_index, n_part * sizeof(*voice_index));
+        n_part = p + 1;
+        part = realloc(part, n_part * sizeof(*part));
+        for (i = old_n_part; i < n_part; i++) {
+            memset(&part[i], 0, sizeof(part[i]));
+        }
+        voice_index = realloc(voice_index, n_part * sizeof(*voice_index));
     }
 
     if (nst != part[p].n_staff) {
-	part[p].n_staff = nst;
-	part[p].staff   = calloc(nst, sizeof(*part[p].staff));
-	voice_index[p] = &part[p].staff[0].unvoiced;
+        part[p].n_staff = nst;
+        part[p].staff   = calloc(nst, sizeof(*part[p].staff));
+        voice_index[p] = &part[p].staff[0].unvoiced;
     }
 }
 

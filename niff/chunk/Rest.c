@@ -20,20 +20,20 @@
 static symbol_p
 rest_create(niffRest *p)
 {
-    symbol_p	s = symbol_create(t_current);
-    note_p	n = &s->symbol.note;
+    symbol_p    s = symbol_create(t_current);
+    note_p      n = &s->symbol.note;
 
     mpq_init(n->duration);
     rat2mpq(n->duration, &p->duration);
 
     if (mpq_cmp(n->duration, time_sig_current->duration) >= 0 &&
             ! mpq_equal(t_current, t_measure_start)) {
-	fprintf(stderr, "Meet SharpEye rest(measure) bug. Replace start time ");
-	mpq_out_str(stderr, 10, t_current);
-	fprintf(stderr, " with measure start time ");
-	mpq_out_str(stderr, 10, t_measure_start);
-	fprintf(stderr, "\n");
-	mpq_set(s->start, t_measure_start);
+        fprintf(stderr, "Meet SharpEye rest(measure) bug. Replace start time ");
+        mpq_out_str(stderr, 10, t_current);
+        fprintf(stderr, " with measure start time ");
+        mpq_out_str(stderr, 10, t_measure_start);
+        fprintf(stderr, "\n");
+        mpq_set(s->start, t_measure_start);
     }
 
     s->type = SYM_NOTE;
@@ -41,11 +41,11 @@ rest_create(niffRest *p)
 
     if (stem_current == NULL) {
 #if VERBOSE
-	VPRINTF("\n ****** Get a Rest chunk without stem chunk??");
+        VPRINTF("\n ****** Get a Rest chunk without stem chunk??");
 #else
-	fprintf(stderr, "Warning: ****** Get a Rest chunk without stem chunk??\n");
+        fprintf(stderr, "Warning: ****** Get a Rest chunk without stem chunk??\n");
 #endif
-	stem_current = &stem_create()->symbol.stem;
+        stem_current = &stem_create()->symbol.stem;
     }
     n->tie_start = NO_ID;
     n->tie_end   = NO_ID;

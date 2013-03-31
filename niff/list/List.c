@@ -38,9 +38,9 @@ cbListStart(NIFFIOChunkContext *pctxChunk)
 
 
     VPRINTF("\n start LIST %s ",
-	    NIFFIONameListType(pctxChunk->pchunk->fccType));
+            NIFFIONameListType(pctxChunk->pchunk->fccType));
     VPRINTF("'%s' ( '%s' sizeData = %ld",
-	    strId, strType, pctxChunk->pchunk->sizeData);
+            strId, strType, pctxChunk->pchunk->sizeData);
 
     return RIFFIO_OK;
 

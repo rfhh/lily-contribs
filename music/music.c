@@ -106,14 +106,14 @@ rat2mpq(mpq_t q, RATIONAL *r)
 void
 mpq2rat(mpq_t t, int *nu, int *de)
 {
-    static mpz_t	zde;
-    static mpz_t	znu;
-    static int		initialized = 0;
+    static mpz_t        zde;
+    static mpz_t        znu;
+    static int          initialized = 0;
 
     if (! initialized) {
-	mpz_init(zde);
-	mpz_init(znu);
-	initialized = 1;
+        mpz_init(zde);
+        mpz_init(znu);
+        initialized = 1;
     }
 
     mpq_get_num(znu, t);
@@ -126,12 +126,12 @@ mpq2rat(mpq_t t, int *nu, int *de)
 int
 mpq_zero(mpq_t t)
 {
-    static mpq_t	z;
-    static int	initialized = 0;
+    static mpq_t        z;
+    static int  initialized = 0;
 
     if (! initialized) {
-	mpq_init(z);
-	mpq_set_ui(z, 0, 1);
+        mpq_init(z);
+        mpq_set_ui(z, 0, 1);
     }
 
     return mpq_equal(t, z);
@@ -140,14 +140,14 @@ mpq_zero(mpq_t t)
 
 #if VERBOSE
 
-int	xly_verbose = 0;
+int     xly_verbose = 0;
 
 #include <stdarg.h>
 
 int verbose_printf(char *fmt, ...)
 {
-    va_list	ap;
-    int		r;
+    va_list     ap;
+    int         r;
 
     va_start(ap, fmt);
     r = vfprintf(stderr, fmt, ap);
@@ -163,18 +163,18 @@ int verbose_printf(char *fmt, ...)
 
 /*
  * Yes, a 3-dim array:
- * 	part[n_part]
- * 	part[p][n_staff]
- * 	part[p][f][n_voice]
+ *      part[n_part]
+ *      part[p][n_staff]
+ *      part[p][f][n_voice]
  */
-part_p		part;
+part_p          part;
 
-int		n_part;
+int             n_part;
 
-tuplet_p	tuplet_current;
+tuplet_p        tuplet_current;
 
-tuplet_p	global_tuplet;
-int		n_tuplet;
+tuplet_p        global_tuplet;
+int             n_tuplet;
 
 
 void
@@ -183,42 +183,42 @@ q_insert(symbol_q_p q, symbol_p n)
     symbol_p scan;
 
     if (q->front == NULL) {
-	q->front = n;
-	q->tail  = n;
-	n->next = NULL;
-	n->prev = NULL;
-	return;
+        q->front = n;
+        q->tail  = n;
+        n->next = NULL;
+        n->prev = NULL;
+        return;
     }
 
     scan = q->tail;
     while (scan != NULL && mpq_cmp(n->start, scan->start) < 0) {
-	scan = scan->prev;
+        scan = scan->prev;
     }
     if (n->type == SYM_NOTE) {
-	while (scan != NULL && scan->type == SYM_NOTE &&
-		mpq_equal(n->start, scan->start)) {
-	    if (n->symbol.note.stem->beam <= scan->symbol.note.stem->beam) {
-		break;
-	    }
-	    scan = scan->prev;
-	}
+        while (scan != NULL && scan->type == SYM_NOTE &&
+                mpq_equal(n->start, scan->start)) {
+            if (n->symbol.note.stem->beam <= scan->symbol.note.stem->beam) {
+                break;
+            }
+            scan = scan->prev;
+        }
     }
 
     if (scan == NULL) {
-	n->next = q->front;
-	n->prev = NULL;
-	q->front->prev = n;
-	q->front = n;
-	return;
+        n->next = q->front;
+        n->prev = NULL;
+        q->front->prev = n;
+        q->front = n;
+        return;
     }
 
     n->prev = scan;
     n->next = scan->next;
     scan->next = n;
     if (n->next == NULL) {
-	q->tail = n;
+        q->tail = n;
     } else {
-	n->next->prev = n;
+        n->next->prev = n;
     }
 }
 
@@ -227,11 +227,11 @@ void
 q_append(symbol_q_p q, symbol_p n)
 {
     if (q->front == NULL) {
-	q->front = n;
-	q->tail  = n;
-	n->next = NULL;
-	n->prev = NULL;
-	return;
+        q->front = n;
+        q->tail  = n;
+        n->next = NULL;
+        n->prev = NULL;
+        return;
     }
 
     n->next = NULL;
@@ -246,16 +246,16 @@ void
 q_remove(symbol_q_p q, symbol_p n)
 {
     if (n->prev == NULL) {
-	assert(n == q->front);
-	q->front = n->next;
+        assert(n == q->front);
+        q->front = n->next;
     } else {
-	n->prev->next = n->next;
+        n->prev->next = n->next;
     }
     if (n->next == NULL) {
-	assert(n == q->tail);
-	q->tail = n->prev;
+        assert(n == q->tail);
+        q->tail = n->prev;
     } else {
-	n->next->prev = n->prev;
+        n->next->prev = n->prev;
     }
 }
 
@@ -271,7 +271,7 @@ stack_push(symbol_p *s, symbol_p n)
 symbol_p
 symbol_create(mpq_t t_current)
 {
-    symbol_p	s = calloc(1, sizeof(*s));
+    symbol_p    s = calloc(1, sizeof(*s));
 
     mpq_init(s->start);
     mpq_set(s->start, t_current);
@@ -283,7 +283,7 @@ symbol_create(mpq_t t_current)
 symbol_p
 symbol_clone(symbol_p s)
 {
-    symbol_p	c = malloc(sizeof(*c));
+    symbol_p    c = malloc(sizeof(*c));
 
     *c = *s;
 
@@ -302,38 +302,38 @@ symbol_clear(symbol_p s)
 }
 
 
-int	n_ties;
-tie_p	ties;
+int     n_ties;
+tie_p   ties;
 
 
 void
 ties_increase(int ID)
 {
-    int		i;
-    int		old_n;
+    int         i;
+    int         old_n;
 
     if (ID < n_ties) {
-	return;
+        return;
     }
 
     old_n = n_ties;
     n_ties = ID + 1;
     ties = realloc(ties, n_ties * sizeof(*ties));
     for (i = old_n; i < n_ties; i++) {
-	memset(&ties[i], 0, sizeof(*ties));
+        memset(&ties[i], 0, sizeof(*ties));
     }
 }
 
 
-int	n_slurs;
-slur_p	slur;
+int     n_slurs;
+slur_p  slur;
 
 
 void
 slurs_increase(int ID)
 {
-    int	old_n_slurs = n_slurs;
-    int	i;
+    int old_n_slurs = n_slurs;
+    int i;
 
     n_slurs = ID + 1;
     slur = realloc(slur, n_slurs * sizeof(*slur));

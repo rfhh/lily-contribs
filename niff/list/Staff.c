@@ -16,8 +16,8 @@
 #include "niff/tag/Tag.h"
 
 
-int		staff_current;
-int		staff_partID;		/* PartID for whole staff */
+int             staff_current;
+int             staff_partID;           /* PartID for whole staff */
 
 
 static RIFFIOSuccess

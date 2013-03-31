@@ -18,8 +18,8 @@ static RIFFIOSuccess
 cbSlashedStem(NIFFIOTagContext *pctxTag)
 {
     if (cbTagStart(pctxTag, NULL, cbSlashedStem)) {
-	VPRINTF(" /slashed stem");
-	stem_current->flags |= FLAG_SLASHED;
+        VPRINTF(" /slashed stem");
+        stem_current->flags |= FLAG_SLASHED;
     }
     cbTagEnd(pctxTag);
     UNIMPLEMENTED_TAG("SlashedStem");

@@ -16,7 +16,7 @@
 static symbol_p
 ornament_create(void)
 {
-    symbol_p	s;
+    symbol_p    s;
 
     s = symbol_create(t_current);
     s->type = SYM_ORNAMENT;
@@ -30,7 +30,7 @@ ornament_create(void)
 static RIFFIOSuccess
 cbOrnamentStart(NIFFIOChunkContext *pctxChunk, niffOrnament *p)
 {
-    symbol_p	s;
+    symbol_p    s;
 
     s = ornament_create();
     s->symbol.ornament.shape = p->shape;

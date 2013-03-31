@@ -4,9 +4,9 @@
 
 #include "niffio.h"
 
-#define NO_VOICE_ID	-1
+#define NO_VOICE_ID     -1
 
-extern int		voiceID_current;	/* VoiceID tag seen */
+extern int              voiceID_current;        /* VoiceID tag seen */
 
 void nf2_tag_VoiceID_init(NIFFIOParser *pparser);
 void nf2_tag_VoiceID_end(NIFFIOParser *pparser);

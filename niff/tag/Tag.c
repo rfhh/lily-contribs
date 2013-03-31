@@ -67,39 +67,39 @@
 typedef struct NF2_TAG nf2_tag_t, *nf2_tag_p;
 
 struct NF2_TAG {
-    NIFFIOTagContext	tag;
-    void	       *ptr;
+    NIFFIOTagContext    tag;
+    void               *ptr;
     RIFFIOSuccess     (*callback)(NIFFIOTagContext *t, void *p);
-    int			partID;
-    int			voiceID;
-    nf2_tag_p		next;
+    int                 partID;
+    int                 voiceID;
+    nf2_tag_p           next;
 };
 
 
-static nf2_tag_p	tag_activate_list;
-static nf2_tag_p	tag_activate_new_list;
+static nf2_tag_p        tag_activate_list;
+static nf2_tag_p        tag_activate_new_list;
 
-static int		tag_activate_collect = 0;
-static int		tag_inactivate_collect = 0;
-static int		tag_activate_partID  = NO_PART_ID;
-static int		tag_activate_voiceID = NO_VOICE_ID;
+static int              tag_activate_collect = 0;
+static int              tag_inactivate_collect = 0;
+static int              tag_activate_partID  = NO_PART_ID;
+static int              tag_activate_voiceID = NO_VOICE_ID;
 
 
 static void
 tag_activate_add(NIFFIOTagContext *pctxTag, void *p, void *callback)
 {
     if (pctxTag->ptag->tagid == nifftagPartID) {
-	tag_activate_partID = *(int *)p;
+        tag_activate_partID = *(int *)p;
     } else if (pctxTag->ptag->tagid == nifftagVoiceID) {
-	tag_activate_voiceID = *(int *)p;
+        tag_activate_voiceID = *(int *)p;
     } else {
-	nf2_tag_p t = calloc(1, sizeof(*t));
-	t->tag = *pctxTag;
-	t->ptr = p;
-	t->callback = callback;
+        nf2_tag_p t = calloc(1, sizeof(*t));
+        t->tag = *pctxTag;
+        t->ptr = p;
+        t->callback = callback;
 
-	t->next = tag_activate_new_list;
-	tag_activate_new_list = t;
+        t->next = tag_activate_new_list;
+        tag_activate_new_list = t;
     }
 }
 
@@ -114,15 +114,15 @@ tag_activate_start(void)
 void
 tag_activate_stop(void)
 {
-    nf2_tag_p	t;
-    nf2_tag_p	next;
+    nf2_tag_p   t;
+    nf2_tag_p   next;
 
     for (t = tag_activate_new_list; t != NULL; t = next) {
-	t->partID  = tag_activate_partID;
-	t->voiceID = tag_activate_voiceID;
-	next = t->next;
-	t->next = tag_activate_list;
-	tag_activate_list = t;
+        t->partID  = tag_activate_partID;
+        t->voiceID = tag_activate_voiceID;
+        next = t->next;
+        t->next = tag_activate_list;
+        tag_activate_list = t;
     }
 
     tag_activate_new_list = NULL;
@@ -138,9 +138,9 @@ tag_activate_reset(void)
     nf2_tag_p t;
 
     while (tag_activate_list != NULL) {
-	t = tag_activate_list;
-	tag_activate_list = t->next;
-	free(t);
+        t = tag_activate_list;
+        tag_activate_list = t->next;
+        free(t);
     }
 }
 
@@ -153,20 +153,20 @@ tag_activate_delete(NIFFIOTagContext *pctxTag)
 
     t = tag_activate_list;
     while (t != NULL && pctxTag->ptag->tagid != t->tag.ptag->tagid) {
-	prev = t;
-	t = t->next;
+        prev = t;
+        t = t->next;
     }
 
     if (t == NULL) {
-	fprintf(stderr, "Want to deactivate tag %s but cannot find it\n",
-		NIFFIONameTagId(pctxTag->ptag->tagid));
-	return;
+        fprintf(stderr, "Want to deactivate tag %s but cannot find it\n",
+                NIFFIONameTagId(pctxTag->ptag->tagid));
+        return;
     }
 
     if (t == tag_activate_list) {
-	tag_activate_list = t->next;
+        tag_activate_list = t->next;
     } else {
-	prev->next = t->next;
+        prev->next = t->next;
     }
     free(t);
 }
@@ -189,20 +189,20 @@ tag_inactivate_stop(void)
 void
 tag_activate_apply(void)
 {
-    nf2_tag_p	t;
+    nf2_tag_p   t;
 
     if (tag_activate_collect) {
-	return;
+        return;
     }
 
     for (t = tag_activate_list; t != NULL; t = t->next) {
-	if (t->partID != NO_PART_ID && partID_current != t->partID) {
-	    continue;
-	}
-	if (t->voiceID != NO_VOICE_ID && voiceID_current != t->voiceID) {
-	    continue;
-	}
-	t->callback(&t->tag, t->ptr);
+        if (t->partID != NO_PART_ID && partID_current != t->partID) {
+            continue;
+        }
+        if (t->voiceID != NO_VOICE_ID && voiceID_current != t->voiceID) {
+            continue;
+        }
+        t->callback(&t->tag, t->ptr);
     }
 }
 
@@ -213,8 +213,8 @@ tags_reset(void)
     ID_current = NO_ID;
     MultiN = 0;
     if (staff_partID == NO_PART_ID) {
-	part_current = NULL;
-	voice_current = &voice_unparted;
+        part_current = NULL;
+        voice_current = &voice_unparted;
     }
     partID_current = staff_partID;
 }
@@ -228,13 +228,13 @@ cbTagStart(NIFFIOTagContext *pctxTag, void *p, void *callback)
     assert(pctxTag->pchunkParent != 0);
 
     if (tag_activate_collect) {
-	tag_activate_add(pctxTag, p, callback);
-	return 0;
+        tag_activate_add(pctxTag, p, callback);
+        return 0;
     }
 
     if (tag_inactivate_collect) {
-	tag_activate_delete(pctxTag);
-	return 0;
+        tag_activate_delete(pctxTag);
+        return 0;
     }
 
     VPRINTF(" /%s", NIFFIONameTagId(pctxTag->ptag->tagid));
@@ -261,7 +261,7 @@ static RIFFIOSuccess
 cbTag(NIFFIOTagContext *pctxTag)
 {
     if (cbTagStart(pctxTag, NULL, cbTag)) {
-	VPRINTF(" unknown meaning");
+        VPRINTF(" unknown meaning");
     }
 
     return cbTagEnd(pctxTag);

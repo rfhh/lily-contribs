@@ -17,7 +17,7 @@
 static symbol_p
 bar_start_create(void)
 {
-    symbol_p	s = symbol_create(t_current);
+    symbol_p    s = symbol_create(t_current);
 
     s->type = SYM_BAR_START;
 
@@ -31,16 +31,16 @@ cbTimeSliceStart(NIFFIOChunkContext *pctxChunk, niffTimeSlice *p)
     cbChunkStart(pctxChunk);
 
     if (p->type == 1) {
-	symbol_p s = bar_start_create();
-	rat2mpq(t_measure_start, &p->startTime);
-	q_insert(voice_current, s);
+        symbol_p s = bar_start_create();
+        rat2mpq(t_measure_start, &p->startTime);
+        q_insert(voice_current, s);
     } else {
-	assert(p->type == 2);
-	rat2mpq(t_current, &p->startTime);
-	mpq_add(t_current, t_current, t_measure_start);
+        assert(p->type == 2);
+        rat2mpq(t_current, &p->startTime);
+        mpq_add(t_current, t_current, t_measure_start);
     }
-    stem_current = NULL;	/* Reset it, something new has begun */
-    symbol_current = NULL;	/* Reset it, something new has begun */
+    stem_current = NULL;        /* Reset it, something new has begun */
+    symbol_current = NULL;      /* Reset it, something new has begun */
 
     printSymbol(NIFFIOSymbolTS, p->type, "type");
     printRATIONAL(p->startTime, "start time");
