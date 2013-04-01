@@ -226,20 +226,49 @@ q_insert(symbol_q_p q, symbol_p n)
 void
 q_append(symbol_q_p q, symbol_p n)
 {
-    if (q->front == NULL) {
-        q->front = n;
-        q->tail  = n;
-        n->next = NULL;
-        n->prev = NULL;
-        return;
-    }
-
-    n->next = NULL;
-    n->prev = q->tail;
-    q->tail->next = n;
-    q->tail = n;
+	if (q->front == NULL) {
+		q->front = n;
+		q->tail  = n;
+		n->next = NULL;
+		n->prev = NULL;
+	} else {
+		n->next = NULL;
+		n->prev = q->tail;
+		q->tail->next = n;
+		q->tail = n;
+	}
 }
 
+
+void
+q_append_before_simultaneous(symbol_q_p q, symbol_p n)
+{
+    if (q->front == NULL || mpq_cmp(n->start, q->tail->start) > 0) {
+        q_append(q, n);
+	} else {
+		symbol_p scan = q->tail;
+		symbol_p next = NULL;
+		while (scan != NULL && mpq_cmp(n->start, scan->start) == 0) {
+			next = scan;
+			scan = scan->prev;
+		}
+		n->next = next;
+		n->prev = scan;
+		if (next == NULL) {
+			// at the tail, after all
+			q->tail = n;
+			scan->next = n;
+		} else {
+			next->prev = n;
+			if (scan == NULL) {
+				// at the front
+				q->front = n;
+			} else {
+				scan->next = n;
+			}
+		}
+	}
+}
 
 
 void

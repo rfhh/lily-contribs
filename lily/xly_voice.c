@@ -12,6 +12,7 @@
 
 #include "xly_voice.h"
 
+void report_symbol(const symbol_p scan, int verbos);
 
 void debugMeAt(mpq_t t);
 void debugMe(void);
@@ -29,7 +30,7 @@ void debugMeAt(mpq_t t)
 
     if (! initialized) {
         mpq_init(t_debug);
-        mpq_set_ui(t_debug, 747, 8);
+        mpq_set_ui(t_debug, 1, 2);
     }
 
     if (mpq_equal(t_debug, t)) {
@@ -53,9 +54,16 @@ voice_increase(staff_p f)
     v->key_previous_current = KEY_RESET;        /* previous key */
 
     for (scan = f->replicated.front; scan != NULL; scan = scan->next) {
+		report_symbol(scan, 1);
+	}
+
+    for (scan = f->replicated.front; scan != NULL; scan = scan->next) {
         symbol_p c = symbol_clone(scan);
         q_insert(&v->q, c);
     }
+	for (scan = v->q.front; scan != NULL; scan = scan->next) {
+		debugMeAt(scan->start);
+	}
 }
 
 
@@ -191,6 +199,7 @@ staff_commit(staff_p f, staff_p back_staff, int recursing, symbol_p *next)
     for (i = 0; i < back_staff->n_voice; i++) {
         while ((scan = back_staff->voice[i].q.front) != NULL) {
             q_remove(&back_staff->voice[i].q, scan);
+			debugMeAt(scan->t_start);
             q_append(&f->voice[i].q, scan);
         }
         voice_copy(&f->voice[i], &back_staff->voice[i]);
@@ -198,6 +207,7 @@ staff_commit(staff_p f, staff_p back_staff, int recursing, symbol_p *next)
 
     while ((scan = back_staff->replicated.front) != NULL) {
         q_remove(&back_staff->replicated, scan);
+		debugMeAt(scan->t_start);
         q_append(&f->replicated, scan);
     }
 
@@ -364,7 +374,6 @@ report_voice_tail(const staff_p f, int i)
 }
 
 
-void report_symbol(const symbol_p scan, int verbos);
 void
 report_symbol(const symbol_p scan, int verbos)
 {
@@ -436,7 +445,7 @@ notes_simultaneous_constrained(staff_p f,
         report_note(scan);
         VPRINTF(" recursing %d", recursing);
 
-        debugMeAt(scan->start);
+        // debugMeAt(scan->start);
 
         for (i = 0; i < f->n_voice; i++) {
             voice_p v = &f->voice[i];
@@ -636,7 +645,7 @@ notes_simultaneous_unconstrained(staff_p f,
         report_note(scan);
         VPRINTF(" recursing %d", recursing);
 
-        debugMeAt(scan->start);
+        // debugMeAt(scan->start);
 
         for (i = 0; i < f->n_voice; i++) {
             voice_p v = &f->voice[i];
@@ -838,22 +847,23 @@ do_staff_voicing(staff_p f, int recursing, symbol_p scan)
         case SYM_TREMOLO:
         case SYM_TUPLET:
         case SYM_NUMBER:
-            q_append(&f->voice[0].q, scan);
+            q_append_before_simultaneous(&f->voice[0].q, scan);
             break;
 
         case SYM_BAR_START:
         case SYM_CLEF:
         case SYM_KEY_SIGN:
         case SYM_TIME_SIGNATURE:
+			debugMeAt(scan->start);
             VPRINTF("Symbol %s %p at t = ",
                      SYMBOL_TYPE_string(scan->type), scan);
             VPRINT_MPQ(scan->start);
             VPRINTF("; n_voice = %d\n", f->n_voice);
             for (i = 0; i < f->n_voice; i++) {
                 symbol_p c = symbol_clone(scan);
-                q_append(&f->voice[i].q, c);
+                q_append_before_simultaneous(&f->voice[i].q, c);
             }
-            q_append(&f->replicated, scan);
+            q_append_before_simultaneous(&f->replicated, scan);
             break;
 
         case SYM_NOTE:

@@ -379,6 +379,7 @@ void slurs_increase(int ID);
 
 void q_insert(symbol_q_p q, symbol_p n);
 void q_append(symbol_q_p q, symbol_p n);
+void q_append_before_simultaneous(symbol_q_p q, symbol_p n);
 void q_remove(symbol_q_p q, symbol_p n);
 
 void stack_push(symbol_p *s, symbol_p n);

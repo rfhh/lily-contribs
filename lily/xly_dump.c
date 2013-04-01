@@ -13,6 +13,9 @@
 #include "xly_partial.h"
 #include "xly_dump.h"
 
+void debugMeAt(mpq_t t);
+void debugMe(void);
+
 
 static clef_p   clef_current;
 static int     *measure_accidental;
@@ -565,7 +568,7 @@ dumpNote(mpq_t *t, symbol_p scan, voice_p voice)
     }
 
     if (note->tie_start != NO_ID) {
-        fprintf(lily_out, "~ ");
+        fprintf(lily_out, " ~ ");
     }
 
     mpq_set(dt, note->duration);
@@ -904,9 +907,6 @@ static void
 dumpBarStart(mpq_t *t, symbol_p s)
 {
     VPRINTF("OK, a bar start\n");
-printf("Bar start: t = ");
-mpq_out_str(stdout, 10, *t);
-printf("\n");
 
     memset(measure_accidental - NOTE_VALUES, 0,
             (2 * NOTE_VALUES + 1) * sizeof(*measure_accidental));
@@ -930,11 +930,6 @@ printf("\n");
 
         num = bar_number(t, remain);
         if (mpq_zero(remain) || last_dumped_symbol->type != SYM_REPEAT) {
-printf("Print bar line: t = ");
-mpq_out_str(stdout, 10, *t);
-printf(" remain = ");
-mpq_out_str(stdout, 10, remain);
-printf("\n");
             fprintf(lily_out, " |");
             fprintf(lily_out, " %% bar %d", num);
             last_dumped_symbol = s;
@@ -973,6 +968,7 @@ dumpVoice(voice_p voice)
     }
 
     for (scan = voice->q.front; scan != NULL; scan = scan->next) {
+		debugMeAt(t);
         switch (scan->type) {
 
         case SYM_ARPEGGIO:
@@ -984,9 +980,11 @@ dumpVoice(voice_p voice)
 
         case SYM_BARLINE:
             dumpBarLine(&t, scan);
+			debugMeAt(t);
             break;
 
         case SYM_BAR_START:
+			debugMeAt(t);
             dumpBarStart(&t, scan);
             break;
 
@@ -1008,6 +1006,7 @@ dumpVoice(voice_p voice)
 
         case SYM_KEY_SIGN:
             dumpKeySign(&t, scan, voice);
+			debugMeAt(t);
             break;
 
         case SYM_MEASURE_NUMBERING:
@@ -1018,6 +1017,7 @@ dumpVoice(voice_p voice)
 
         case SYM_NOTE:
             dumpNote(&t, scan, voice);
+			debugMeAt(t);
             break;
 
         case SYM_OTTAVA:
@@ -1025,6 +1025,7 @@ dumpVoice(voice_p voice)
 
         case SYM_ORNAMENT:
             dumpOrnament(&t, scan);
+			debugMeAt(t);
             break;
 
         case SYM_PARENTH:
@@ -1041,6 +1042,7 @@ dumpVoice(voice_p voice)
 
         case SYM_REPEAT:
             dumpRepeat(&t, scan);
+			debugMeAt(t);
             break;
 
         case SYM_STEM:
@@ -1057,6 +1059,7 @@ dumpVoice(voice_p voice)
 
         case SYM_TIME_SIGNATURE:
             dumpTimeSig(&t, scan);
+			debugMeAt(t);
             break;
 
         case SYM_TREMOLO:
