@@ -840,7 +840,6 @@ do_staff_voicing(staff_p f, int recursing, symbol_p scan)
         case SYM_PEDAL:
         case SYM_PORTAMENTO:
         case SYM_REHEARSAL_MARK:
-        case SYM_REPEAT:
         case SYM_TEMPO:
         case SYM_TEXT:
         case SYM_TIE:
@@ -848,6 +847,10 @@ do_staff_voicing(staff_p f, int recursing, symbol_p scan)
         case SYM_TUPLET:
         case SYM_NUMBER:
             q_append_before_simultaneous(&f->voice[0].q, scan);
+            break;
+
+        case SYM_REPEAT:
+            q_append(&f->voice[0].q, scan);
             break;
 
         case SYM_BAR_START:
