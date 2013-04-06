@@ -593,41 +593,56 @@ notes_simultaneous_unconstrained(staff_p f,
     symbol_p    scan;
     symbol_p    next;
     int         r = 1;
-    // int         n_unconstrained = n_simultaneous(f, now, *c_scan, 0);
-    int         n_match = 0;
-    int         stem_match = 0;
 
-    next = *c_next;
-    for (scan = *c_scan;
-             scan != NULL && mpq_equal(now, scan->start);
-             scan = scan->next) {
-        int     i;
+	/* We first handle all stem-matching notes */
+	next = *c_next;
+	for (scan = *c_scan;
+			 scan != NULL && mpq_equal(now, scan->start);
+			 scan = next) {
+		int     i;
 
-        if (scan->type != SYM_NOTE) {
-            continue;
-        }
-        if (is_constrained(&scan->symbol.note)) {
-            fprintf(stderr, "OOOOPPPPSSSSS constrained note not assigned\n");
-        }
+		next = scan->next;
+		if (scan->type != SYM_NOTE) {
+			continue;
+		}
 
-        for (i = 0; i < f->n_voice; i++) {
-            voice_p v = &f->voice[i];
+		if (is_constrained(&scan->symbol.note)) {
+			fprintf(stderr, "OOOOPPPPSSSSS constrained note not assigned\n");
+		}
 
-            report_voice_tail(f, i);
+		for (i = 0; i < f->n_voice; i++) {
+			voice_p v = &f->voice[i];
 
-            if (mpq_equal(scan->start, v->t_finish)) {
-                note_p tail = v->tail;
+			if (mpq_equal(scan->start, v->t_finish)) {
+				note_p tail = v->tail;
 
-                VPRINTF("Voice %d matches\n", i);
-                n_match++;
-                if (tail != NULL &&
-                        (scan->symbol.note.stem->flags & FLAG_STEM_UP) ==
-                            (tail->stem->flags & FLAG_STEM_UP)) {
-                    stem_match++;
-                }
-            }
-        }
-    }
+				VPRINTF("Voice %d matches\n", i);
+				if (tail != NULL &&
+						! (tail->flags & FLAG_REST) &&
+						(scan->symbol.note.stem->flags & FLAG_STEM_UP) ==
+							(tail->stem->flags & FLAG_STEM_UP)) {
+					report_note(scan);
+					VPRINTF("Append note with matching stem contiguously to voice %d\n", i);
+					break;
+				}
+			}
+		}
+
+		if (i != f->n_voice) {
+			if (scan == *c_scan) {
+				*c_scan = next;
+				*c_next = next->next;
+			} else if (scan == *c_next) {
+				*c_next = next->next;
+			}
+			if (recursing) {
+				scan = symbol_clone(scan);
+			} else {
+				q_remove(&f->unvoiced, scan);
+			}
+			append_note(f, i, scan);
+		}
+	}
 
     next = *c_next;
     for (scan = *c_scan;
