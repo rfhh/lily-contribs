@@ -30,7 +30,8 @@ void debugMeAt(mpq_t t)
 
     if (! initialized) {
         mpq_init(t_debug);
-        mpq_set_ui(t_debug, 1, 2);
+        mpq_set_ui(t_debug, 145, 4);
+		initialized = 1;
     }
 
     if (mpq_equal(t_debug, t)) {
@@ -199,7 +200,6 @@ staff_commit(staff_p f, staff_p back_staff, int recursing, symbol_p *next)
     for (i = 0; i < back_staff->n_voice; i++) {
         while ((scan = back_staff->voice[i].q.front) != NULL) {
             q_remove(&back_staff->voice[i].q, scan);
-			debugMeAt(scan->t_start);
             q_append(&f->voice[i].q, scan);
         }
         voice_copy(&f->voice[i], &back_staff->voice[i]);
@@ -207,7 +207,6 @@ staff_commit(staff_p f, staff_p back_staff, int recursing, symbol_p *next)
 
     while ((scan = back_staff->replicated.front) != NULL) {
         q_remove(&back_staff->replicated, scan);
-		debugMeAt(scan->t_start);
         q_append(&f->replicated, scan);
     }
 
@@ -445,8 +444,6 @@ notes_simultaneous_constrained(staff_p f,
         report_note(scan);
         VPRINTF(" recursing %d", recursing);
 
-        // debugMeAt(scan->start);
-
         for (i = 0; i < f->n_voice; i++) {
             voice_p v = &f->voice[i];
             note_p tail = v->tail;
@@ -602,9 +599,12 @@ notes_simultaneous_unconstrained(staff_p f,
 		int     i;
 
 		next = scan->next;
+
 		if (scan->type != SYM_NOTE) {
 			continue;
 		}
+
+		debugMeAt(scan->start);
 
 		if (is_constrained(&scan->symbol.note)) {
 			fprintf(stderr, "OOOOPPPPSSSSS constrained note not assigned\n");
@@ -644,6 +644,116 @@ notes_simultaneous_unconstrained(staff_p f,
 		}
 	}
 
+	/* We then handle all stem-up notes */
+	next = *c_next;
+	for (scan = *c_scan;
+			 scan != NULL && mpq_equal(now, scan->start);
+			 scan = next) {
+		int     i;
+
+		next = scan->next;
+		if (scan->type != SYM_NOTE) {
+			continue;
+		}
+
+		if (! (scan->symbol.note.stem->flags & FLAG_STEM_UP)) {
+			continue;
+		}
+
+		for (i = 0; i < f->n_voice; i += 2) {
+			voice_p v = &f->voice[i];
+
+			if (mpq_equal(scan->start, v->t_finish)) {
+				note_p tail = v->tail;
+
+				VPRINTF("Voice %d matches\n", i);
+				if (tail != NULL &&
+						! (tail->flags & FLAG_REST) &&
+						(scan->symbol.note.stem->flags & FLAG_STEM_UP) ==
+							(tail->stem->flags & FLAG_STEM_UP)) {
+					report_note(scan);
+					VPRINTF("Append note with stem UP contiguously to voice %d\n", i);
+					break;
+				}
+			}
+		}
+
+		if (i < f->n_voice) {
+			if (scan == *c_scan) {
+				*c_scan = next;
+				*c_next = next->next;
+			} else if (scan == *c_next) {
+				*c_next = next->next;
+			}
+			if (recursing) {
+				scan = symbol_clone(scan);
+			} else {
+				q_remove(&f->unvoiced, scan);
+			}
+			append_note(f, i, scan);
+		}
+	}
+
+	/* We then handle all explicit stem-down notes to assign to voice 1, 3, 5, ... */
+	next = *c_next;
+	for (scan = *c_scan;
+			 scan != NULL && mpq_equal(now, scan->start);
+			 scan = next) {
+		int     i;
+		mpq_t	t_whole;
+
+        mpq_init(t_whole);
+        mpq_set_ui(t_whole, 1, 1);
+
+		next = scan->next;
+		if (scan->type != SYM_NOTE) {
+			continue;
+		}
+
+		if (scan->symbol.note.stem->flags & FLAG_STEM_UP) {
+			continue;
+		}
+		if (scan->symbol.note.flags & FLAG_REST) {
+			continue;
+		}
+		if (mpq_cmp(scan->symbol.note.duration, t_whole) >= 0) {
+			continue;
+		}
+
+		for (i = 1; i < f->n_voice; i += 2) {
+			voice_p v = &f->voice[i];
+
+			if (mpq_equal(scan->start, v->t_finish)) {
+				note_p tail = v->tail;
+
+				VPRINTF("Voice %d matches\n", i);
+				if (tail != NULL &&
+						! (tail->flags & FLAG_REST) &&
+						(scan->symbol.note.stem->flags & FLAG_STEM_UP) ==
+							(tail->stem->flags & FLAG_STEM_UP)) {
+					report_note(scan);
+					VPRINTF("Append note with stem UP contiguously to voice %d\n", i);
+					break;
+				}
+			}
+		}
+
+		if (i < f->n_voice) {
+			if (scan == *c_scan) {
+				*c_scan = next;
+				*c_next = next->next;
+			} else if (scan == *c_next) {
+				*c_next = next->next;
+			}
+			if (recursing) {
+				scan = symbol_clone(scan);
+			} else {
+				q_remove(&f->unvoiced, scan);
+			}
+			append_note(f, i, scan);
+		}
+	}
+
     next = *c_next;
     for (scan = *c_scan;
              scan != NULL && mpq_equal(now, scan->start);
@@ -660,22 +770,18 @@ notes_simultaneous_unconstrained(staff_p f,
         report_note(scan);
         VPRINTF(" recursing %d", recursing);
 
-        // debugMeAt(scan->start);
+		for (i = 0; i < f->n_voice; i++) {
+			voice_p v = &f->voice[i];
 
-        for (i = 0; i < f->n_voice; i++) {
-            voice_p v = &f->voice[i];
+			report_voice_tail(f, i);
 
-            report_voice_tail(f, i);
+			if (mpq_equal(scan->start, v->t_finish)) {
+				VPRINTF("Append note contiguously to voice %d\n", i);
+				break;
+			}
+		}
 
-            // Do this nested if() for the debugger. Later? restore it to
-            // an &&-ing of the expressions.
-            if (mpq_equal(scan->start, v->t_finish)) {
-                VPRINTF("Append note contiguously to voice %d\n", i);
-                break;
-            }
-        }
-
-        if (i == f->n_voice) {          /* Could not append */
+        if (i >= f->n_voice) {          /* Could not append */
             for (i = 0; i < f->n_voice; i++) {
                 if (mpq_cmp(scan->start, f->voice[i].t_finish) > 0) {
                     VPRINTF("Append note non-contiguously, t = ");
@@ -688,7 +794,7 @@ notes_simultaneous_unconstrained(staff_p f,
             }
         }
 
-        if (i == f->n_voice) {          /* Could not append */
+        if (i >= f->n_voice) {          /* Could not append */
             if (recursing) {
                 fprintf(stderr, "No assignment found and recursing. What now?\n");
                 for (i = 0; i < f->n_voice; i++) {
@@ -718,7 +824,7 @@ notes_simultaneous_unconstrained(staff_p f,
             voice_increase(f);
         }
 
-        if (i != f->n_voice) {
+        if (i < f->n_voice) {
             if (scan == *c_scan) {
                 *c_scan = next;
                 *c_next = next->next;
@@ -872,7 +978,6 @@ do_staff_voicing(staff_p f, int recursing, symbol_p scan)
         case SYM_CLEF:
         case SYM_KEY_SIGN:
         case SYM_TIME_SIGNATURE:
-			debugMeAt(scan->start);
             VPRINTF("Symbol %s %p at t = ",
                      SYMBOL_TYPE_string(scan->type), scan);
             VPRINT_MPQ(scan->start);
