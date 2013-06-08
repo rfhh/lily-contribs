@@ -154,8 +154,8 @@ defaultKey(int s, voice_p voice)
                         {  1,  0,  0,  1,  1,  0,  0 }, /* 3# A */
                         {  1,  1,  0,  1,  1,  0,  0 }, /* 4# E */
                         {  1,  1,  0,  1,  1,  1,  0 }, /* 5# B */
-                        {  1,  1,  1,  1,  1,  1,  0 }, /* 5# Fis */
-                        {  1,  1,  1,  1,  1,  1,  1 }, /* 5# Cis */
+                        {  1,  1,  1,  1,  1,  1,  0 }, /* 6# Fis */
+                        {  1,  1,  1,  1,  1,  1,  1 }, /* 7# Cis */
                         {  0,  0,  0,  0,  0,  0, -1 }, /* 1b F */
                         {  0,  0, -1,  0,  0,  0, -1 }, /* 2b Bes */
                         {  0,  0, -1,  0,  0, -1, -1 }, /* 3b Es */
@@ -165,8 +165,14 @@ defaultKey(int s, voice_p voice)
                         { -1, -1, -1, -1, -1, -1, -1 }};        /* 7b Ces */
 
     if (voice->key_current == KEY_RESET) {      /* Missed a C major? */
-        fprintf(stderr, "Warning: key reset not followed by key, ignore\n");
-        key_set(NULL, voice->key_previous_current, voice);
+		if (1) {
+			fprintf(stderr, "Warning: key reset not followed by key, ignore\n");
+			key_set(NULL, voice->key_previous_current, voice);
+		} else {
+
+			fprintf(stderr, "Warning: key reset not followed by key, assume C major\n");
+			key_set(NULL, 0, voice);
+		}
     }
 
     return step[voice->key_current][s];

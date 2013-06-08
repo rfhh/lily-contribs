@@ -1,0 +1,5 @@
+Key to C major
+
+For a key change to C major, in SharpEye insert a key change (e.g. a flat),
+then set it to 'natural' in the key selection choice. This hopefully
+generates a correct key in the NIFF.
