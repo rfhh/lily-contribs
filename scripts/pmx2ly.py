@@ -114,10 +114,11 @@ class Barcheck :
 
 
 class Meter :
-	def __init__ (self,nums):
-		self.nums = nums
+	def __init__ (self,num,denom):
+		self.num = num
+		self.denom = denom
 	def dump (self):
-		return ' %{ FIXME: meter change %} '
+		return ' \\time ' + str(self.num) + "/" + str(self.denom)
 		
 class Beam:
 	def __init__ (self, ch):
@@ -125,18 +126,32 @@ class Beam:
 	def dump (self):
 		return self.char
 
+class Tie:
+	def __init__ (self,id):
+		self.id = id
+		self.start_chord = None
+		self.end_chord = None
+	def calculate (self):
+		s = self.start_chord
+		e = self.end_chord
+
+		if e and s:
+			s.note_suffix = s.note_suffix + '~'
+		else:
+			sys.stderr.write ("\nOrphaned tie")
+
 class Slur:
 	def __init__ (self,id):
 		self.id = id
 		self.start_chord = None
 		self.end_chord = None
 	def calculate (self):
-		s =self.start_chord
-		e= self.end_chord
+		s = self.start_chord
+		e = self.end_chord
 
 		if e and s:
 			s.note_suffix = s.note_suffix + '('
-			e.note_prefix = e.note_suffix + ')' 
+			e.note_suffix = e.note_suffix + ')' 
 		else:
 			sys.stderr.write ("\nOrphaned slur")
 
@@ -146,20 +161,47 @@ class Voice:
 		self.entries = []
 		self.chords = []
 		self.staff = None
+		self.current_ties = []
+		self.ties = []
 		self.current_slurs = []
 		self.slurs = []
+		self.meter = None
+		self.pending_slur = None
+		self.pending_tie = None
+
+	def set_meter(self, meter):
+		self.meter = meter
+	
+	def toggle_tie (self, id):
+		for s in self.current_ties:
+			if s.id == id:
+				self.current_ties.remove (s)
+				s.end_chord = self.chords[-1]
+				return
+		self.pending_tie = Tie (id)
+
 	def toggle_slur (self, id):
-		
 		for s in self.current_slurs:
 			if s.id == id:
 				self.current_slurs.remove (s)
 				s.end_chord = self.chords[-1]
 				return
-		s = Slur (id)
-		s.start_chord = self.chords[-1]
-		self.current_slurs.append (s)
-		self.slurs.append (s)
-		
+		self.pending_slur = Slur(id)
+
+	def handle_pending(self):
+		if self.pending_slur:
+			s = self.pending_slur
+			s.start_chord = self.chords[-1]
+			self.current_slurs.append (s)
+			self.slurs.append (s)
+			self.pending_slur = None
+		if self.pending_tie:
+			s = self.pending_tie
+			s.start_chord = self.chords[-1]
+			self.current_ties.append (s)
+			self.ties.append (s)
+			self.pending_tie = None
+
 	def last_chord (self):
 		return self.chords[-1]
 	
@@ -197,8 +239,10 @@ class Voice:
 		lastc = None
 		for c in self.chords:
 			if c.grace and  not lastgr:
+				sys.stderr.write("Handle grace prefix...\n");
 				c.chord_prefix = c.chord_prefix + '\\grace { '
 			elif not c.grace and lastgr:
+				sys.stderr.write("Handle grace suffix...\n");
 				lastc.chord_suffix = lastc.chord_suffix + ' } '
 			lastgr = c.grace
 			lastc = c
@@ -252,7 +296,7 @@ class Staff:
 		self.voice_idx = 0
 		self.number = None
 		self.key = 0
-		
+
 		i = 0
 		for v  in self.voices:
 			v.staff = self
@@ -264,6 +308,20 @@ class Staff:
 			self.voices[0].add_nonchord (Clef (clstr))
 		else:
 			sys.stderr.write ("Clef type `%c' unknown\n" % letter)
+	def set_meter(self, meter):
+		for v in self.voices:
+			v.add_nonchord(meter)
+	def set_key(self, keysig):
+		self.key = keysig
+		sys.stderr.write("Key sig %d\n" % keysig)
+		if keysig >= 0:
+			key = '+' + str(keysig)
+		else:
+			key = '-' + str(-keysig)
+		sys.stderr.write("Key sig[%d] %s\n" % (keysig , key_table[key]))
+		keystr = key_table[key]
+		for v in self.voices:
+			v.add_nonchord(Key(keystr))
 	
 	def current_voice (self):
 		return self.voices[self.voice_idx]
@@ -328,10 +386,14 @@ class Chord:
 		self.chord_suffix = ''
 		self.note_prefix = ''
 		self.note_suffix = ''
+		self.multibar = 0
 		
 	def dump (self):
-		str = ''
+		if self.multibar > 0:
+			v = 'R' + str(self.basic_duration) + "*" + str(self.multibar) + "|"
+			return v
 
+		v = ''
 		sd = ''
 		if self.basic_duration == 0.5:
 			sd = '\\breve'
@@ -339,23 +401,23 @@ class Chord:
 			sd = '%d' % self.basic_duration
 		sd = sd + '.' * self.dots 
 		for p in self.pitches:
-			if str:
-				str = str + ' ' 
-			str = str + pitch_to_lily_string (p) 
+			if v:
+				v = v + ' ' 
+			v = v + pitch_to_lily_string (p) 
 
 		if len (self.pitches) > 1:
-			str = '<%s>' % str
+			v = '<%s>' % v
 		elif len (self.pitches) == 0:
-			str = 'r'
+			v = 'r'
 
-		str = str + sd
+		v = v + sd
 		for s in self.scripts:
-			str = str + '-' + s
+			v = v + '-' + s
 
-		str = self.note_prefix + str + self.note_suffix
-		str = self.chord_prefix + str + self.chord_suffix
+		v = self.note_prefix + v + self.note_suffix
+		v = self.chord_prefix + v + self.chord_suffix
 		
-		return str
+		return v
 		
 SPACE=' \t\n'
 DIGITS ='0123456789'
@@ -399,6 +461,9 @@ class Parser:
 		self.tuplets_expected = 0
 		self.tuplets = []
 		self.last_basic_duration = 4
+		self.meter = None
+		self.keysig = 0
+		self.alteration = [0] * 7
 
 		self.parse (filename)
 		
@@ -408,8 +473,11 @@ class Parser:
 		self.staff_idx = 0
 
 		i =0
+		sys.stderr.write("Key sig %d\n" % self.keysig)
 		for s in self.staffs:
 			s.number = i
+			s.set_meter(self.meter)
+			s.set_key(self.keysig)
 			i = i+1
 	def current_staff (self):
 		return self.staffs[self.staff_idx]
@@ -420,46 +488,52 @@ class Parser:
 	def next_staff (self):
 		self.staff_idx = (self.staff_idx + 1)% len (self.staffs)
 		
-	def parse_note (self, str):
+	def parse_note (self, v):
 		name = None
 		ch = None
 
 		grace = 0
-		if str[0] == 'G':
+		if v[0] == 'G':
 			grace = 1
-			str = str[1:]
+			v = v[1:]
 			
-		if str[0] == 'z':
+		if v[0] == 'z':
 			ch = self.current_voice().last_chord()
-			str = str[1:]
+			v = v[1:]
 		else:
 			ch = Chord ()
 			self.current_voice().add_chord (ch)
 
-		# what about 's'?
-		if str[0] <> 'r':
-			name = (ord (str[0]) - ord('a') + 5) % 7
+		self.current_voice().handle_pending()
 
-		str = str[1:]
+		# what about 's'?
+		alteration = 0
+		if v[0] <> 'r':
+			name = (ord (v[0]) - ord('a') + 5) % 7
+			# sys.stderr.write("Process note '%s' name '%d'\n" % (v[0], name))
+			alteration = self.alteration[name]
+
+		v = v[1:]
 
 		ch.grace = ch.grace or grace 
 		
 		forced_duration  = 0
-		alteration = 0
 		dots = 0
 		oct = None
 		durdigit = None
 		multibar = 0
 		tupnumber = 0
 		extra_oct = 0
-		while str[0] in 'dsfmnul0123456789.,+-':
-			c = str[0]
-			str = str[1:]
+		# sys.stderr.write("Process token '%s'" % v)
+		while v[0] in 'dsfmpnul0123456789.,+-':
+			c = v[0]
 			if c == 'f':
 				alteration = alteration -1
 			elif c == 'n':
 				alteration = 0
 			elif c == 'm':
+				multibar = 1
+			elif c == 'p':
 				multibar = 1
 			elif c == 's':
 				alteration = alteration +1
@@ -467,7 +541,14 @@ class Parser:
 				dots = dots + 1
 			elif c in DIGITS and durdigit == None and \
 			     self.tuplets_expected == 0:
-				durdigit = string.atoi (c)
+				if multibar != 0:
+					bars = ""
+					while v[0] in DIGITS:
+						bars = bars + v[0]
+						v = v[1:]
+					multibar = string.atoi(bars)
+				else:
+					durdigit = string.atoi (c)
 			elif c in DIGITS:
 				oct = string.atoi (c) - 3
 			elif c == '+':
@@ -479,21 +560,29 @@ class Parser:
 				forced_duration = 2
 			elif c == ',':
 				forced_duration = 2
+			v = v[1:]
 
-		if str[0] == 'x':
-			str = str[1:]
-			tupnumber = string.atoi (str[0])
-			str = str[1:]
-			str=re.sub (r'^n?f?[+-0-9.]+', '' , str)
+		if v[0] == 'x':
+			v = v[1:]
+			tupnumber = string.atoi (v[0])
+			v = v[1:]
+			v=re.sub (r'^n?f?[+-0-9.]+', '' , v)
 
-		
-		if durdigit:
+		if multibar != 0:
+			basic_duration = str(self.meter.denom) + "*" + str(self.meter.num)
+			sys.stderr.write("Current meter '%s' = %d/%d basic_duration %s\n" % (self.meter, self.meter.num, self.meter.denom, basic_duration))
+			if oct:
+				sys.stderr.write("Multi-measure rest length %d oct %d\n" % (multibar, oct))
+			else:
+				sys.stderr.write("Multi-measure rest length %d" % multibar)
+
+		elif durdigit:
 			try:
 				basic_duration =  basicdur_table[durdigit]
 				self.last_basic_duration = basic_duration
 			except KeyError:
 				sys.stderr.write ("""
-Huh? expected duration, found %d Left was `%s'""" % (durdigit, str[:20]))
+Huh? expected duration, found %d Left was `%s'""" % (durdigit, v[:20]))
 
 				basic_duration = 4
 		else:
@@ -518,22 +607,25 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, str[:20]))
 			ch.pitches.append ((oct, name,  alteration))
 
 		# do before adding to tuplet.
+		ch.multibar = multibar
 		ch.basic_duration = basic_duration
-		ch.dots = dots
 
-		if forced_duration:
-			self.forced_duration = ch.basic_duration / forced_duration
+		if multibar == 0:
+			ch.dots = dots
+			if forced_duration:
+				self.forced_duration = ch.basic_duration / forced_duration
 
-		if tupnumber:
-			tup =Tuplet (tupnumber, basic_duration, dots)
-			self.tuplets_expected = tupnumber
-			self.tuplets.append (tup)
+			if tupnumber:
+				tup =Tuplet (tupnumber, basic_duration, dots)
+				self.tuplets_expected = tupnumber
+				self.tuplets.append (tup)
 
-		if self.tuplets_expected > 0:
-			self.tuplets[-1].add_chord (ch)
-			self.tuplets_expected = self.tuplets_expected - 1
+			if self.tuplets_expected > 0:
+				self.tuplets[-1].add_chord (ch)
+				self.tuplets_expected = self.tuplets_expected - 1
 			
-		return str
+		return v
+
 	def parse_basso_continuo (self, str):
 		while str[0] in DIGITS +'#n-':
 			scr = str[0]
@@ -552,7 +644,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, str[:20]))
 	#	self.current_voice().add_nonchord (Beam(c))
 		if str[0] == '[':
 			str = str[1:]
-			while str[0] in '+-0123456789':
+			while str[0] in 'ulfhm+-0123456789':
 				str=str[1:]
 		else:
 			str = str[1:]
@@ -602,9 +694,22 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, str[:20]))
 
 			numbers = numbers + map (atonum, opening)
 
-		(no_staffs, no_instruments, timesig_num, timesig_den, ptimesig_num,
-		 esig_den, pickup_beats,keysig_number) = tuple (numbers[0:8])
+		(no_staffs, no_instruments, timesig_num, timesig_den, ptimesig_num, ptimesig_den, pickup_beats, keysig_number) = tuple (numbers[0:8])
 		(no_pages,no_systems, musicsize, fracindent) = tuple (numbers[8:])
+
+		self.meter = Meter(timesig_num, timesig_den)
+
+		self.keysig = keysig_number
+		a = 6
+		for i in range(keysig_number):
+			a = a + 4
+			self.alteration[a % 7] = (i + 7) / 7
+		a = 3
+		for i in range(-keysig_number):
+			a = a + 3
+			self.alteration[a % 7] = -(i + 7) / 7
+		for i in range(7):
+			sys.stderr.write ("%c -> %d " % (chr(ord('c') + i), self.alteration[i]))
 
 		# ignore this.
 		# opening = map (string.atoi, re.split ('[\t ]+', opening))
@@ -652,9 +757,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, str[:20]))
 		
 		return left [1:]
 
-	def parse_slur (self, left):
-		left = left[1:]
-
+	def parse_id(self, left):
 		id = None
 
 		if re.match ('[A-Z0-9]', left[0]):
@@ -662,6 +765,21 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, str[:20]))
 			left= left[1:]
 		while left[0] in 'uld0123456789+-.':
 			left= left[1:]
+		
+		return (id, left)
+
+	def parse_tie (self, left):
+		left = left[1:]
+
+		(id, left) = self.parse_id(left)
+
+		self.current_voice ().toggle_tie(id)
+		return left
+
+	def parse_slur (self, left):
+		left = left[1:]
+
+		(id, left) = self.parse_id(left)
 			
 		self.current_voice ().toggle_slur (id)
 		return left
@@ -694,16 +812,19 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, str[:20]))
 				left = left[1:]
 				m = re.match ('([o0-9]/[o0-9]/[o0-9]/[o0-9])', left)
 				if m:
+					comps = m.split('/')
 					nums = m.group (1)
 					left = left[len (nums):]
 					nums = map (string.atoi , nums)
-					self.current_voice ().add_nonchord (Meter (nums))
+					self.current_voice ().add_nonchord (Meter (comps[0], comps[1]))
+					self.meter = Meter(comps[0], comps[1])
 					continue
 
 				m= re.match ('([0-9o]+)', left)
 				if m:
 					nums = m.group (1)
 					self.current_voice ().add_nonchord (Meter (map (string.atoi (nums))))
+					self.meter = Meter(nums, 1)
 					continue
 				
 			elif left[0] in 'lh':
@@ -722,7 +843,9 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, str[:20]))
 				left = self.parse_basso_continuo (left)
 			elif c in SPACE:
 				left = left[1:]
-			elif c == 's':
+			elif c in '{}':
+				left = self.parse_tie (left)
+			elif c in 's()':
 				left = self.parse_slur (left)
 			elif c == '|':
 				left = self.parse_barcheck (left)
@@ -742,7 +865,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, str[:20]))
 				left = left[2:]
 			elif c == '/':
 				self.next_staff ()
-				left = left[1:]
+				left = self.parse_barcheck (left)
 			elif c == '\\':
 				left = self.parse_mumbo_jumbo(left)
 			elif c == '\r':
