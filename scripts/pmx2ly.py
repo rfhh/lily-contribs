@@ -21,8 +21,15 @@ if version == '@' + 'TOPLEVEL_VERSION' + '@':
 def encodeint (i):
 	return chr ( i  + ord ('A'))
 
-	
-actab = {-2: 'eses', -1: 'es', 0 : '', 1: 'is', 2:'isis'}
+
+actab = {
+	-2: 'eses',
+	-1: 'es',
+	0 : '',
+	1: 'is',
+	2: 'isis'
+}
+
 
 def pitch_to_lily_string (tup):
 	(o,n,a) = tup
@@ -35,15 +42,17 @@ def pitch_to_lily_string (tup):
 		nm = nm + "," * -o
 	return nm
 
+
 def gcd (a,b):
 	if b == 0:
 		return a
 	c = a
-	while c: 
+	while c:
 		c = a % b
 		a = b
 		b = c
 	return a
+
 
 def rat_simplify (r):
 	(n,d) = r
@@ -55,16 +64,19 @@ def rat_simplify (r):
 	else:
 		g = gcd (n, d)
 		return (n/g, d/g)
-	
+
+
 def rat_multiply (a,b):
 	(x,y) = a
 	(p,q) = b
 
 	return rat_simplify ((x*p, y*q))
 
+
 def rat_divide (a,b):
 	(p,q) = b
 	return rat_multiply (a, (q,p))
+
 
 tuplet_table = {
 	2: 3,
@@ -79,16 +91,20 @@ def rat_add (a,b):
 
 	return rat_simplify ((x*q + p*y, y*q))
 
+
 def rat_neg (a):
 	(p,q) = a
 	return (-p,q)
 
 
+
 def rat_larger (a,b):
 	return rat_subtract (a, b )[0] > 0
 
+
 def rat_subtract (a,b ):
 	return rat_add (a, rat_neg (b))
+
 
 def rat_to_duration (frac):
 	log = 1
@@ -103,12 +119,13 @@ def rat_to_duration (frac):
 		dots = 1
 	elif frac == rat_multiply (d, (3,4)):
 		dots = 2
-	return (log, dots)	
+	return (log, dots)
 
 
 class Barcheck :
 	def __init__ (self):
 		pass
+
 	def dump (self):
 		return '|'
 
@@ -116,6 +133,7 @@ class Barcheck :
 class Barnumber :
 	def __init__ (self, number):
 		self.number = number
+
 	def dump (self):
 		return '| % ' + str(self.number) + '\n   '
 
@@ -124,14 +142,18 @@ class Meter :
 	def __init__ (self,num,denom):
 		self.num = num
 		self.denom = denom
+
 	def to_rat(self):
 		return rat_simplify((self.num, self.denom))
+
 	def dump (self):
 		return ' \\time ' + str(self.num) + "/" + str(self.denom) + '\n'
-		
+
+
 class Beam:
 	def __init__ (self, ch):
 		self.char = ch
+
 	def dump (self):
 		return self.char
 
@@ -141,6 +163,7 @@ class Tie:
 		self.id = id
 		self.start_chord = None
 		self.end_chord = None
+
 	def calculate (self):
 		s = self.start_chord
 		e = self.end_chord
@@ -156,13 +179,14 @@ class Slur:
 		self.id = id
 		self.start_chord = None
 		self.end_chord = None
+
 	def calculate (self):
 		s = self.start_chord
 		e = self.end_chord
 
 		if e and s:
 			s.note_suffix = s.note_suffix + '('
-			e.note_suffix = e.note_suffix + ')' 
+			e.note_suffix = e.note_suffix + ')'
 		else:
 			sys.stderr.write ("\nOrphaned slur")
 
@@ -233,7 +257,7 @@ class Voice:
 
 	def last_chord (self):
 		return self.chords[-1]
-	
+
 	def add_chord (self, ch):
 		self.chords.append (ch)
 		self.entries.append (ch)
@@ -253,16 +277,16 @@ class Voice:
 				str  = str + ln + next
 				ln = ''
 				continue
-			
+
 			if 0 and len (ln) +len (next) > 72:
 				str = str+ ln + '\n'
 				ln = ''
 			ln = ln + next
-			
-			
+
+
 		str = str  + ln
 		id = self.idstring ()
-			
+
 		str = '%s =  \\notes { \n %s }\n '% (id, str)
 		return str
 
@@ -286,12 +310,14 @@ class Voice:
 		for t in self.ties:
 			t.calculate ()
 
+
 class Clef:
 	def __init__ (self, cl):
 		self.type = cl
 
 	def dump(self):
 		return '\\clef ' + self.type + '\n'
+
 
 class Key:
 	def __init__ (self, key):
@@ -325,8 +351,10 @@ key_table = {
 	'-5':'des \major',
 	'-6':'ges \major'
 	}
+
+
 class Staff:
-	def __init__ (self): 
+	def __init__ (self):
 		self.voices = (Voice (), Voice())
 		self.clef = None
 		self.instrument = 0
@@ -339,16 +367,19 @@ class Staff:
 			v.staff = self
 			v.number = i
 			i = i+1
+
 	def set_clef (self, letter):
 		if clef_table.has_key (letter):
 			clstr = clef_table[letter]
 			self.voices[0].add_nonchord (Clef (clstr))
 		else:
 			sys.stderr.write ("Clef type `%c' unknown\n" % letter)
+
 	def set_meter(self, meter, pickup):
 		for v in self.voices:
 			v.add_nonchord(meter)
 			v.set_meter(meter, pickup)
+
 	def set_key(self, keysig):
 		self.key = keysig
 		sys.stderr.write("Key sig %d\n" % keysig)
@@ -363,17 +394,20 @@ class Staff:
 			v.set_keysig(keysig)
 		for i in range(7):
 			sys.stderr.write ("%c -> %d " % (chr(ord('c') + i), self.voices[0].default_alteration[i]))
-	
+
 	def current_voice (self):
 		return self.voices[self.voice_idx]
+
 	def next_voice (self):
 		self.voice_idx = (self.voice_idx + 1)%len (self.voices)
 
 	def calculate (self):
 		for v in self.voices:
 			v.calculate ()
+
 	def idstring (self):
 		return 'staff%s' % encodeint (self.number)
+
 	def dump (self):
 		str = ''
 
@@ -381,9 +415,10 @@ class Staff:
 		for v in self.voices:
 			str = str + v.dump()
 			refs = refs + '\\' + v.idstring ()+  ' '
-		
+
 		str = str + '\n\n%s = \\context Staff = %s \n  << \n %s >>\n\n\n'% (self.idstring (), self.idstring (), refs)
 		return str
+
 
 class Tuplet:
 	def __init__ (self, number, base, dots):
@@ -392,7 +427,7 @@ class Tuplet:
 		self.replaces = tuplet_table[number]
 		self.base = base
 		self.dots = dots
-		
+
 		length = (1,base)
 		if dots == 1:
 			length = rat_multiply (length, (3,2))
@@ -414,8 +449,9 @@ class Tuplet:
 		if len (self.chords) == 1:
 			ch.chord_prefix = '\\times %d/%d { ' % (self.replaces, self.number)
 		elif len (self.chords) == self.number:
-			ch.chord_suffix = ' }' 
-		
+			ch.chord_suffix = ' }'
+
+
 class Chord:
 	def __init__ (self):
 		self.pitches = []
@@ -428,7 +464,7 @@ class Chord:
 		self.note_prefix = ''
 		self.note_suffix = ''
 		self.multibar = 0
-		
+
 	def dump (self):
 		if self.multibar > 0:
 			if self.grace:
@@ -442,11 +478,11 @@ class Chord:
 			sd = '\\breve'
 		else:
 			sd = '%d' % self.basic_duration
-		sd = sd + '.' * self.dots 
+		sd = sd + '.' * self.dots
 		for p in self.pitches:
 			if v:
-				v = v + ' ' 
-			v = v + pitch_to_lily_string (p) 
+				v = v + ' '
+			v = v + pitch_to_lily_string (p)
 
 		if len (self.pitches) > 1:
 			v = '<%s>' % v
@@ -461,9 +497,10 @@ class Chord:
 		if self.grace:
 			sys.stderr.write('chord is grace: %s %s %s\n' % (self.chord_prefix, v, self.chord_suffix))
 		v = self.chord_prefix + v + self.chord_suffix
-		
+
 		return v
-		
+
+
 SPACE=' \t\n'
 DIGITS ='0123456789'
 basicdur_table = {
@@ -497,12 +534,13 @@ ornament_table = {
 	'^': '^',
 	}
 
+
 class Parser:
 	def __init__ (self, filename):
 		self.staffs = []
 		self.forced_duration = None
 		self.last_name = 0
-		self.last_oct = 0		
+		self.last_oct = 0
 		self.tuplets_expected = 0
 		self.tuplets = []
 		self.last_basic_duration = 4
@@ -511,10 +549,10 @@ class Parser:
 		self.keysig = 0
 
 		self.parse (filename)
-		
+
 	def set_staffs (self, number):
 		self.staffs = map (lambda x: Staff (), range(0, number))
-		
+
 		self.staff_idx = 0
 
 		i =0
@@ -524,15 +562,16 @@ class Parser:
 			s.set_meter(self.meter, self.pickup)
 			s.set_key(self.keysig)
 			i = i+1
+
 	def current_staff (self):
 		return self.staffs[self.staff_idx]
 
 	def current_voice (self):
 		return self.current_staff ().current_voice ()
-	
+
 	def next_staff (self):
 		self.staff_idx = (self.staff_idx + 1)% len (self.staffs)
-		
+
 	def parse_note (self, v):
 		name = None
 		ch = None
@@ -541,7 +580,7 @@ class Parser:
 		if v[0] == 'G':
 			grace = 1
 			v = v[1:]
-			
+
 		if v[0] == 'z':
 			ch = self.current_voice().last_chord()
 			v = v[1:]
@@ -564,8 +603,8 @@ class Parser:
 
 		v = v[1:]
 
-		ch.grace = ch.grace or grace 
-		
+		ch.grace = ch.grace or grace
+
 		forced_duration  = 0
 		dots = 0
 		oct = None
@@ -681,7 +720,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, v[:20]))
 				self.current_voice().altered[i] = 0
 				self.current_voice().alteration[i] = self.current_voice().default_alteration[i]
 			self.current_voice ().add_nonchord (Barnumber (self.current_voice().bar))
-		
+
 		if name <> None and oct == None:
 			e = 0
 			if self.last_name < name and name -self.last_name > 3:
@@ -694,7 +733,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, v[:20]))
 		if name <> None:
 			self.last_oct = oct
 			self.last_name = name
-				
+
 		if name <> None:
 			ch.pitches.append ((oct, name,  alteration))
 
@@ -715,7 +754,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, v[:20]))
 			if self.tuplets_expected > 0:
 				self.tuplets[-1].add_chord (ch)
 				self.tuplets_expected = self.tuplets_expected - 1
-			
+
 		return v
 
 	def parse_basso_continuo (self, str):
@@ -724,13 +763,14 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, v[:20]))
 
 			if scr == '#':
 				scr = '\\\\textsharp'
-			
+
 			if len(scr)>1 or scr not in DIGITS:
 				scr = '"%s"' % scr
-				
+
 			self.current_voice().last_chord ().scripts.append (scr)
 			str=str[1:]
 		return str
+
 	def parse_beams (self,str):
 		c = str[0]
 	#	self.current_voice().add_nonchord (Beam(c))
@@ -740,7 +780,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, v[:20]))
 				str=str[1:]
 		else:
 			str = str[1:]
-					
+
 		return str
 
 	def parse_key (self, str):
@@ -778,7 +818,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, v[:20]))
 
 			opening = re.sub ('[ \t\n]+', ' ', opening)
 			opening = re.sub ('^ ', '', opening)
-			opening = re.sub (' $', '', opening)						
+			opening = re.sub (' $', '', opening)
 			if opening == '':
 				continue
 			opening = string.split (opening, ' ')
@@ -794,7 +834,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, v[:20]))
 
 		# ignore this.
 		# opening = map (string.atoi, re.split ('[\t ]+', opening))
-		
+
 		instruments = []
 		while len (instruments) < no_instruments:
 			instruments.append (ls[0])
@@ -809,8 +849,8 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, v[:20]))
 			s.set_clef(l[0])
 			l = l[1:]
 
-		# dump path 
-		ls = ls[1:] 
+		# dump path
+		ls = ls[1:]
 
 		# dump more ?
 		return ls
@@ -830,12 +870,13 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, v[:20]))
 			orn = ornament_table[id]
 		except KeyError:
 			sys.stderr.write ("unknown ornament `%s'\n" % id)
-			
+
 		e.scripts.append (orn)
 		return left
+
 	def parse_barcheck (self, left):
 		self.current_voice ().add_nonchord (Barcheck ())
-		
+
 		return left [1:]
 
 	def parse_id(self, left):
@@ -846,7 +887,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, v[:20]))
 			left= left[1:]
 		while left[0] in 'uld0123456789+-.':
 			left= left[1:]
-		
+
 		return (id, left)
 
 	def parse_tie (self, left):
@@ -861,7 +902,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, v[:20]))
 		left = left[1:]
 
 		(id, left) = self.parse_id(left)
-			
+
 		self.current_voice ().toggle_slur (id)
 		return left
 
@@ -872,16 +913,17 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, v[:20]))
 
 		left  = left[1:]
 		return left
+
 	def parsex (self,left):
 		left = left[1:]
 		while left[0] in DIGITS:
 			left = left[1:]
 
 		return left
-	
+
 	def parse_body (self, left):
 		preamble = 1
-		
+
 		while left:
 			c = left[0]
 			if c == '%':
@@ -907,14 +949,14 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, v[:20]))
 					self.current_voice ().add_nonchord (Meter (map (string.atoi (nums))))
 					self.meter = Meter(nums, 1)
 					continue
-				
+
 			elif left[0] in 'lh':
 				f = string.find (left, '\n')
 				if f <0 :
 					left = ''
 				else:
 					left = left[f+1:]
-					
+
 				f = string.find (left, '\n')
 				title = left[:f]
 				left=left[f+1:]
@@ -957,7 +999,6 @@ Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))
 				left = left[1:]
 
 	def dump (self):
-
 		defaults = '\n\
     \\set Score.skipBars = ##t\n\
     \\accidentalStyle modern-cautionary\n\
@@ -971,13 +1012,13 @@ Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))
 
 		str = str + "\n\n\\score { <<\n %s\n%s\n >> }" % (refs , defaults)
 		return str
-			
+
 
 	def parse (self,fn):
 		ls = open (fn).readlines ()
 		def subst(s):
 			return re.sub ('%.*$', '', s)
-		
+
 		ls = map (subst, ls)
 		ls = filter (lambda x: x <> '\n', ls)
 		ls = self.parse_header (ls)
@@ -988,7 +1029,7 @@ Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))
 		for c in self.staffs:
 			c.calculate ()
 
-		
+
 
 
 
@@ -1022,6 +1063,8 @@ certain conditions.  Invoke as `midi2ly --warranty' for more information.
 
 Copyright (c) 2000--2004 by Han-Wen Nienhuys <hanwen@cs.uu.nl>
 """ % version)
+
+
 def identify():
 	sys.stderr.write ("%s from LilyPond %s\n" % (program_name, version))
 
@@ -1038,7 +1081,7 @@ for opt in options:
 	if o == '--version' or o == '-v':
 		print_version ()
 		sys.exit(0)
-		
+
 	if o == '--output' or o == '-o':
 		out_filename = a
 	else:
@@ -1055,19 +1098,19 @@ for f in files:
 	e = Parser(f)
 	if not out_filename:
 		out_filename = os.path.basename (re.sub ('(?i).pmx$', '.ly', f))
-		
+
 	if out_filename == f:
 		out_filename = os.path.basename (f + '.ly')
-		
+
 	sys.stderr.write ('Writing `%s\'' % out_filename)
 	ly = e.dump() + '\n'
 
-	
-	
+
+
 	fo = open (out_filename, 'w')
 	fo.write ('%% lily was here -- automatically converted by pmx2ly from %s\n' % f)
 	fo.write('\\version "2.1.0"\n\n')
 	fo.write(ly)
 	fo.close ()
-	
+
 
