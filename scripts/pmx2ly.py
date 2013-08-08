@@ -32,7 +32,7 @@ actab = {
 
 
 def pitch_to_lily_string (tup):
-	(o,n,a) = tup
+	(o,n,a,f) = tup
 
 	nm = chr((n + 2) % 7 + ord ('a'))
 	nm = nm + actab[a]
@@ -40,6 +40,10 @@ def pitch_to_lily_string (tup):
 		nm = nm + "'" * o
 	elif o < 0:
 		nm = nm + "," * -o
+	if f & CAUTIONARY:
+		nm = nm + "!"
+	if f & SUPPRESS:
+		sys.stderr.write("\n**** Refuse to really suppress the cautionary")
 	return nm
 
 
@@ -173,11 +177,11 @@ class Tie:
 			# check if the first note is altered. If so, copy the
 			# alteration to the second note.
 			for p in s.pitches:
-				(op, np, ap) = p
+				(op, np, ap, fp) = p
 				for i in range(len(e.pitches)):
-					(oq, nq, aq) = e.pitches[i]
+					(oq, nq, aq, fq) = e.pitches[i]
 					if op == oq and np == nq and ap != aq:
-						e.pitches[i] = (oq, nq, ap)
+						e.pitches[i] = (oq, nq, ap, fq)
 		else:
 			sys.stderr.write ("\nOrphaned tie")
 
@@ -200,11 +204,12 @@ class Slur:
 
 
 class Grace:
-	def __init__ (self, items, slashed, slurred, direction):
+	def __init__ (self, items, slashed, slurred, after, direction):
 		self.items = items
 		self.pending = items
 		self.slashed = slashed
 		self.slurred = slurred
+		self.after = after
 		self.direction = direction
 		self.start_chord = None
 		self.end_chord = None
@@ -214,7 +219,9 @@ class Grace:
 		e = self.end_chord
 
 		if e and s:
-			if self.slashed:
+			if self.after:
+				sys.stderr.write('\nFIXME: for \\afterGrace, invert the grace and the graced note');
+			elif self.slashed:
 				if self.slurred:
 					s.note_prefix = s.note_prefix + '\\acciaccatura { '
 				else:
@@ -299,7 +306,7 @@ class Voice:
 			self.pending_tie = None
 		if self.pending_grace:
 			s = self.pending_grace
-			sys.stderr.write("Handle pending grace, items %d pending %d\n" % (s.items, s.pending))
+			# sys.stderr.write("Handle pending grace, items %d pending %d\n" % (s.items, s.pending))
 			s.pending = s.pending - 1
 			if s.pending == 0:
 				s.end_chord = self.chords[-1]
@@ -509,6 +516,9 @@ class Tuplet:
 			ch.chord_suffix = ' }'
 
 
+CAUTIONARY = 0x1 << 0
+SUPPRESS   = 0x1 << 1
+
 class Chord:
 	def __init__ (self):
 		self.pitches = []
@@ -639,6 +649,7 @@ class Parser:
 			slashed = 0
 			slurred = 0
 			items = -1
+			after = 0
 			direction = 0
 			# process the grace note options
 			while v[0] in '0123456789msxluAW':
@@ -649,7 +660,7 @@ class Parser:
 						sys.stderr.write("""
 Huh? expected number of grace note beams, found %d Left was `%s'""" % (v[0], v[:20]))
 					else:
-						basic_duration = 2 << (ord(v[0]) - ord('0'))
+						basic_duration = 4 << (ord(v[0]) - ord('0'))
 						v = v[1:]
 				elif c == 's':
 					slurred = 1
@@ -659,6 +670,8 @@ Huh? expected number of grace note beams, found %d Left was `%s'""" % (v[0], v[:
 					direction = -1
 				elif c == 'u':
 					direction = 1
+				elif c in 'AW':
+					after = 1
 				else:
 					if not c in '0123456789':
 						sys.stderr.write("""
@@ -670,8 +683,8 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, v[:20]))
 							items = 10 * items + ord(c) - ord('0')
 			if items == -1:
 				items = 1
-			sys.stderr.write("Detect grace items %d\n" % items)
-			grace = Grace(items, slashed, slurred, direction)
+			# sys.stderr.write("Detect grace items %d\n" % items)
+			grace = Grace(items, slashed, slurred, after, direction)
 
 		if v[0] == 'z':
 			ch = self.current_voice().last_chord()
@@ -707,34 +720,53 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, v[:20]))
 		extra_oct = 0
 		flats = 0
 		sharps = 0
+		accidental_flags = 0
 		# sys.stderr.write("Process token '%s'" % v)
-		while v[0] in 'dsfmpnul0123456789.,+-':
+		while v[0] in 'aer</>dsfmpnul0123456789.,+-':
 			c = v[0]
-			if c == 'f':
-				flats = flats + 1
-				if -flats != self.current_voice().alteration[name]:
+			if c == 'a':
+				sys.stderr.write("\nFIXME: Somehow specify \\noBeam")
+			if c in 'er</>':
+				sys.stderr.write("\nFIXME: horizontal shift not implemented")
+			if c in 'fns':
+				if c == 'f':
+					flats = flats + 1
+					if -flats != self.current_voice().alteration[name]:
+						self.current_voice().altered[name] = 1
+						self.current_voice().alteration[name] = -flats
+						alteration = -flats
+				elif c == 'n':
+					alteration = 0
 					self.current_voice().altered[name] = 1
-					self.current_voice().alteration[name] = -flats
-					alteration = -flats
+					self.current_voice().alteration[name] = alteration
+				elif c == 's':
+					sharps = sharps + 1
+					if sharps != self.current_voice().alteration[name]:
+						self.current_voice().altered[name] = 1
+						self.current_voice().alteration[name] = sharps
+						alteration = sharps
 				# sys.stderr.write("Set alteration to %d\n" % alteration)
-			elif c == 'n':
-				alteration = 0
-				self.current_voice().altered[name] = 1
-				self.current_voice().alteration[name] = alteration
-				# sys.stderr.write("Set alteration to %d\n" % alteration)
+				if len(v) == 1:
+					pass
+				elif v[1] in '+-':
+					sys.stderr.write("\nFIXME: accidental/dot horizontal shift not implemented")
+				elif v[1] == 'c':
+					accidental_flags = accidental_flags | CAUTIONARY;
+					v = v[1:]
+				elif v[1] == 'i':
+					accidental_flags = accidental_flags | SUPPRESS;
+					v = v[1:]
 			elif c == 'm':
 				multibar = 1
 			elif c == 'p':
 				multibar = 1
-			elif c == 's':
-				sharps = sharps + 1
-				if sharps != self.current_voice().alteration[name]:
-					self.current_voice().altered[name] = 1
-					self.current_voice().alteration[name] = sharps
-					alteration = sharps
-				# sys.stderr.write("Set alteration to %d\n" % alteration)
+				if len(v) > 1 and v[1] == 'o':
+					# ignore off-center attribute
+					v = v[1:]
 			elif c == 'd':
 				dots = dots + 1
+				if v[1] in '+-':
+					sys.stderr.write("\nFIXME: accidental/dot horizontal shift not implemented")
 			elif c in DIGITS and durdigit == None and \
 			     self.tuplets_expected == 0:
 				if multibar != 0:
@@ -773,7 +805,7 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, v[:20]))
 					self.last_basic_duration = basic_duration
 				except KeyError:
 					sys.stderr.write ("""
-	Huh? expected duration, found %d Left was `%s'""" % (durdigit, v[:20]))
+Huh? expected duration, found %d Left was `%s'""" % (durdigit, v[:20]))
 
 					basic_duration = 4
 			elif not grace:
@@ -788,14 +820,7 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, v[:20]))
 			else:
 				self.current_voice().time = rat_add(self.current_voice().time, (1, int(basic_duration)))
 
-			if 0:
-				(nn, nd) = self.current_voice().time
-				(mn, md) = self.meter.to_rat()
-				sys.stderr.write("Compare now = (%d/%d) to meter (%d/%d)\n" % (nn, nd, mn, md))
 			if self.current_voice().time == self.meter.to_rat():
-				if 0:
-					(n, d) = self.current_voice().time
-					sys.stderr.write("Reset voice alterations: t = (%d/%d)\n" % (n, d))
 				self.current_voice().time = (0, 1)
 				if multibar > 0:
 					self.current_voice().bar += multibar
@@ -820,7 +845,7 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, v[:20]))
 			self.last_name = name
 
 		if name <> None:
-			ch.pitches.append ((oct, name,  alteration))
+			ch.pitches.append ((oct, name, alteration, accidental_flags))
 
 		# do before adding to tuplet.
 		ch.multibar = multibar
@@ -951,12 +976,17 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, v[:20]))
 			left = left [1:]
 
 		orn = '"orn"'
-		try:
-			orn = ornament_table[id]
-		except KeyError:
-			sys.stderr.write ("unknown ornament `%s'\n" % id)
+		if id == 'e':
+			if left[0] in 'sfn':
+				e.chord_prefix = e.chord_prefix + '\\once \\set suggestAccidentals = ##t '
+				left = left[1:]
+		else:
+			try:
+				orn = ornament_table[id]
+			except KeyError:
+				sys.stderr.write ("unknown ornament `%s'\n" % id)
 
-		e.scripts.append (orn)
+			e.scripts.append (orn)
 		return left
 
 	def parse_barcheck (self, left):
@@ -1095,7 +1125,7 @@ Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))
 			str = str +  s.dump ()
 			refs = '\\' + s.idstring() + refs
 
-		str = str + "\n\n\\score { <<\n %s\n%s\n >> }" % (refs , defaults)
+		str = str + "\n\n\\score { <<\n    %s\n    %s\n >> }" % (refs , defaults)
 		return str
 
 
@@ -1197,5 +1227,6 @@ for f in files:
 	fo.write('\\version "2.1.0"\n\n')
 	fo.write(ly)
 	fo.close ()
+	sys.stderr.write(" -- done\n");
 
 
