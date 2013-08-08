@@ -170,9 +170,17 @@ class Tie:
 
 		if e and s:
 			s.note_suffix = s.note_suffix + '~'
-			sys.stderr.write("**** FIXME: Copy alterations from tied start to tied end\n")
+			# check if the first note is altered. If so, copy the
+			# alteration to the second note.
+			for p in s.pitches:
+				(op, np, ap) = p
+				for i in range(len(e.pitches)):
+					(oq, nq, aq) = e.pitches[i]
+					if op == oq and np == nq and ap != aq:
+						e.pitches[i] = (oq, nq, ap)
 		else:
 			sys.stderr.write ("\nOrphaned tie")
+
 
 class Slur:
 	def __init__ (self,id):
@@ -191,18 +199,53 @@ class Slur:
 			sys.stderr.write ("\nOrphaned slur")
 
 
+class Grace:
+	def __init__ (self, items, slashed, slurred, direction):
+		self.items = items
+		self.pending = items
+		self.slashed = slashed
+		self.slurred = slurred
+		self.direction = direction
+		self.start_chord = None
+		self.end_chord = None
+
+	def calculate(self):
+		s = self.start_chord
+		e = self.end_chord
+
+		if e and s:
+			if self.slashed:
+				if self.slurred:
+					s.note_prefix = s.note_prefix + '\\acciaccatura { '
+				else:
+					s.note_prefix = s.note_prefix + '\\slashedGrace { '
+			elif self.slurred:
+				s.note_prefix = s.note_prefix + '\\appoggiatura { '
+			else:
+				s.note_prefix = s.note_prefix + '\\grace { '
+			if self.items > 1:
+				s.note_suffix = s.note_suffix + '['
+				e.note_suffix = e.note_suffix + ']'
+			e.note_suffix = e.note_suffix + ' }'
+		else:
+			sys.stderr.write("\nOrphaned grace")
+
+
 class Voice:
 	def __init__ (self):
 		self.entries = []
 		self.chords = []
 		self.staff = None
-		self.current_ties = []
-		self.ties = []
+		self.meter = None
 		self.current_slurs = []
 		self.slurs = []
-		self.meter = None
 		self.pending_slur = None
+		self.current_ties = []
+		self.ties = []
 		self.pending_tie = None
+		self.current_grace = None
+		self.pending_grace = None
+		self.graces = []
 		self.altered = [0] * 7
 		self.alteration = [0] * 7
 		self.default_alteration = [0] * 7
@@ -254,6 +297,17 @@ class Voice:
 			self.current_ties.append (s)
 			self.ties.append (s)
 			self.pending_tie = None
+		if self.pending_grace:
+			s = self.pending_grace
+			sys.stderr.write("Handle pending grace, items %d pending %d\n" % (s.items, s.pending))
+			s.pending = s.pending - 1
+			if s.pending == 0:
+				s.end_chord = self.chords[-1]
+				self.current_grace = s
+				self.pending_grace = None
+			if s.pending == s.items - 1:
+				s.start_chord = self.chords[-1]
+				self.graces.append(s)
 
 	def last_chord (self):
 		return self.chords[-1]
@@ -304,11 +358,14 @@ class Voice:
 			lastc = c
 
 	def calculate (self):
-		self.calculate_graces ()
+		# sys.stderr.write("Skip calculating graces\n")
+		# self.calculate_graces ()
 		for s in self.slurs:
 			s.calculate ()
 		for t in self.ties:
 			t.calculate ()
+		for g in self.graces:
+			g.calculate()
 
 
 class Clef:
@@ -576,10 +633,45 @@ class Parser:
 		name = None
 		ch = None
 
-		grace = 0
+		grace = None
 		if v[0] == 'G':
-			grace = 1
 			v = v[1:]
+			slashed = 0
+			slurred = 0
+			items = -1
+			direction = 0
+			# process the grace note options
+			while v[0] in '0123456789msxluAW':
+				c = v[0]
+				v = v[1:]
+				if c == 'm':
+					if not v[0] in '0123456789':
+						sys.stderr.write("""
+Huh? expected number of grace note beams, found %d Left was `%s'""" % (v[0], v[:20]))
+					else:
+						basic_duration = 2 << (ord(v[0]) - ord('0'))
+						v = v[1:]
+				elif c == 's':
+					slurred = 1
+				elif c == 'x':
+					slashed = 1
+				elif c == 'l':
+					direction = -1
+				elif c == 'u':
+					direction = 1
+				else:
+					if not c in '0123456789':
+						sys.stderr.write("""
+Huh? expected number of grace notes, found %s Left was `%s'""" % (c, v[:20]))
+					else:
+						if items == -1:
+							items = ord(c) - ord('0')
+						else:
+							items = 10 * items + ord(c) - ord('0')
+			if items == -1:
+				items = 1
+			sys.stderr.write("Detect grace items %d\n" % items)
+			grace = Grace(items, slashed, slurred, direction)
 
 		if v[0] == 'z':
 			ch = self.current_voice().last_chord()
@@ -587,6 +679,9 @@ class Parser:
 		else:
 			ch = Chord ()
 			self.current_voice().add_chord (ch)
+
+		if grace:
+			self.current_voice().pending_grace = grace
 
 		self.current_voice().handle_pending()
 
@@ -602,8 +697,6 @@ class Parser:
 			# alteration = self.alteration[name]
 
 		v = v[1:]
-
-		ch.grace = ch.grace or grace
 
 		forced_duration  = 0
 		dots = 0
@@ -630,22 +723,16 @@ class Parser:
 				self.current_voice().alteration[name] = alteration
 				# sys.stderr.write("Set alteration to %d\n" % alteration)
 			elif c == 'm':
-				if grace:
-					sys.stderr.write('handle grace \'m\' attribute\n')
-				else:
-					multibar = 1
+				multibar = 1
 			elif c == 'p':
 				multibar = 1
 			elif c == 's':
-				if grace:
-					sys.stderr.write('handle grace \'s\' attribute\n')
-				else:
-					sharps = sharps + 1
-					if sharps != self.current_voice().alteration[name]:
-						self.current_voice().altered[name] = 1
-						self.current_voice().alteration[name] = sharps
-						alteration = sharps
-					# sys.stderr.write("Set alteration to %d\n" % alteration)
+				sharps = sharps + 1
+				if sharps != self.current_voice().alteration[name]:
+					self.current_voice().altered[name] = 1
+					self.current_voice().alteration[name] = sharps
+					alteration = sharps
+				# sys.stderr.write("Set alteration to %d\n" % alteration)
 			elif c == 'd':
 				dots = dots + 1
 			elif c in DIGITS and durdigit == None and \
@@ -671,55 +758,53 @@ class Parser:
 				forced_duration = 2
 			v = v[1:]
 
-		if v[0] == 'x':
-			if grace:
-				sys.stderr.write('handle grace \'x\' attribute\n')
-			else:
+		if not grace:
+			if v[0] == 'x':
 				v = v[1:]
 				tupnumber = string.atoi (v[0])
 				v = v[1:]
 				v=re.sub (r'^n?f?[+-0-9.]+', '' , v)
 
-		if multibar != 0:
-			basic_duration = str(self.meter.denom) + "*" + str(self.meter.num)
-		elif durdigit:
-			try:
-				basic_duration =  basicdur_table[durdigit]
-				self.last_basic_duration = basic_duration
-			except KeyError:
-				sys.stderr.write ("""
-Huh? expected duration, found %d Left was `%s'""" % (durdigit, v[:20]))
+			if multibar != 0:
+				basic_duration = str(self.meter.denom) + "*" + str(self.meter.num)
+			elif durdigit:
+				try:
+					basic_duration =  basicdur_table[durdigit]
+					self.last_basic_duration = basic_duration
+				except KeyError:
+					sys.stderr.write ("""
+	Huh? expected duration, found %d Left was `%s'""" % (durdigit, v[:20]))
 
-				basic_duration = 4
-		else:
-			basic_duration = self.last_basic_duration
+					basic_duration = 4
+			elif not grace:
+				basic_duration = self.last_basic_duration
 
-		if multibar != 0:
-			self.current_voice().time = self.meter.to_rat()
-		elif basic_duration == 0.5:
-			self.current_voice().time = rat_add(self.current_voice().time, (2, 1))
-		elif basic_duration == 0:
-			self.current_voice().time = rat_add(self.current_voice().time, (1, 1))
-		else:
-			self.current_voice().time = rat_add(self.current_voice().time, (1, int(basic_duration)))
-
-		if 0:
-			(nn, nd) = self.current_voice().time
-			(mn, md) = self.meter.to_rat()
-			sys.stderr.write("Compare now = (%d/%d) to meter (%d/%d)\n" % (nn, nd, mn, md))
-		if self.current_voice().time == self.meter.to_rat():
-			if 0:
-				(n, d) = self.current_voice().time
-				sys.stderr.write("Reset voice alterations: t = (%d/%d)\n" % (n, d))
-			self.current_voice().time = (0, 1)
-			if multibar > 0:
-				self.current_voice().bar += multibar
+			if multibar != 0:
+				self.current_voice().time = self.meter.to_rat()
+			elif basic_duration == 0.5:
+				self.current_voice().time = rat_add(self.current_voice().time, (2, 1))
+			elif basic_duration == 0:
+				self.current_voice().time = rat_add(self.current_voice().time, (1, 1))
 			else:
-				self.current_voice().bar += 1
-			for i in range(7):
-				self.current_voice().altered[i] = 0
-				self.current_voice().alteration[i] = self.current_voice().default_alteration[i]
-			self.current_voice ().add_nonchord (Barnumber (self.current_voice().bar))
+				self.current_voice().time = rat_add(self.current_voice().time, (1, int(basic_duration)))
+
+			if 0:
+				(nn, nd) = self.current_voice().time
+				(mn, md) = self.meter.to_rat()
+				sys.stderr.write("Compare now = (%d/%d) to meter (%d/%d)\n" % (nn, nd, mn, md))
+			if self.current_voice().time == self.meter.to_rat():
+				if 0:
+					(n, d) = self.current_voice().time
+					sys.stderr.write("Reset voice alterations: t = (%d/%d)\n" % (n, d))
+				self.current_voice().time = (0, 1)
+				if multibar > 0:
+					self.current_voice().bar += multibar
+				else:
+					self.current_voice().bar += 1
+				for i in range(7):
+					self.current_voice().altered[i] = 0
+					self.current_voice().alteration[i] = self.current_voice().default_alteration[i]
+				self.current_voice ().add_nonchord (Barnumber (self.current_voice().bar))
 
 		if name <> None and oct == None:
 			e = 0
