@@ -110,21 +110,31 @@ class Barcheck :
 	def __init__ (self):
 		pass
 	def dump (self):
-		return '|\n'
+		return '|'
+
+
+class Barnumber :
+	def __init__ (self, number):
+		self.number = number
+	def dump (self):
+		return '| % ' + str(self.number) + '\n   '
 
 
 class Meter :
 	def __init__ (self,num,denom):
 		self.num = num
 		self.denom = denom
+	def to_rat(self):
+		return rat_simplify((self.num, self.denom))
 	def dump (self):
-		return ' \\time ' + str(self.num) + "/" + str(self.denom)
+		return ' \\time ' + str(self.num) + "/" + str(self.denom) + '\n'
 		
 class Beam:
 	def __init__ (self, ch):
 		self.char = ch
 	def dump (self):
 		return self.char
+
 
 class Tie:
 	def __init__ (self,id):
@@ -137,6 +147,7 @@ class Tie:
 
 		if e and s:
 			s.note_suffix = s.note_suffix + '~'
+			sys.stderr.write("**** FIXME: Copy alterations from tied start to tied end\n")
 		else:
 			sys.stderr.write ("\nOrphaned tie")
 
@@ -168,10 +179,28 @@ class Voice:
 		self.meter = None
 		self.pending_slur = None
 		self.pending_tie = None
+		self.altered = [0] * 7
+		self.alteration = [0] * 7
+		self.default_alteration = [0] * 7
+		self.time = (0, 1)
+		self.bar = 1
 
-	def set_meter(self, meter):
+	def set_meter(self, meter, pickup):
 		self.meter = meter
-	
+		self.time = rat_subtract(meter.to_rat(), pickup)
+		if pickup != (0, 0):
+			self.bar = 0
+
+	def set_keysig(self, keysig):
+		a = 6
+		for i in range(keysig):
+			a = a + 4
+			self.default_alteration[a % 7] = (i + 7) / 7
+		a = 3
+		for i in range(-keysig):
+			a = a + 3
+			self.default_alteration[a % 7] = -(i + 7) / 7
+
 	def toggle_tie (self, id):
 		for s in self.current_ties:
 			if s.id == id:
@@ -208,11 +237,13 @@ class Voice:
 	def add_chord (self, ch):
 		self.chords.append (ch)
 		self.entries.append (ch)
+
 	def add_nonchord (self, nch):
 		self.entries.append (nch)
 
 	def idstring (self):
 		return 'staff%svoice%s ' % (encodeint (self.staff.number) , encodeint(self.number))
+
 	def dump (self):
 		str = ''
 		ln = ''
@@ -223,7 +254,7 @@ class Voice:
 				ln = ''
 				continue
 			
-			if len (ln) +len (next) > 72:
+			if 0 and len (ln) +len (next) > 72:
 				str = str+ ln + '\n'
 				ln = ''
 			ln = ln + next
@@ -234,6 +265,7 @@ class Voice:
 			
 		str = '%s =  \\notes { \n %s }\n '% (id, str)
 		return str
+
 	def calculate_graces (self):
 		lastgr = 0
 		lastc = None
@@ -246,22 +278,27 @@ class Voice:
 				lastc.chord_suffix = lastc.chord_suffix + ' } '
 			lastgr = c.grace
 			lastc = c
+
 	def calculate (self):
 		self.calculate_graces ()
 		for s in self.slurs:
 			s.calculate ()
+		for t in self.ties:
+			t.calculate ()
 
 class Clef:
 	def __init__ (self, cl):
 		self.type = cl
+
 	def dump(self):
-		return '\\clef %s' % self.type
+		return '\\clef ' + self.type + '\n'
 
 class Key:
 	def __init__ (self, key):
 		self.type = key
+
 	def dump(self):
-		return '\\key %s' % self.type
+		return '\\key ' + self.type + '\n'
 
 clef_table = {
 	'b':'bass'  ,
@@ -308,9 +345,10 @@ class Staff:
 			self.voices[0].add_nonchord (Clef (clstr))
 		else:
 			sys.stderr.write ("Clef type `%c' unknown\n" % letter)
-	def set_meter(self, meter):
+	def set_meter(self, meter, pickup):
 		for v in self.voices:
 			v.add_nonchord(meter)
+			v.set_meter(meter, pickup)
 	def set_key(self, keysig):
 		self.key = keysig
 		sys.stderr.write("Key sig %d\n" % keysig)
@@ -322,6 +360,9 @@ class Staff:
 		keystr = key_table[key]
 		for v in self.voices:
 			v.add_nonchord(Key(keystr))
+			v.set_keysig(keysig)
+		for i in range(7):
+			sys.stderr.write ("%c -> %d " % (chr(ord('c') + i), self.voices[0].default_alteration[i]))
 	
 	def current_voice (self):
 		return self.voices[self.voice_idx]
@@ -390,7 +431,9 @@ class Chord:
 		
 	def dump (self):
 		if self.multibar > 0:
-			v = 'R' + str(self.basic_duration) + "*" + str(self.multibar) + "|"
+			if self.grace:
+				sys.stderr.write('Ooppsss... multibar grace?????\n')
+			v = 'R' + str(self.basic_duration) + "*" + str(self.multibar)
 			return v
 
 		v = ''
@@ -415,6 +458,8 @@ class Chord:
 			v = v + '-' + s
 
 		v = self.note_prefix + v + self.note_suffix
+		if self.grace:
+			sys.stderr.write('chord is grace: %s %s %s\n' % (self.chord_prefix, v, self.chord_suffix))
 		v = self.chord_prefix + v + self.chord_suffix
 		
 		return v
@@ -462,8 +507,8 @@ class Parser:
 		self.tuplets = []
 		self.last_basic_duration = 4
 		self.meter = None
+		self.pickup = (0, 1)
 		self.keysig = 0
-		self.alteration = [0] * 7
 
 		self.parse (filename)
 		
@@ -476,7 +521,7 @@ class Parser:
 		sys.stderr.write("Key sig %d\n" % self.keysig)
 		for s in self.staffs:
 			s.number = i
-			s.set_meter(self.meter)
+			s.set_meter(self.meter, self.pickup)
 			s.set_key(self.keysig)
 			i = i+1
 	def current_staff (self):
@@ -511,7 +556,11 @@ class Parser:
 		if v[0] <> 'r':
 			name = (ord (v[0]) - ord('a') + 5) % 7
 			# sys.stderr.write("Process note '%s' name '%d'\n" % (v[0], name))
-			alteration = self.alteration[name]
+			if self.current_voice().altered[name]:
+				alteration = self.current_voice().alteration[name]
+			else:
+				alteration = self.current_voice().default_alteration[name]
+			# alteration = self.alteration[name]
 
 		v = v[1:]
 
@@ -524,19 +573,40 @@ class Parser:
 		multibar = 0
 		tupnumber = 0
 		extra_oct = 0
+		flats = 0
+		sharps = 0
 		# sys.stderr.write("Process token '%s'" % v)
 		while v[0] in 'dsfmpnul0123456789.,+-':
 			c = v[0]
 			if c == 'f':
-				alteration = alteration -1
+				flats = flats + 1
+				if -flats != self.current_voice().alteration[name]:
+					self.current_voice().altered[name] = 1
+					self.current_voice().alteration[name] = -flats
+					alteration = -flats
+				# sys.stderr.write("Set alteration to %d\n" % alteration)
 			elif c == 'n':
 				alteration = 0
+				self.current_voice().altered[name] = 1
+				self.current_voice().alteration[name] = alteration
+				# sys.stderr.write("Set alteration to %d\n" % alteration)
 			elif c == 'm':
-				multibar = 1
+				if grace:
+					sys.stderr.write('handle grace \'m\' attribute\n')
+				else:
+					multibar = 1
 			elif c == 'p':
 				multibar = 1
 			elif c == 's':
-				alteration = alteration +1
+				if grace:
+					sys.stderr.write('handle grace \'s\' attribute\n')
+				else:
+					sharps = sharps + 1
+					if sharps != self.current_voice().alteration[name]:
+						self.current_voice().altered[name] = 1
+						self.current_voice().alteration[name] = sharps
+						alteration = sharps
+					# sys.stderr.write("Set alteration to %d\n" % alteration)
 			elif c == 'd':
 				dots = dots + 1
 			elif c in DIGITS and durdigit == None and \
@@ -563,19 +633,16 @@ class Parser:
 			v = v[1:]
 
 		if v[0] == 'x':
-			v = v[1:]
-			tupnumber = string.atoi (v[0])
-			v = v[1:]
-			v=re.sub (r'^n?f?[+-0-9.]+', '' , v)
+			if grace:
+				sys.stderr.write('handle grace \'x\' attribute\n')
+			else:
+				v = v[1:]
+				tupnumber = string.atoi (v[0])
+				v = v[1:]
+				v=re.sub (r'^n?f?[+-0-9.]+', '' , v)
 
 		if multibar != 0:
 			basic_duration = str(self.meter.denom) + "*" + str(self.meter.num)
-			sys.stderr.write("Current meter '%s' = %d/%d basic_duration %s\n" % (self.meter, self.meter.num, self.meter.denom, basic_duration))
-			if oct:
-				sys.stderr.write("Multi-measure rest length %d oct %d\n" % (multibar, oct))
-			else:
-				sys.stderr.write("Multi-measure rest length %d" % multibar)
-
 		elif durdigit:
 			try:
 				basic_duration =  basicdur_table[durdigit]
@@ -588,7 +655,32 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, v[:20]))
 		else:
 			basic_duration = self.last_basic_duration
 
+		if multibar != 0:
+			self.current_voice().time = self.meter.to_rat()
+		elif basic_duration == 0.5:
+			self.current_voice().time = rat_add(self.current_voice().time, (2, 1))
+		elif basic_duration == 0:
+			self.current_voice().time = rat_add(self.current_voice().time, (1, 1))
+		else:
+			self.current_voice().time = rat_add(self.current_voice().time, (1, int(basic_duration)))
 
+		if 0:
+			(nn, nd) = self.current_voice().time
+			(mn, md) = self.meter.to_rat()
+			sys.stderr.write("Compare now = (%d/%d) to meter (%d/%d)\n" % (nn, nd, mn, md))
+		if self.current_voice().time == self.meter.to_rat():
+			if 0:
+				(n, d) = self.current_voice().time
+				sys.stderr.write("Reset voice alterations: t = (%d/%d)\n" % (n, d))
+			self.current_voice().time = (0, 1)
+			if multibar > 0:
+				self.current_voice().bar += multibar
+			else:
+				self.current_voice().bar += 1
+			for i in range(7):
+				self.current_voice().altered[i] = 0
+				self.current_voice().alteration[i] = self.current_voice().default_alteration[i]
+			self.current_voice ().add_nonchord (Barnumber (self.current_voice().bar))
 		
 		if name <> None and oct == None:
 			e = 0
@@ -670,7 +762,6 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, v[:20]))
 			self.current_voice().add_nonchord (Key(keystr))
 		return(str)
 
-
 	def parse_header  (self, ls):
 		def atonum(a):
 			if re.search('\\.', a):
@@ -698,18 +789,8 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, v[:20]))
 		(no_pages,no_systems, musicsize, fracindent) = tuple (numbers[8:])
 
 		self.meter = Meter(timesig_num, timesig_den)
-
+		self.pickup = (pickup_beats, timesig_den)
 		self.keysig = keysig_number
-		a = 6
-		for i in range(keysig_number):
-			a = a + 4
-			self.alteration[a % 7] = (i + 7) / 7
-		a = 3
-		for i in range(-keysig_number):
-			a = a + 3
-			self.alteration[a % 7] = -(i + 7) / 7
-		for i in range(7):
-			sys.stderr.write ("%c -> %d " % (chr(ord('c') + i), self.alteration[i]))
 
 		# ignore this.
 		# opening = map (string.atoi, re.split ('[\t ]+', opening))
@@ -772,8 +853,8 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, v[:20]))
 		left = left[1:]
 
 		(id, left) = self.parse_id(left)
-
 		self.current_voice ().toggle_tie(id)
+
 		return left
 
 	def parse_slur (self, left):
@@ -876,6 +957,11 @@ Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))
 				left = left[1:]
 
 	def dump (self):
+
+		defaults = '\n\
+    \\set Score.skipBars = ##t\n\
+    \\accidentalStyle modern-cautionary\n\
+'
 		str = ''
 
 		refs = ''
@@ -883,7 +969,7 @@ Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))
 			str = str +  s.dump ()
 			refs = '\\' + s.idstring() + refs
 
-		str = str + "\n\n\\score { <<\n %s\n >> }" % refs 
+		str = str + "\n\n\\score { <<\n %s\n%s\n >> }" % (refs , defaults)
 		return str
 			
 
@@ -974,12 +1060,13 @@ for f in files:
 		out_filename = os.path.basename (f + '.ly')
 		
 	sys.stderr.write ('Writing `%s\'' % out_filename)
-	ly = e.dump()
+	ly = e.dump() + '\n'
 
 	
 	
 	fo = open (out_filename, 'w')
 	fo.write ('%% lily was here -- automatically converted by pmx2ly from %s\n' % f)
+	fo.write('\\version "2.1.0"\n\n')
 	fo.write(ly)
 	fo.close ()
 	
