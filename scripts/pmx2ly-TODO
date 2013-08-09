@@ -1,0 +1,21 @@
+- accidentals work for the *staff*, not for just a single voice in the staff
+- movement breaks
+- line breaks???
+- page breaks???
+- afterGrace
+- forced accidentals
+- titles
+- (final) bar line(s)
+
+- lyrics
+- tex \def: is there some preprocessor that can do that for me, short of TeX
+  itself?
+
+- write little validation suite for:
+   - multi-voice
+   - multi-voice accidentals
+   - grace notes, incl multinote graces
+   - forced accidentals
+   - titles
+   - movements
+   - (final) bar line(s)

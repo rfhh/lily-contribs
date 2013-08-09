@@ -41,6 +41,8 @@ def pitch_to_lily_string (tup):
 	elif o < 0:
 		nm = nm + "," * -o
 	if f & CAUTIONARY:
+		nm = nm + "?"
+	if f & FORCED:
 		nm = nm + "!"
 	if f & SUPPRESS:
 		sys.stderr.write("\n**** Refuse to really suppress the cautionary")
@@ -348,7 +350,7 @@ class Voice:
 		str = str  + ln
 		id = self.idstring ()
 
-		str = '%s =  \\notes { \n %s }\n '% (id, str)
+		str = '%s =  { \n %s }\n '% (id, str)
 		return str
 
 	def calculate_graces (self):
@@ -518,6 +520,7 @@ class Tuplet:
 
 CAUTIONARY = 0x1 << 0
 SUPPRESS   = 0x1 << 1
+FORCED     = 0x1 << 2
 
 class Chord:
 	def __init__ (self):
@@ -986,6 +989,16 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, v[:20]))
 			except KeyError:
 				sys.stderr.write ("unknown ornament `%s'\n" % id)
 
+			if id == 'T':
+				if left[0] == 't':
+					sys.stderr.write("\nFIXME: trill wave without \\trill")
+					left = left[1:]
+				if left[0] == '0':
+					# OK, trill without spanner
+					left = left[1:]
+				else:
+					while left[0] in DIGITS:
+						sys.stderr.write("\nFIXME: trill spanner")
 			e.scripts.append (orn)
 		return left
 
@@ -1224,7 +1237,7 @@ for f in files:
 
 	fo = open (out_filename, 'w')
 	fo.write ('%% lily was here -- automatically converted by pmx2ly from %s\n' % f)
-	fo.write('\\version "2.1.0"\n\n')
+	fo.write('\\version "2.16.0"\n\n')
 	fo.write(ly)
 	fo.close ()
 	sys.stderr.write(" -- done\n");
