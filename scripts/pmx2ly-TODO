@@ -1,4 +1,6 @@
-- accidentals work for the *staff*, not for just a single voice in the staff
+- accidentals work for the *staff*, not for just a single voice in the staff.
+  This will cause a full refactor for the accidental implementation: it
+  lives in the staff, not in the voice, and is handled at calculate-time.
 - movement breaks
 - line breaks???
 - page breaks???
@@ -6,10 +8,25 @@
 - forced accidentals
 - titles
 - (final) bar line(s)
+- repeats
+- expand --- --- sections
+- expand \def... sections using tme http://www.astro.indiana.edu/~jthorn/software.html#tme
+- handle end-of-tex\def correctly: a '\' on its own
+- keep line/column counts into input
+- 'relative' accidentals ( :-( )
+- bar markups (h and l)
+- noBeam
+- skips
+- segno
+- multibar rests in one voice should give skips in empty other voices
 
 - lyrics
-- tex \def: is there some preprocessor that can do that for me, short of TeX
-  itself?
+
+- add options:
+   - accidental for all octaves or only for explicitly set octaves? This
+     is a well-known musical issue
+   - option to follow line breaks
+   - option to follow page breaks
 
 - write little validation suite for:
    - multi-voice
@@ -19,3 +36,4 @@
    - titles
    - movements
    - (final) bar line(s)
+   - every feature and all combinations of features
