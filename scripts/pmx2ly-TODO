@@ -1,6 +1,6 @@
 - accidentals work for the *staff*, not for just a single voice in the staff.
-  This will cause a full refactor for the accidental implementation: it
-  lives in the staff, not in the voice, and is handled at calculate-time.
+  ** This requires refactoring the accidental implementation: it must
+  live in the staff, not in the voice, and is handled at calculate-time.
 - movement breaks
 - line breaks???
 - page breaks???
@@ -9,6 +9,9 @@
 - titles
 - (final) bar line(s)
 - repeats
+  Are the manual repeat bars and voltas transformed into lilypond \repeat
+  \volta sections, or do we just, easily, retain the manual repeat bars and
+  volta indications?
 - expand --- --- sections
 - expand \def... sections using tme http://www.astro.indiana.edu/~jthorn/software.html#tme
 - handle end-of-tex\def correctly: a '\' on its own
@@ -19,6 +22,8 @@
 - skips
 - segno
 - multibar rests in one voice should give skips in empty other voices
+  ** For efficiency, and for ease of programming, this requires refactoring
+  so each voice maintains its global time, not bar + time-in-bar.
 
 - lyrics
 
