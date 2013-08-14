@@ -18,6 +18,9 @@ if version == '@' + 'TOPLEVEL_VERSION' + '@':
 	version = '(unknown version)'	   # uGUHGUHGHGUGH
 
 
+MAX_OCTAVE	= 10
+OCTAVE		= 7
+
 def encodeint (i):
 	return chr ( i  + ord ('A'))
 
@@ -37,7 +40,7 @@ def pitch_to_lily_string (tup):
 	if n == 's':
 		return n
 
-	nm = chr((n + 2) % 7 + ord ('a'))
+	nm = chr((n + 2) % OCTAVE + ord ('a'))
 	nm = nm + actab[a]
 	if o > 0:
 		nm = nm + "'" * o
@@ -259,9 +262,6 @@ class Voice:
 		self.current_grace = None
 		self.pending_grace = None
 		self.graces = []
-		self.altered = [0] * 7
-		self.alteration = [0] * 7
-		self.default_alteration = [0] * 7
 		self.time = (0, 1)
 		self.bar = 0
 		self.preset_id = None
@@ -278,16 +278,6 @@ class Voice:
 			self.bar = -1
 		(d, n) = self.time
 		sys.stderr.write("set_meter(): time %d / %d\n" % (d, n))
-
-	def set_keysig(self, keysig):
-		a = 6
-		for i in range(keysig):
-			a = a + 4
-			self.default_alteration[a % 7] = (i + 7) / 7
-		a = 3
-		for i in range(-keysig):
-			a = a + 3
-			self.default_alteration[a % 7] = -(i + 7) / 7
 
 	def start_tie(self, id):
 		self.pending_tie = Tie(id)
@@ -388,7 +378,7 @@ class Voice:
 		if self.preset_id:
 			out = '%s = {\n   %s}\n' % (self.preset_id, out)
 		else:
-			out = '%s = <<\n{\n   %s\n}\n\\timeLine\n>>\n'% (id, out)
+			out = '%s = <<\n{\n   %s\n}\n>>\n'% (id, out)
 		return out
 
 	def calculate_graces (self):
@@ -426,13 +416,58 @@ class Clef:
 	def dump(self):
 		return ' \\clef ' + self.type + '\n   '
 
+key_table = {
+	'+0':'c \major',
+	'+1':'g \major',
+	'+2':'d \major',
+	'+3':'a \major',
+	'+4':'e \major',
+	'+5':'b \major',
+	'+6':'fis \major',
+	'-1':'f \major',
+	'-2':'bes \major',
+	'-3':'ees \major',
+	'-4':'aes \major',
+	'-5':'des \major',
+	'-6':'ges \major'
+	}
+
 
 class Key:
-	def __init__ (self, key):
-		self.type = key
+	def __init__ (self, key, bar, time):
+		self.key = key
+		self.bar  = bar
+		self.time = time
 
 	def dump(self):
-		return ' \\key ' + self.type + '\n   '
+		if self.key >= 0:
+			key = '+' + str(self.key)
+		else:
+			key = '-' + str(-self.key)
+		return ' \\key ' + key_table[key] + '\n   '
+
+
+class Accidental:
+	def __init__(self, note, octave, alteration, flags, bar, time):
+		self.note = note
+		self.octave = octave
+		self.alteration = alteration
+		self.flags = flags
+		self.bar = bar
+		self.time = time
+
+	def dump(self):
+		(n, d) = self.time
+		return 'bar=%d t=%d/%d note=%d alt=%s flags=%d' % (self.bar, n, d, self.note, self.alteration, self.flags)
+
+class AlterationReset:
+	def __init__(self, bar, time):
+		self.bar = bar
+		self.time = time
+
+	def dump(self):
+		return '<AlterationReset> bar=%d t=%d/%d' % (self.bar, self.time[0], self.time[1])
+
 
 clef_table = {
 	'b':'bass'  ,
@@ -452,21 +487,6 @@ clef_table = {
 	'6': 'bass',
 	'7': 'frenchviolin'
 	}
-key_table = {
-	'+0':'c \major',
-	'+1':'g \major',
-	'+2':'d \major',
-	'+3':'a \major',
-	'+4':'e \major',
-	'+5':'b \major',
-	'+6':'fis \major',
-	'-1':'f \major',
-	'-2':'bes \major',
-	'-3':'ees \major',
-	'-4':'aes \major',
-	'-5':'des \major',
-	'-6':'ges \major'
-	}
 
 
 class Staff:
@@ -477,6 +497,8 @@ class Staff:
 		self.voice_idx = 0
 		self.number = None
 		self.key = 0
+		self.alterations = []
+		self.alteration_spans_octaves = False
 
 		i = 0
 		for v  in self.voices:
@@ -494,30 +516,119 @@ class Staff:
 	def set_key(self, keysig):
 		self.key = keysig
 		sys.stderr.write("Key sig %d\n" % keysig)
-		if keysig >= 0:
-			key = '+' + str(keysig)
-		else:
-			key = '-' + str(-keysig)
-		sys.stderr.write("Key sig[%d] %s\n" % (keysig , key_table[key]))
-		keystr = key_table[key]
-		for v in self.voices:
-			v.add_nonchord(Key(keystr))
-			v.set_keysig(keysig)
-		for i in range(7):
-			sys.stderr.write ("%c -> %d " % (chr(ord('c') + i), self.voices[0].default_alteration[i]))
+		sys.stderr.write("\nFIXME: set pickup time for Key")
+		self.alterations.append(Key(keysig, 0, (0, 1)))
+
+	def set_alteration(self, note, octave, alteration, flags):
+		self.alterations.append(Accidental(note, octave, alteration, flags,
+						   self.current_voice().bar,
+						   self.current_voice().time))
+
+	def reset_alterations(self):
+		self.alterations.append(AlterationReset(self.current_voice().bar,
+							self.current_voice().time))
+		sys.stderr.write("reset the alterations for this staff")
 
 	def current_voice (self):
 		return self.voices[self.voice_idx]
 
 	def next_voice (self):
-		self.voice_idx = (self.voice_idx + 1)%len (self.voices)
+		self.voice_idx = (self.voice_idx + 1) % len(self.voices)
+
+
+	def calculate_alteration(self, voice):
+		altered = [[False] * MAX_OCTAVE for i in range(OCTAVE)]
+		alteration = [[0] * MAX_OCTAVE for i in range(OCTAVE)]
+		default_alteration = [[0] * MAX_OCTAVE for i in range(OCTAVE)]
+		alterations = sorted(self.alterations, key = lambda alt: (alt.bar, alt.time[0] / (1.0 * alt.time[1])))
+		alt_index = 0
+		for ch in voice.chords:
+			# sys.stderr.write("\nConsider chord at bar=%d time=%d/%d" % (ch.bar, ch.time[0], ch.time[1]))
+			while alt_index < len(alterations):
+				a = alterations[alt_index]
+				if a.bar > ch.bar or \
+					(a.bar == ch.bar and rat_larger(a.time, ch.time)):
+					break
+				# sys.stderr.write("\nConsider alteration[%d] %d:(%d/%d) %s" % (alt_index, a.bar, a.time[0], a.time[1], a.dump()))
+				if False:
+					pass
+				elif isinstance(a, Key):
+					alt = 6
+					for k in range(a.key):
+						alt = alt + 4
+						for o in range(MAX_OCTAVE):
+							default_alteration[alt % OCTAVE][o] = (k + OCTAVE) / OCTAVE
+					alt = 3
+					for k in range(-a.key):
+						alt = alt + 3
+						for o in range(MAX_OCTAVE):
+							default_alteration[alt % OCTAVE][o] = -(k + OCTAVE) / OCTAVE
+				elif isinstance(a, AlterationReset):
+					for k in range(OCTAVE):
+						for o in range(MAX_OCTAVE):
+							altered[k][o] = False
+							alteration[k][o] = default_alteration[k][o]
+					flats = 0
+					sharps = 0
+				elif isinstance(a, Accidental):
+					c = a.alteration
+					if False:
+						pass
+					elif c[0] == 'f':
+						flats = 1
+						if c == 'ff':
+							flats = 2
+						if -flats != alteration[a.note][a.octave]:
+							if self.alteration_spans_octaves:
+								for o in range(MAX_OCTAVE):
+									altered[a.note][o] = True
+									alteration[a.note][o] = -flats
+							else:
+								altered[a.note][a.octave] = True
+								alteration[a.note][a.octave] = -flats
+					elif c == 'n':
+						if self.alteration_spans_octaves:
+							for o in range(MAX_OCTAVE):
+								altered[a.note][o] = True
+								alteration[a.note][o] = 0
+						else:
+							altered[a.note][a.octave] = True
+							alteration[a.note][a.octave] = 0
+					elif c[0] == 's':
+						sharps = 1
+						if c == 'ss':
+							sharps = 2
+						if sharps != alteration[a.note][a.octave]:
+							if self.alteration_spans_octaves:
+								for o in range(MAX_OCTAVE):
+									altered[a.note][o] = True
+									alteration[a.note][o] = sharps
+							else:
+								altered[a.note][a.octave] = True
+								alteration[a.note][a.octave] = sharps
+				alt_index = alt_index + 1
+			for p in range(len(ch.pitches)):
+				(o, n, a, f) = ch.pitches[p]
+				if altered[n][o]:
+					a = alteration[n][o]
+				else:
+					a = default_alteration[n][o]
+				# sys.stderr.write("\nApply note %d alteration %d" % (n, a))
+				ch.pitches[p] = (o, n, a, f)
+
+		sys.stderr.write("traverse the voice to calculate the alterations\n")
+
 
 	def calculate (self):
 		for v in self.voices:
+			self.calculate_alteration(v)
+		for v in self.voices:
 			v.calculate ()
+
 
 	def idstring (self):
 		return 'staff%s' % encodeint (self.number)
+
 
 	def dump (self):
 		nonempty = 0
@@ -534,11 +645,12 @@ class Staff:
 			for v in self.voices:
 				out = out + "\n\n" + v.dump()
 			for v in self.voices:
-				voice = '\n   { \\' + v.idstring () + ' }'
+				voice = '\n    \\' + v.idstring ()
 				if v != self.voices[0]:
 					refs = voice + ' \\\\' + refs
 				else:
 					refs = voice + refs
+		refs = refs + "\n    \\timeLine"
 
 		out = out + '\n\n%s = \\new Staff = %s <<%s\n>>\n\n' % (self.idstring (), self.idstring (), refs)
 		return out
@@ -599,6 +711,8 @@ class Chord:
 		self.note_suffix = ''
 		self.multibar = 0
 		self.skip = False
+		self.bar = -1
+		self.time = []
 
 	def dump (self):
 		if self.multibar != 0:
@@ -772,6 +886,7 @@ class Parser:
 				voice.add_nonchord(barnumber)
 		voice.bar = target_bar
 
+
 	def add_markup(self, elevation, text):
 		ch = Chord()
 		self.current_voice().add_chord(ch)
@@ -781,52 +896,59 @@ class Parser:
 		ch.pitches.append((0, 's', 0, 0))
 		ch.chord_suffix = ch.chord_suffix + "^\\markup{" + text + "}"
 
+
+	def parse_grace(self, left):
+		left = left[1:]
+		slashed = 0
+		slurred = 0
+		items = -1
+		after = 0
+		direction = 0
+		basic_duration = 8
+		# process the grace note options
+		while left[0] in '0123456789msxluAW':
+			c = left[0]
+			left = left[1:]
+			if c == 'm':
+				if not left[0] in '0123456789':
+					sys.stderr.write("""
+Huh? expected number of grace note beams, found %d Left was `%s'""" % (left[0], left[:20]))
+				else:
+					basic_duration = 4 << (ord(left[0]) - ord('0'))
+					left = left[1:]
+			elif c == 's':
+				slurred = 1
+			elif c == 'x':
+				slashed = 1
+			elif c == 'l':
+				direction = -1
+			elif c == 'u':
+				direction = 1
+			elif c in 'AW':
+				after = 1
+			else:
+				if not c in '0123456789':
+					sys.stderr.write("""
+Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
+				elif items == -1:
+					items = ord(c) - ord('0')
+				else:
+					items = 10 * items + ord(c) - ord('0')
+		if items == -1:
+			items = 1
+		# sys.stderr.write("Detect grace items %d\n" % items)
+		grace = Grace(items, slashed, slurred, after, direction)
+
+		return (left, grace)
+
+
 	def parse_note (self, left):
 		name = None
 		ch = None
 
 		grace = None
 		if left[0] == 'G':
-			left = left[1:]
-			slashed = 0
-			slurred = 0
-			items = -1
-			after = 0
-			direction = 0
-			basic_duration = 8
-			# process the grace note options
-			while left[0] in '0123456789msxluAW':
-				c = left[0]
-				left = left[1:]
-				if c == 'm':
-					if not left[0] in '0123456789':
-						sys.stderr.write("""
-Huh? expected number of grace note beams, found %d Left was `%s'""" % (left[0], left[:20]))
-					else:
-						basic_duration = 4 << (ord(left[0]) - ord('0'))
-						left = left[1:]
-				elif c == 's':
-					slurred = 1
-				elif c == 'x':
-					slashed = 1
-				elif c == 'l':
-					direction = -1
-				elif c == 'u':
-					direction = 1
-				elif c in 'AW':
-					after = 1
-				else:
-					if not c in '0123456789':
-						sys.stderr.write("""
-Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
-					elif items == -1:
-						items = ord(c) - ord('0')
-					else:
-						items = 10 * items + ord(c) - ord('0')
-			if items == -1:
-				items = 1
-			# sys.stderr.write("Detect grace items %d\n" % items)
-			grace = Grace(items, slashed, slurred, after, direction)
+			(left, grace) = parse_grace(left)
 
 		if left[0] == 'z':
 			chord_continuation = True
@@ -835,6 +957,8 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 		else:
 			chord_continuation = False
 			ch = Chord ()
+			ch.time = self.current_voice().time
+			ch.bar = self.current_voice().bar
 			self.current_voice().add_chord (ch)
 
 		if grace:
@@ -848,24 +972,20 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 		if left[0] <> 'r':
 			name = (ord (left[0]) - ord('a') + 5) % 7
 			# sys.stderr.write("Process note '%s' name '%d'\n" % (left[0], name))
-			if self.current_voice().altered[name]:
-				alteration = self.current_voice().alteration[name]
-			else:
-				alteration = self.current_voice().default_alteration[name]
-			# alteration = self.alteration[name]
 
 		left = left[1:]
 
 		forced_duration  = 0
 		dots = 0
-		oct = None
+		octave = None
 		durdigit = None
+		alteration = None
 		multibar = 0
 		tupnumber = 0
 		extra_oct = 0
 		flats = 0
 		sharps = 0
-		accidental_flags = 0
+		alteration_flags = 0
 		# sys.stderr.write("Process token '%s'" % left)
 		while left[0] in 'aber</>dsfmpnul0123456789.,+-\\':
 			c = left[0]
@@ -876,32 +996,19 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 			elif c in 'er</>':
 				sys.stderr.write("\nFIXME: horizontal shift not implemented")
 			elif c in 'fns':
-				if c == 'f':
-					flats = flats + 1
-					if -flats != self.current_voice().alteration[name]:
-						self.current_voice().altered[name] = 1
-						self.current_voice().alteration[name] = -flats
-						alteration = -flats
-				elif c == 'n':
-					alteration = 0
-					self.current_voice().altered[name] = 1
-					self.current_voice().alteration[name] = alteration
-				elif c == 's':
-					sharps = sharps + 1
-					if sharps != self.current_voice().alteration[name]:
-						self.current_voice().altered[name] = 1
-						self.current_voice().alteration[name] = sharps
-						alteration = sharps
-				# sys.stderr.write("Set alteration to %d\n" % alteration)
+				alteration = c
+				if left[:2] == 'ff' or left[:2] == 'ss':
+					alteration = left[:2]
+					left = left[1:]
 				if len(left) == 1:
 					pass
 				elif left[1] in '+-':
-					sys.stderr.write("\nFIXME: accidental/dot horizontal shift not implemented")
+					sys.stderr.write("\nFIXME: alteration/dot horizontal shift not implemented")
 				elif left[1] == 'c':
-					accidental_flags = accidental_flags | FLAG_CAUTIONARY;
+					alteration_flags = alteration_flags | FLAG_CAUTIONARY;
 					left = left[1:]
 				elif left[1] == 'i':
-					accidental_flags = accidental_flags | FLAG_SUPPRESS;
+					alteration_flags = alteration_flags | FLAG_SUPPRESS;
 					left = left[1:]
 			elif c == 'm':
 				multibar = 1
@@ -913,7 +1020,7 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 			elif c == 'd':
 				dots = dots + 1
 				if left[1] in '+-':
-					sys.stderr.write("\nFIXME: accidental/dot horizontal shift not implemented")
+					sys.stderr.write("\nFIXME: alteration/dot horizontal shift not implemented")
 			elif c in DIGITS and durdigit == None and \
 			     self.tuplets_expected == 0:
 				if multibar != 0:
@@ -927,7 +1034,7 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 					if durdigit == 0:
 						durdigit = 7
 			elif c in DIGITS:
-				oct = string.atoi (c) - 3
+				octave = string.atoi (c) - 3
 			elif c == '+':
 				extra_oct = extra_oct + 1
 			elif c == '-':
@@ -961,21 +1068,24 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 
 		self.last_basic_duration = basic_duration
 
-		if name <> None and oct == None:
+		if name <> None and octave == None:
 			e = 0
 			if self.last_name < name and name -self.last_name > 3:
 				e = -1
 			elif self.last_name > name and self.last_name -name > 3:
 				e = 1
 
-			oct = self.last_oct  +e + extra_oct
+			octave = self.last_oct  +e + extra_oct
 
 		if name <> None:
-			self.last_oct = oct
+			self.last_oct = octave
 			self.last_name = name
 
 		if name <> None:
-			ch.pitches.append ((oct, name, alteration, accidental_flags))
+			ch.pitches.append ((octave, name, 0, 0))
+
+		if alteration:
+			self.current_staff().set_alteration(name, octave, alteration, alteration_flags)
 
 		# do before adding to tuplet.
 		ch.multibar = multibar
@@ -996,7 +1106,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			#	sys.stderr.write("Would add tuplet basic_duration %f tupnumber %d\n" % (basic_duration, tupnumber))
 			# calculate the current time in the bar. Correct for tuplets.
 			# If current time fills the bar, start a new bar, and reset
-			# incidental accidentals.
+			# incidental alterations.
 			if multibar != 0:
 				self.current_voice().time = self.meter.to_rat()
 			else:
@@ -1012,9 +1122,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 					(d, n) = t
 					t = rat_multiply(t, (1, self.tuplets[-1].replaces))
 					t = rat_multiply(t, (self.tuplets[-1].replaces, self.tuplets[-1].number))
-				(d, n) = t
 				self.current_voice().time = rat_add(self.current_voice().time, t)
-				(d, n) = self.current_voice().time;
 
 			if False:
 				(dc, nc) = self.current_voice().time
@@ -1026,9 +1134,8 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 					self.current_voice().bar += multibar
 				else:
 					self.current_voice().bar += 1
-				for i in range(7):
-					self.current_voice().altered[i] = 0
-					self.current_voice().alteration[i] = self.current_voice().default_alteration[i]
+				if self.current_voice() == self.current_staff().voices[0]:
+					self.current_staff().reset_alterations()
 				barnumber = Barnumber(self.current_voice().bar, self.meter)
 				self.current_voice ().add_nonchord(barnumber)
 				# sys.stderr.write("%s: increase bar count to %d\n" % (self.current_voice().idstring(), self.current_voice().bar))
@@ -1084,8 +1191,9 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			while left[0] in '+-0123456789':
 				key=key + left[0]
 				left=left[1:]
-			keystr = key_table[key]
-			self.current_voice().add_nonchord (Key(keystr))
+			key_obj = Key(int(key), self.current_voice().bar, self.current_voice().time)
+			self.current_voice().add_nonchord(key_obj)
+			self.current_staff().alterations.append(key_obj)
 		return(left)
 
 	def parse_header  (self, ls):
@@ -1449,24 +1557,27 @@ Huh? Unknown T parameter `%s', before `%s'""" % (left[1], left[:20] ))
 				sys.stderr.write('\nFIXME: handle volta, from %s' % left[:20])
 			elif c == '\\':
 				# handle just a few MusiXTeX commands
+				while left[0] == '\\':
+					left = left[1:]
+
 				if False:
 					pass
-				elif left.startswith('\\zcharnote'):
-					(left, params) = self.expand_tex(left[len('\\zcharnote'):], 2)
+				elif left.startswith('zcharnote'):
+					(left, params) = self.expand_tex(left[len('zcharnote'):], 2)
 					self.add_markup(params[0], params[1])
-				elif left.startswith('\\lcharnote'):
-					(left, params) = self.expand_tex(left[len('\\lcharnote'):], 2)
-				elif left.startswith('\\ccharnote'):
-					(left, params) = self.expand_tex(left[len('\\lcharnote'):], 2)
-				elif left.startswith('\\zchar'):
-					(left, params) = self.expand_tex(left[len('\\lcharnote'):], 2)
-				elif left.startswith('\\lchar'):
-					(left, params) = self.expand_tex(left[len('\\lcharnote'):], 2)
-				elif left.startswith('\\cchar'):
-					(left, params) = self.expand_tex(left[len('\\lcharnote'):], 2)
-				elif left.startswith('\\zql'):
+				elif left.startswith('lcharnote'):
+					(left, params) = self.expand_tex(left[len('lcharnote'):], 2)
+				elif left.startswith('ccharnote'):
+					(left, params) = self.expand_tex(left[len('lcharnote'):], 2)
+				elif left.startswith('zchar'):
+					(left, params) = self.expand_tex(left[len('lcharnote'):], 2)
+				elif left.startswith('lchar'):
+					(left, params) = self.expand_tex(left[len('lcharnote'):], 2)
+				elif left.startswith('cchar'):
+					(left, params) = self.expand_tex(left[len('lcharnote'):], 2)
+				elif left.startswith('zql'):
 					sys.stderr.write('\nFIXME: handle MusiXTeX macro \\zql, left %s' % left[:20])
-					(left, params) = self.expand_tex(left[len('\\zql'):], 1)
+					(left, params) = self.expand_tex(left[len('zql'):], 1)
 				# to handle:
 				# \zq{note}
 				# \zh{note}
@@ -1487,6 +1598,88 @@ Huh? Unknown T parameter `%s', before `%s'""" % (left[1], left[:20] ))
 				# \zcccl{note}
 				# \zccccu{note}
 				# \zccccl{note}
+
+				# and handle a number of MusixTeX commands
+				elif left.startswith('smalltype'):
+					pass
+				elif left.startswith('Smalltype'):
+					pass
+				elif left.startswith('normtype'):
+					pass
+				elif left.startswith('medtype'):
+					pass
+				elif left.startswith('Bigtype'):
+					pass
+				elif left.startswith('BIgtype'):
+					pass
+				elif left.startswith('BIGtype'):
+					pass
+
+				# and handle a number of M-Tx commands
+				elif left.startswith('mtx'):
+					pass
+					# mtxInstrfont{\twelvebf}
+					# mtxeightsf{\font\eightsf=cmss8}
+					# mtxEightsf{\mtxeightsf\eightsf}
+					# mtxtensf{\font\tensf=cmss10}
+					# mtxTensf{\mtxtensf\tensf}
+					# mtxelevensf{\font\elevensf=cmss10 scaled \magstephalf}
+					# mtxElevensf{\mtxelevensf\elevensf}
+					# mtxtwelvesf{\font\twelvesf=cmss12}
+					# mtxTwelvesf{\mtxtwelvesf\twelvesf}
+					# mtxBigsf{\font\Bigtype=cmss9 scaled \magstep2}
+					# mtxBIGsf{\font\BIGtype=cmss9 scaled \magstep4}
+					# mtxAllsf{\mtxElevensf\mtxBigsf\mtxBIGsf}
+					# mtxTinySize{\tinyvalue}
+					# mtxSmallSize{\smallvalue}
+					# mtxNormalSize{\normalvalue}
+					# mtxLargeSize{\largevalue}
+					# mtxHugeSize{\Largevalue}
+					# mtxSetLyrics, 2):	# #1#2{\setlyrics{#1}{#2}}
+					# mtxCopyLyrics, 2):	# #1#2{\copylyrics{#1}{#2}}
+					# mtxAssignLyrics, 2):	# #1#2{\assignlyrics{#1}{#2}}
+					# mtxAuxLyr#1{\auxlyr{#1}}
+					# mtxLyrlink{\lyrlink}
+					# mtxLowLyrlink{\lowlyrlink}
+					# mtxLyricsAdjust, 2):	# #1#2{\setsongraise{#1}{#2\internote}}
+					# mtxAuxLyricsAdjust, 2):	# #1#2{\auxsetsongraise{#1}{#2\internote}}
+					# mtxLyrModeAlter#1{\lyrmodealter{#1}}
+					# mtxLyrModeNormal#1{\lyrmodenormal{#1}}
+					# mtxBM{\beginmel}
+					# mtxEM{\endmel}
+					# mtxAuxBM{\auxlyr\mtxBM}
+					# mtxAuxEM{\auxlyr\mtxEM}
+					# mtxTenorClef#1{\settrebleclefsymbol{#1}\treblelowoct}
+					# mtxVerseNumber#1{#1 }
+					# mtxInterInstrument, 2):	# #1#2{\setinterinstrument{#1}{#2\Interligne}}
+					# mtxStaffBottom#1{\gdef\atnextline{\stafftopmarg #1\Interligne}}
+					# mtxGroup#1#2#3{\grouptop{#1}{#2}\groupbottom{#1}{#3}}
+					# mtxPageHeight#1{\vsize #1}
+					# mtxTwoInstruments, 2):	# #1#2{\vbox{\hbox{#1}\hbox{#2}}}
+					# mtxTitleLine#1{\gdef\mtxTitle{#1}}
+					# mtxComposerLine, 2):	# #1#2{\gdef\mtxPoetComposer{#1\hfill #2}}
+					# mtxInstrName#1{{\mtxInstrfont #1}}
+					# mtxSetSize, 2):	# #1#2{\setsize{#1}{#2}}
+					# mtxDotted{\dotted}
+					# %\def\mtxSharp{\raise1ex\hbox{\musicsmallfont\char'064}}
+					# %\def\mtxFlat{\raise1ex\hbox{\musicsmallfont\char'062}}
+					# mtxSharp{\raise1ex\hbox{\sharp}}
+					# mtxFlat{\raise1ex\hbox{\flat}}
+					# mtxIcresc{\icresc}
+					# mtxTcresc{\tcresc}
+					# mtxCresc#1{\crescendo{#1\elemskip}}
+					# mtxIdecresc{\icresc}
+					# mtxTdecresc{\tdecresc}
+					# mtxDecresc#1{\decrescendo{#1\elemskip}}
+					# mtxPF{\ppff}
+					# mtxLchar, 2):	# #1#2{\lchar{#1}{#2}}
+					# mtxCchar, 2):	# #1#2{\cchar{#1}{#2}}
+					# mtxZchar, 2):	# #1#2{\zchar{#1}{#2}}
+					# mtxVerseNumberOffset{3}
+					# mtxVerse{\loffset{\mtxVerseNumberOffset}\lyr}
+
+					# flat{\musixfont\char'062}
+					# sharp{\musixfont\char'064}
 
 				elif left[1] in ' \n\t':
 					left = left[1:]
@@ -1526,28 +1719,42 @@ Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))
 	def compact_timeline(self):
 		compacted = []
 		multi = 0
+		last_bar = None
+		last_chord = None
 		for b in self.timeline.entries:
 			if isinstance(b, Chord):
 				multi = multi + 1
-				basic_duration = b.basic_duration
+				last_chord = b
 			elif isinstance(b, Barnumber):
-				pass
+				last_bar = b
 			elif isinstance(b, Meter):
+				# help, do something about the code duplication
 				if multi > 0:
 					# stop compressing here
 					ch = Chord()
 					ch.multibar = multi
 					ch.skip = True
-					ch.basic_duration = basic_duration
+					ch.basic_duration = last_chord.basic_duration
+					ch.bar = last_chord.bar
+					ch.time = last_chord.time
 					compacted.append(ch)
 					multi = 0
+					if last_bar:
+						compacted.append(last_bar)
 				compacted.append(b)
+
+		# help, do something about the code duplication
 		if multi > 0:
 			ch = Chord()
 			ch.multibar = multi
 			ch.skip = True
-			ch.basic_duration = basic_duration
+			ch.basic_duration = last_chord.basic_duration
+			ch.bar = last_chord.bar
+			ch.time = last_chord.time
 			compacted.append(ch)
+			if last_bar:
+				compacted.append(last_bar)
+
 		# sys.stderr.write("\nReplace timeline.entries with compacted[%d]" % len(compacted))
 		self.timeline.entries = compacted
 
