@@ -265,6 +265,7 @@ class Voice:
 		self.time = (0, 1)
 		self.bar = 0
 		self.preset_id = None
+		self.nonempty = False
 
 	def set_preset_id(self, preset):
 		self.preset_id = preset
@@ -288,21 +289,34 @@ class Voice:
 			a = a + 3
 			self.default_alteration[a % 7] = -(i + 7) / 7
 
-	def toggle_tie (self, id):
+	def start_tie(self, id):
+		self.pending_tie = Tie(id)
+
+	def end_tie (self, id):
 		for s in self.current_ties:
 			if s.id == id:
 				self.current_ties.remove (s)
 				s.end_chord = self.chords[-1]
-				return
-		self.pending_tie = Tie (id)
+				return True
+		return False
 
-	def toggle_slur (self, id):
+	def start_slur(self, id):
+		self.pending_slur = Slur(id)
+
+	def end_slur(self, id):
 		for s in self.current_slurs:
 			if s.id == id:
 				self.current_slurs.remove (s)
 				s.end_chord = self.chords[-1]
-				return
-		self.pending_slur = Slur(id)
+				return True
+		return False
+
+	def toggle_slur (self, id):
+		if not end_slur(id):
+			s = Slur(id)
+			s.start_chord = self.chords[-1]
+			self.current_slurs.append (s)
+			self.slurs.append (s)
 
 	def handle_pending(self):
 		if self.pending_slur:
@@ -399,6 +413,10 @@ class Voice:
 			t.calculate ()
 		for g in self.graces:
 			g.calculate()
+		for s in self.chords:
+			if not s.skip:
+				self.nonempty = True
+				break
 
 
 class Clef:
@@ -502,10 +520,14 @@ class Staff:
 		return 'staff%s' % encodeint (self.number)
 
 	def dump (self):
+		nonempty = 0
+		for v in self.voices:
+			if v.nonempty:
+				nonempty = nonempty + 1
 
-		if len(self.voices) == 1:
-			out = v.dump
-			refs = v.idstring
+		if nonempty == 1:
+			out = '\n\n' + self.voices[0].dump()
+			refs = '\n    \\' + self.voices[0].idstring()
 		else:
 			out = ''
 			refs = ''
@@ -711,18 +733,18 @@ class Parser:
 		for b in range(bars):
 			voice.add_skip_bar(basic_duration)
 			voice.add_nonchord(Barnumber(voice.bar + b, self.meter))
-		voice.time = self.meter.to_rat()	# should be (0, 1) ????
+		voice.time = (0, 1)
 		(d, s) = voice.time
 		voice.bar += bars
-		sys.stderr.write("%s add_skip_bars(%d): bar %d target %d time %d/%d\n" % (voice.idstring(), bars, voice.bar, target_bar, d, s))
+		# sys.stderr.write("%s add_skip_bars(%d): bar %d target %d time %d/%d\n" % (voice.idstring(), bars, voice.bar, target_bar, d, s))
 
 	def catch_up(self, voice, target_bar):
-		sys.stderr.write("%s: catch up from %d to bar %d\n" % (voice.idstring(), voice.bar, target_bar))
+		# sys.stderr.write("%s: catch up from %d to bar %d\n" % (voice.idstring(), voice.bar, target_bar))
 		meter = self.meter
 		size = len(self.timeline.entries)
 		for b in reversed(self.timeline.entries):
 			if isinstance(b, Barnumber):
-				sys.stderr.write("  -- bar number %d (voice.bar %d)\n" % (b.number, voice.bar))
+				# sys.stderr.write("  -- bar number %d (voice.bar %d)\n" % (b.number, voice.bar))
 				if b.number < voice.bar:
 					break
 			elif isinstance(b, Meter):
@@ -740,10 +762,11 @@ class Parser:
 			else:
 				sys.stderr.write("What is this: %s\n" % b.dump())
 			size = size - 1
+
 		for b in self.timeline.entries[size:]:
 			if isinstance(b, Barnumber):
 				barnumber = Barnumber(b.number, b.meter)
-				sys.stderr.write("  -- add empty bar %d length %d/%d\n" % (barnumber.number, b.meter.denom, b.meter.num))
+				# sys.stderr.write("  -- add empty bar %d length %d/%d\n" % (barnumber.number, b.meter.denom, b.meter.num))
 				basic_duration = str(b.meter.denom) + "*" + str(b.meter.num)
 				voice.add_skip_bar(basic_duration)
 				voice.add_nonchord(barnumber)
@@ -993,9 +1016,10 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				self.current_voice().time = rat_add(self.current_voice().time, t)
 				(d, n) = self.current_voice().time;
 
-			(dc, nc) = self.current_voice().time
-			(dm, nm) = self.meter.to_rat()
-			sys.stderr.write("%s: check current time %d/%d against bar time %d/%d\n" % (self.current_voice().idstring(), dc, nc, dm, nm))
+			if False:
+				(dc, nc) = self.current_voice().time
+				(dm, nm) = self.meter.to_rat()
+				sys.stderr.write("%s: check current time %d/%d against bar time %d/%d\n" % (self.current_voice().idstring(), dc, nc, dm, nm))
 			if self.current_voice().time == self.meter.to_rat():
 				self.current_voice().time = (0, 1)
 				if multibar > 0:
@@ -1007,10 +1031,10 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 					self.current_voice().alteration[i] = self.current_voice().default_alteration[i]
 				barnumber = Barnumber(self.current_voice().bar, self.meter)
 				self.current_voice ().add_nonchord(barnumber)
-				sys.stderr.write("%s: increase bar count to %d\n" % (self.current_voice().idstring(), self.current_voice().bar))
+				# sys.stderr.write("%s: increase bar count to %d\n" % (self.current_voice().idstring(), self.current_voice().bar))
 				if self.current_voice() == self.staffs[0].voices[0]:
 					self.add_skip_bars(self.timeline, self.current_voice().bar)
-					sys.stderr.write("Added bar %d to timeline\n" % barnumber.number)
+					# sys.stderr.write("Added bar %d to timeline\n" % barnumber.number)
 
 		if multibar == 0:
 			if self.tuplets_expected > 0:
@@ -1173,20 +1197,23 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 
 		return (id, left)
 
-	def parse_tie (self, left):
-		left = left[1:]
-
-		(id, left) = self.parse_id(left)
-		self.current_voice ().toggle_tie(id)
-
-		return left
-
 	def parse_slur (self, left):
+		c = left[0]
 		left = left[1:]
 
 		(id, left) = self.parse_id(left)
 
-		self.current_voice ().toggle_slur (id)
+		if c == 'S':
+			self.current_voice ().toggle_slur(id)
+		elif c == '(':
+			self.current_voice().start_slur(id)
+		elif c == ')':
+			self.current_voice().end_slur(id)
+		elif c == '{':
+			self.current_voice().start_tie(id)
+		elif c == '}':
+			self.current_voice().end_tie(id)
+
 		return left
 
 	def parse_mumbo_jumbo (self,left):
@@ -1349,9 +1376,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				left = self.parse_basso_continuo (left)
 			elif c in SPACE:
 				left = left[1:]
-			elif c in '{}':
-				left = self.parse_tie (left)
-			elif c in 's()':
+			elif c in 's(){}':
 				left = self.parse_slur (left)
 			elif c == '|':
 				left = self.parse_barcheck (left)
@@ -1498,6 +1523,35 @@ Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))
 		return out
 
 
+	def compact_timeline(self):
+		compacted = []
+		multi = 0
+		for b in self.timeline.entries:
+			if isinstance(b, Chord):
+				multi = multi + 1
+				basic_duration = b.basic_duration
+			elif isinstance(b, Barnumber):
+				pass
+			elif isinstance(b, Meter):
+				if multi > 0:
+					# stop compressing here
+					ch = Chord()
+					ch.multibar = multi
+					ch.skip = True
+					ch.basic_duration = basic_duration
+					compacted.append(ch)
+					multi = 0
+				compacted.append(b)
+		if multi > 0:
+			ch = Chord()
+			ch.multibar = multi
+			ch.skip = True
+			ch.basic_duration = basic_duration
+			compacted.append(ch)
+		# sys.stderr.write("\nReplace timeline.entries with compacted[%d]" % len(compacted))
+		self.timeline.entries = compacted
+
+
 	def parse (self,fn):
 		ls = open (fn).readlines ()
 		def subst(s):
@@ -1512,6 +1566,7 @@ Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))
 		self.parse_body (left)
 		for c in self.staffs:
 			c.calculate ()
+		self.compact_timeline()
 
 
 

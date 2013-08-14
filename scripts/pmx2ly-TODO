@@ -1,3 +1,4 @@
+- slur start broken again(!)
 - accidentals work for the *staff*, not for just a single voice in the staff.
   ** This requires refactoring the accidental implementation: it must
   live in the staff, not in the voice, and is handled at calculate-time.
@@ -19,6 +20,7 @@
 - 'relative' accidentals ( :-( )
 - bar markups (h and l)
 - noBeam
+- variable number of beams
 - skips
 - segno
 - multibar rests in one voice should give skips in empty other voices
