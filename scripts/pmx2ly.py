@@ -455,6 +455,8 @@ class Key:
 
 class Accidental:
 	def __init__(self, note, octave, alteration, flags, bar, time):
+		# if alteration == 'ff' or alteration == 'ss':
+		#	sys.stderr.write("\nSee alteration %s" % alteration)
 		self.note = note
 		self.octave = octave
 		self.alteration = alteration
@@ -505,12 +507,16 @@ class Staff:
 		self.key = 0
 		self.alterations = []
 		self.alteration_spans_octaves = False
+		self.accidental_mode = ACCIDENTAL_ABSOLUTE
 
 		i = 0
 		for v  in self.voices:
 			v.staff = self
 			v.number = i
 			i = i+1
+
+	def set_accidental_mode(self, mode):
+		self.accidental_mode = mode
 
 	def set_clef (self, letter):
 		if clef_table.has_key (letter):
@@ -524,6 +530,7 @@ class Staff:
 		sys.stderr.write("Key sig %d\n" % keysig)
 		sys.stderr.write("\nFIXME: set pickup time for Key")
 		self.alterations.append(Key(keysig, 0, (0, 1)))
+		self.voices[0].add_nonchord(Key(keysig, 0, (0, 1)))
 
 	def set_alteration(self, note, octave, alteration, flags):
 		self.alterations.append(Accidental(note, octave, alteration, flags,
@@ -549,7 +556,7 @@ class Staff:
 		alterations = sorted(self.alterations, key = lambda alt: (alt.bar, alt.time[0] / (1.0 * alt.time[1])))
 		alt_index = 0
 		for ch in voice.chords:
-			sys.stderr.write("\nConsider chord %s at bar=%d time=%d/%d" % (ch.dump(), ch.bar, ch.time[0], ch.time[1]))
+			# sys.stderr.write("\nConsider chord %s at bar=%d time=%d/%d" % (ch.dump(), ch.bar, ch.time[0], ch.time[1]))
 			while alt_index < len(alterations):
 				a = alterations[alt_index]
 				if a.bar > ch.bar or \
@@ -568,14 +575,14 @@ class Staff:
 					for k in range(-a.key):
 						alt = alt + 3
 						for o in range(MAX_OCTAVE):
-							default_alteration[alt % OCTAVE][o] = -(k + OCTAVE) / OCTAVE
+							default_alteration[alt % OCTAVE][o] = -((k + OCTAVE) / OCTAVE)
+						if default_alteration[alt % OCTAVE][0] == -2:
+							sys.stderr.write("\nSet default alteration -2")
 				elif isinstance(a, AlterationReset):
 					for k in range(OCTAVE):
 						for o in range(MAX_OCTAVE):
 							altered[k][o] = False
 							alteration[k][o] = default_alteration[k][o]
-					flats = 0
-					sharps = 0
 				elif isinstance(a, Accidental):
 					c = a.alteration
 					if False:
@@ -584,35 +591,64 @@ class Staff:
 						flats = 1
 						if c == 'ff':
 							flats = 2
-						if -flats != alteration[a.note][a.octave]:
+							sys.stderr.write("\nSee alteration %s" % c)
+						if self.accidental_mode == ACCIDENTAL_RELATIVE:
 							if self.alteration_spans_octaves:
 								for o in range(MAX_OCTAVE):
 									altered[a.note][o] = True
-									alteration[a.note][o] = -flats
+									alteration[a.note][o] = default_alteration[a.note.o][o] - flats
 							else:
 								altered[a.note][a.octave] = True
-								alteration[a.note][a.octave] = -flats
-					elif c == 'n':
-						if self.alteration_spans_octaves:
-							for o in range(MAX_OCTAVE):
-								altered[a.note][o] = True
-								alteration[a.note][o] = 0
+								alteration[a.note][a.octave] = default_alteration[a.note.o][o] - flats
 						else:
-							altered[a.note][a.octave] = True
-							alteration[a.note][a.octave] = 0
+							if -flats != alteration[a.note][a.octave]:
+								if self.alteration_spans_octaves:
+									for o in range(MAX_OCTAVE):
+										altered[a.note][o] = True
+										alteration[a.note][o] = -flats
+								else:
+									altered[a.note][a.octave] = True
+									alteration[a.note][a.octave] = -flats
+					elif c == 'n':
+						if self.accidental_mode == ACCIDENTAL_RELATIVE:
+							if self.alteration_spans_octaves:
+								for o in range(MAX_OCTAVE):
+									altered[a.note][o] = True
+									alteration[a.note][o] = default_alteration[a.note][o]
+							else:
+								altered[a.note][a.octave] = True
+								alteration[a.note][a.octave] = default_alteration[a.note][a.octave]
+						else:
+							if self.alteration_spans_octaves:
+								for o in range(MAX_OCTAVE):
+									altered[a.note][o] = True
+									alteration[a.note][o] = 0
+							else:
+								altered[a.note][a.octave] = True
+								alteration[a.note][a.octave] = 0
 					elif c[0] == 's':
 						sharps = 1
 						if c == 'ss':
 							sharps = 2
-						if sharps != alteration[a.note][a.octave]:
+						if self.accidental_mode == ACCIDENTAL_RELATIVE:
 							if self.alteration_spans_octaves:
 								for o in range(MAX_OCTAVE):
 									altered[a.note][o] = True
-									alteration[a.note][o] = sharps
+									alteration[a.note][o] = default_alteration[a.note][o] + sharps
 							else:
 								altered[a.note][a.octave] = True
-								alteration[a.note][a.octave] = sharps
+								alteration[a.note][a.octave] = default_alteration[a.note][a.octave] + sharps
+						else:
+							if sharps != alteration[a.note][a.octave]:
+								if self.alteration_spans_octaves:
+									for o in range(MAX_OCTAVE):
+										altered[a.note][o] = True
+										alteration[a.note][o] = sharps
+								else:
+									altered[a.note][a.octave] = True
+									alteration[a.note][a.octave] = sharps
 				alt_index = alt_index + 1
+
 			for p in range(len(ch.pitches)):
 				(o, n, a, f) = ch.pitches[p]
 				if n != 's':	# skip skips
@@ -620,7 +656,7 @@ class Staff:
 						a = alteration[n][o]
 					else:
 						a = default_alteration[n][o]
-					# sys.stderr.write("\nApply note %d alteration %d" % (n, a))
+					sys.stderr.write("\nApply note %d alteration %d" % (n, a))
 					ch.pitches[p] = (o, n, a, f)
 
 		sys.stderr.write("traverse the voice to calculate the alterations\n")
@@ -746,8 +782,7 @@ class Chord:
 		for p in self.pitches:
 			if v:
 				v = v + ' '
-			else:
-				v = v + pitch_to_lily_string (p)
+			v = v + pitch_to_lily_string (p)
 
 		if self.skip:
 			v = v + 's'
@@ -820,7 +855,6 @@ class Parser:
 		self.composer = ''
 		self.instrument = ''
 		self.accidental_mode = ACCIDENTAL_ABSOLUTE
-		self.accidental_mode = ACCIDENTAL_ABSOLUTE
 		self.paper_size = PAPER_A4
 
 		self.parse (filename)
@@ -837,6 +871,7 @@ class Parser:
 		for s in self.staffs:
 			s.number = i
 			s.set_key(self.keysig)
+			s.set_accidental_mode(self.accidental_mode)
 			i = i+1
 
 	def current_staff (self):
@@ -979,7 +1014,7 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 			name = (ord (left[0]) - ord('a') + 5) % 7
 			# sys.stderr.write("Process note '%s' name '%d'\n" % (left[0], name))
 
-		sys.stderr.write("Process token name %s from '%s'" % (name, left[:20]))
+		# sys.stderr.write("Process note: name %s from '%s'" % (name, left[:20]))
 		left = left[1:]
 
 		count = 1
@@ -1395,6 +1430,8 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 						break
 			elif c == 'r':
 				self.accidental_mode = ACCIDENTAL_RELATIVE
+				for s in self.staffs:
+					s.set_accidental_mode(self.accidental_mode)
 			elif c == 'R':
 				f = left.find(' \t\n')
 				filename = left[0:f]
@@ -1462,16 +1499,24 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 					nums = map (string.atoi , nums)
 					meter = Meter(comps[0], comps[1])
 				else:
-					sys.stderr.write("See meter in %s\n" % left[0:20])
-					m = re.match ('([0-9o]+)', left)
-					if m:
-						nums = m.group (1)
-						syms = map(string.atoi, nums)
-						meter = Meter(syms[0], syms[1])
+					sys.stderr.write("\nFIXME: correct meter format in %s" % left[0:20])
+					ix = 0
+					syms = [0] * 4
+					while left[0] in 'o0123456789':
+						if left[0] == 'o':
+							syms[ix] = 1
+							left = left[1:]
+						elif left[0] == '1':
+							syms[ix] = string.atoi(left[:2])
+							left = left[2:]
+						else:
+							syms[ix] = string.atoi(left[0])
+							left = left[1:]
+						ix = ix + 1
+					sys.stderr.write("\nAdd meter %d/%d" % (syms[0], syms[1]))
+					meter = Meter(syms[0], syms[1])
 
 				if meter:
-					sys.stderr.write("\nFIXME: add meter change to all voices, and handle multibar skips correctly")
-					# self.current_voice().add_nonchord(meter)
 					self.timeline.add_nonchord(meter)
 					self.meter = meter
 					continue
@@ -1563,6 +1608,10 @@ Huh? Unknown T parameter `%s', before `%s'""" % (left[1], left[:20] ))
 				else:
 					pass
 				sys.stderr.write('\nFIXME: handle volta, from %s' % left[:20])
+			elif c in 'LPM':
+				sys.stderr.write('\nFIXME: handle line/page/movement breaks')
+				while not left[0] in ' \n\t':
+					left = left[1:]
 			elif c == '\\':
 				# handle just a few MusiXTeX commands
 				while left[0] == '\\':

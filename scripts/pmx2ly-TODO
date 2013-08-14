@@ -19,7 +19,6 @@
 - expand \def... sections using tme http://www.astro.indiana.edu/~jthorn/software.html#tme
 - handle end-of-tex\def correctly: a '\' on its own
 - keep line/column counts into input
-- 'relative' accidentals ( :-( )
 - bar markups (h and l)
 - variable number of beams
 - skips
@@ -58,3 +57,4 @@
 - slur start broken again(!)
   * make difference between (a b) and a S b S
 - noBeam
+- 'relative' accidentals ( :-( )
