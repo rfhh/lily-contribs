@@ -153,6 +153,8 @@ class Barnumber :
 
 class Meter :
 	def __init__ (self,num,denom):
+		if denom == 3:
+			raise Exception('weird denom', basic_duration)
 		self.num = num
 		self.denom = denom
 
@@ -343,12 +345,16 @@ class Voice:
 	def add_nonchord (self, nch):
 		self.entries.append (nch)
 
-	def add_skip_bar(self, basic_duration):
+	def add_skip_bar(self, count, basic_duration):
+		if basic_duration == 3:
+			raise Exception('weird basic_duration', basic_duration)
 		ch = Chord ()
 		self.add_chord(ch)
 		ch.multibar = 1
 		ch.skip = True
+		ch.count = count
 		ch.basic_duration = basic_duration
+		ch.time = (0, 1)
 
 	def idstring (self):
 		if self.preset_id:
@@ -543,7 +549,7 @@ class Staff:
 		alterations = sorted(self.alterations, key = lambda alt: (alt.bar, alt.time[0] / (1.0 * alt.time[1])))
 		alt_index = 0
 		for ch in voice.chords:
-			# sys.stderr.write("\nConsider chord at bar=%d time=%d/%d" % (ch.bar, ch.time[0], ch.time[1]))
+			sys.stderr.write("\nConsider chord %s at bar=%d time=%d/%d" % (ch.dump(), ch.bar, ch.time[0], ch.time[1]))
 			while alt_index < len(alterations):
 				a = alterations[alt_index]
 				if a.bar > ch.bar or \
@@ -609,12 +615,13 @@ class Staff:
 				alt_index = alt_index + 1
 			for p in range(len(ch.pitches)):
 				(o, n, a, f) = ch.pitches[p]
-				if altered[n][o]:
-					a = alteration[n][o]
-				else:
-					a = default_alteration[n][o]
-				# sys.stderr.write("\nApply note %d alteration %d" % (n, a))
-				ch.pitches[p] = (o, n, a, f)
+				if n != 's':	# skip skips
+					if altered[n][o]:
+						a = alteration[n][o]
+					else:
+						a = default_alteration[n][o]
+					# sys.stderr.write("\nApply note %d alteration %d" % (n, a))
+					ch.pitches[p] = (o, n, a, f)
 
 		sys.stderr.write("traverse the voice to calculate the alterations\n")
 
@@ -702,6 +709,7 @@ class Chord:
 	def __init__ (self):
 		self.pitches = []
 		self.dots = 0
+		self.count = 1
 		self.basic_duration = 0
 		self.scripts = []
 		self.grace = 0
@@ -722,10 +730,8 @@ class Chord:
 				rest = 's'
 			else:
 				rest = 'R'
-			multibar = self.multibar
-			if multibar == -1:
-				multibar = 0
-			v = self.chord_prefix + ' ' + rest + str(self.basic_duration) + "*" + str(multibar) + self.chord_suffix
+			multi = self.multibar * self.count
+			v = self.chord_prefix + ' ' + rest + str(self.basic_duration) + "*" + str(multi) + self.chord_suffix
 			return v
 
 		v = ''
@@ -734,16 +740,18 @@ class Chord:
 			sd = '\\breve'
 		else:
 			sd = '%d' % self.basic_duration
+		if self.count != 1:
+			sd = sd + "*" + str(self.count)
 		sd = sd + '.' * self.dots
 		for p in self.pitches:
 			if v:
 				v = v + ' '
-			if self.skip:
-				v = v + 's'
 			else:
 				v = v + pitch_to_lily_string (p)
 
-		if len (self.pitches) > 1:
+		if self.skip:
+			v = v + 's'
+		elif len (self.pitches) > 1:
 			v = '<%s>' % v
 		elif len (self.pitches) == 0:
 			v = 'r'
@@ -842,14 +850,13 @@ class Parser:
 		self.current_staff().voice_idx = 0
 
 	def add_skip_bars(self, voice, target_bar):
-		basic_duration = str(self.meter.denom) + "*" + str(self.meter.num)
 		bars = target_bar - voice.bar
 		for b in range(bars):
-			voice.add_skip_bar(basic_duration)
+			voice.add_skip_bar(self.meter.num, self.meter.denom)
 			voice.add_nonchord(Barnumber(voice.bar + b, self.meter))
 		voice.time = (0, 1)
-		(d, s) = voice.time
 		voice.bar += bars
+		# (d, s) = voice.time
 		# sys.stderr.write("%s add_skip_bars(%d): bar %d target %d time %d/%d\n" % (voice.idstring(), bars, voice.bar, target_bar, d, s))
 
 	def catch_up(self, voice, target_bar):
@@ -870,8 +877,7 @@ class Parser:
 				# sys.stderr.write("  -- chord, multibar %d\n" % b.multibar)
 				# bar += b.multibar
 				# if voice.bar < target_bar:
-					# basic_duration = str(meter.denom) + "*" + str(meter.num) + "*" + str(b.multibar)
-					# voice.add_skip_bar(basic_duration)
+					# voice.add_skip_bar(self.meter.num, self.meter.denum)
 					# voice.bar = voice.bar + b.multibar
 			else:
 				sys.stderr.write("What is this: %s\n" % b.dump())
@@ -880,9 +886,8 @@ class Parser:
 		for b in self.timeline.entries[size:]:
 			if isinstance(b, Barnumber):
 				barnumber = Barnumber(b.number, b.meter)
-				# sys.stderr.write("  -- add empty bar %d length %d/%d\n" % (barnumber.number, b.meter.denom, b.meter.num))
-				basic_duration = str(b.meter.denom) + "*" + str(b.meter.num)
-				voice.add_skip_bar(basic_duration)
+				# sys.stderr.write("  -- add empty bar %d length %d/%d\n" % (barnumber.number, b.meter.num, b.meter.denum))
+				voice.add_skip_bar(self.meter.num, self.meter.denom)
 				voice.add_nonchord(barnumber)
 		voice.bar = target_bar
 
@@ -891,9 +896,10 @@ class Parser:
 		ch = Chord()
 		self.current_voice().add_chord(ch)
 		ch.basic_duration = self.meter.denom
-		ch.multibar = -1
+		ch.count = 0
 		ch.skip = True
-		ch.pitches.append((0, 's', 0, 0))
+		ch.time = self.current_voice().time
+		ch.bar  = self.current_voice().bar
 		ch.chord_suffix = ch.chord_suffix + "^\\markup{" + text + "}"
 
 
@@ -948,7 +954,7 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 
 		grace = None
 		if left[0] == 'G':
-			(left, grace) = parse_grace(left)
+			(left, grace) = self.parse_grace(left)
 
 		if left[0] == 'z':
 			chord_continuation = True
@@ -973,8 +979,10 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 			name = (ord (left[0]) - ord('a') + 5) % 7
 			# sys.stderr.write("Process note '%s' name '%d'\n" % (left[0], name))
 
+		sys.stderr.write("Process token name %s from '%s'" % (name, left[:20]))
 		left = left[1:]
 
+		count = 1
 		forced_duration  = 0
 		dots = 0
 		octave = None
@@ -986,7 +994,6 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 		flats = 0
 		sharps = 0
 		alteration_flags = 0
-		# sys.stderr.write("Process token '%s'" % left)
 		while left[0] in 'aber</>dsfmpnul0123456789.,+-\\':
 			c = left[0]
 			if c == 'a':
@@ -1046,25 +1053,25 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 				forced_duration = 2
 			left = left[1:]
 
-		if not grace:
-			if left[0] == 'x':
-				left = left[1:]
-				tupnumber = string.atoi (left[0])
-				left = left[1:]
-				left = re.sub (r'^n?f?[+-0-9.]*', '' , left)
+		if left[0] == 'x':
+			left = left[1:]
+			tupnumber = string.atoi (left[0])
+			left = left[1:]
+			left = re.sub (r'^n?f?[+-0-9.]*', '' , left)
 
-			if multibar != 0:
-				basic_duration = str(self.meter.denom) + "*" + str(self.meter.num)
-			elif durdigit:
-				try:
-					basic_duration =  basicdur_table[durdigit]
-				except KeyError:
-					sys.stderr.write ("""
+		if multibar != 0:
+			count = self.meter.num
+			basic_duration = self.meter.num
+		elif durdigit:
+			try:
+				basic_duration =  basicdur_table[durdigit]
+			except KeyError:
+				sys.stderr.write ("""
 Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 
-					basic_duration = 4
-			else:
-				basic_duration = self.last_basic_duration
+				basic_duration = 4
+		else:
+			basic_duration = self.last_basic_duration
 
 		self.last_basic_duration = basic_duration
 
@@ -1089,6 +1096,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 
 		# do before adding to tuplet.
 		ch.multibar = multibar
+		ch.count = count
 		ch.basic_duration = basic_duration
 
 		if multibar == 0:
@@ -1111,11 +1119,11 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				self.current_voice().time = self.meter.to_rat()
 			else:
 				if basic_duration == 0.5:
-					t = (2, 1)
+					t = (count * 2, 1)
 				elif basic_duration == 0:
-					t = (1, 1)
+					t = (count, 1)
 				else:
-					t = (1, int(basic_duration))
+					t = (count, int(basic_duration))
 				for d in range(dots):
 					t = rat_multiply(t, (3, 2))
 				if self.tuplets_expected > 0:
@@ -1408,7 +1416,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 	def expand_tex(self, left, nparam):
 		type = 1
 		while left[0] == '\\':
-			type += type
+			type = type + 1
 			left = left[1:]
 		params = []
 		for i in range(nparam):
@@ -1684,9 +1692,10 @@ Huh? Unknown T parameter `%s', before `%s'""" % (left[1], left[:20] ))
 				elif left[1] in ' \n\t':
 					left = left[1:]
 				else:
-					sys.stderr.write('\nFIXME: ignore TeX command %s' % left[:20])
-					done = left.find('\\')
-					left = left[done + 1:]
+					# done = left.find('\\')
+					# sys.stderr.write('\nFIXME: ignore TeX command %s' % left[:done+1])
+					# left = left[done + 1:]
+					pass
 			else:
 				sys.stderr.write ("""
 Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))
@@ -1735,6 +1744,7 @@ Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))
 					ch.multibar = multi
 					ch.skip = True
 					ch.basic_duration = last_chord.basic_duration
+					ch.count = last_chord.count
 					ch.bar = last_chord.bar
 					ch.time = last_chord.time
 					compacted.append(ch)
@@ -1749,6 +1759,7 @@ Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))
 			ch.multibar = multi
 			ch.skip = True
 			ch.basic_duration = last_chord.basic_duration
+			ch.count = last_chord.count
 			ch.bar = last_chord.bar
 			ch.time = last_chord.time
 			compacted.append(ch)

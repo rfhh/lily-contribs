@@ -1,7 +1,9 @@
-- slur start broken again(!)
-- accidentals work for the *staff*, not for just a single voice in the staff.
-  ** This requires refactoring the accidental implementation: it must
-  live in the staff, not in the voice, and is handled at calculate-time.
+
+------
+ TODO:
+------
+
+- accidentals must work through grace time
 - movement breaks
 - line breaks???
 - page breaks???
@@ -19,15 +21,11 @@
 - keep line/column counts into input
 - 'relative' accidentals ( :-( )
 - bar markups (h and l)
-- noBeam
 - variable number of beams
 - skips
 - segno
-- multibar rests in one voice should give skips in empty other voices
-  ** For efficiency, and for ease of programming, this requires refactoring
-  so each voice maintains its global time, not bar + time-in-bar.
 
-- lyrics
+- lyrics: implement some M-Tx macros
 
 - add options:
    - accidental for all octaves or only for explicitly set octaves? This
@@ -44,3 +42,19 @@
    - movements
    - (final) bar line(s)
    - every feature and all combinations of features
+
+------
+ DONE:
+------
+
+- multibar rests in one voice should give skips in empty other voices
+  ** For efficiency, and for ease of programming, this requires refactoring
+  so each voice maintains its global time, not bar + time-in-bar.
+  * No, I walk the timeline in reverse directory, so it's no longer (so)
+  quadratic
+- accidentals work for the *staff*, not for just a single voice in the staff.
+  ** This requires refactoring the accidental implementation: it must
+  live in the staff, not in the voice, and is handled at calculate-time.
+- slur start broken again(!)
+  * make difference between (a b) and a S b S
+- noBeam
