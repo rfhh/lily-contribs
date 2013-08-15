@@ -15,6 +15,7 @@
 - keep line/column counts into input
 - variable number of beams
 - segno
+- work-around for continuing ties from M-Tx (weird mix of slurs and non-toggling ties)
 
 - lyrics: implement some M-Tx macros
 

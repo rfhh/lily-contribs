@@ -347,6 +347,8 @@ class Voice:
 		sys.stderr.write("set_meter(): time %d / %d\n" % (d, n))
 
 	def start_tie(self, id):
+		if self.pending_tie != None:
+			raise Exception("Already have a pending tie", "")
 		self.pending_tie = Tie(id)
 
 	def end_tie (self, id):
@@ -359,7 +361,7 @@ class Voice:
 
 	def toggle_tie (self, id):
 		if not self.end_tie(id):
-			s = Slur(id)
+			s = Tie(id)
 			s.start_chord = self.chords[-1]
 			self.current_ties.append (s)
 			self.ties.append (s)
@@ -431,6 +433,23 @@ class Voice:
 			return self.preset_id
 		else:
 			return 'staff%svoice%s ' % (encodeint (self.staff.number) , encodeint(self.number))
+
+
+	def add_mark(self, elevation, text):
+		ch = Chord()
+		self.add_chord(ch)
+		ch.basic_duration = self.meter.denom
+		ch.count = 0
+		ch.skip = True
+		ch.time = self.time
+		ch.bar  = self.bar
+		if int(elevation) >= 0:
+			direction = ''
+		else:
+			direction = '\\once \\override Score.RehearsalMark #\'direction = #DOWN'
+		text = re.sub('~', '\char ##x00A0 ', text)
+		ch.chord_suffix = ch.chord_suffix + ' ' + direction + "\\mark \\markup{" + text + "}"
+
 
 	def dump (self):
 		out = ''
@@ -1412,9 +1431,9 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 	def parse_id(self, left):
 		id = None
 
-		if re.match ('[A-Z0-9]', left[0]):
+		if re.match ('\A[A-Z0-9]', left[0]):
 			id = left[0]
-			left= left[1:]
+			left = left[1:]
 		while left[0] in 'uld0123456789+-.':
 			left= left[1:]
 
@@ -1818,7 +1837,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 					left = left[f+1:]
 
 				f = string.find (left, '\n')
-				self.add_markup(direction, left[:f])
+				self.timeline.add_mark(direction, left[:f])
 				left = left[f+1:]
 			elif c in 'Gzabcdefgr':
 				left = self.parse_note(left)
@@ -1975,42 +1994,32 @@ Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))
 		multi = 0
 		last_bar = None
 		last_chord = None
+		def new_multi():
+			if multi > 0:
+				ch = Chord()
+				ch.multibar = multi
+				ch.skip = True
+				ch.basic_duration = last_chord.basic_duration
+				ch.count = last_chord.count
+				ch.bar = last_chord.bar
+				ch.time = last_chord.time
+				compacted.append(ch)
+				if last_bar:
+					compacted.append(last_bar)
+
 		for b in self.timeline.entries:
-			if isinstance(b, Chord):
+			if isinstance(b, Chord) and b.count > 0:
 				multi = multi + 1
 				last_chord = b
 			elif isinstance(b, Barnumber):
 				last_bar = b
 			# elif isinstance(b, Meter):
 			else:
-				# help, do something about the code duplication
-				if multi > 0:
-					# stop compressing here
-					ch = Chord()
-					ch.multibar = multi
-					ch.skip = True
-					ch.basic_duration = last_chord.basic_duration
-					ch.count = last_chord.count
-					ch.bar = last_chord.bar
-					ch.time = last_chord.time
-					compacted.append(ch)
-					multi = 0
-					if last_bar:
-						compacted.append(last_bar)
+				new_multi()
+				multi = 0
 				compacted.append(b)
 
-		# help, do something about the code duplication
-		if multi > 0:
-			ch = Chord()
-			ch.multibar = multi
-			ch.skip = True
-			ch.basic_duration = last_chord.basic_duration
-			ch.count = last_chord.count
-			ch.bar = last_chord.bar
-			ch.time = last_chord.time
-			compacted.append(ch)
-			if last_bar:
-				compacted.append(last_bar)
+		new_multi()
 
 		# sys.stderr.write("\nReplace timeline.entries with compacted[%d]" % len(compacted))
 		self.timeline.entries = compacted
