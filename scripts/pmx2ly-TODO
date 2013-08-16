@@ -16,6 +16,8 @@
 - variable number of beams
 - segno
 - work-around for continuing ties from M-Tx (weird mix of slurs and non-toggling ties)
+- fermata on multimeasure rest (Sinfonia 209, flute, bar 112)
+- compact multi-measure rests (and skips?) in live voices
 
 - lyrics: implement some M-Tx macros
 
@@ -60,3 +62,12 @@
 - noBeam
 - 'relative' accidentals ( :-( )
 - titles
+
+-------
+ HOWTO:
+-------
+
+Create expanded file from mtx-generated pmx file:
+$ egrep '^\\\\*def' 02Recit.pmx > 02Recit-defs.pmx
+$ egrep -v '^\\\\*def' 02Recit.pmx > 02Recit-nodefs.pmx
+$ ~/ftp/generic/tex/tme.perl 02Recit-defs.pmx pg_a4hoch.tex < 02Recit-nodefs.pmx > 02Recit-expanded.pmx

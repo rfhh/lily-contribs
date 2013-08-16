@@ -1313,7 +1313,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			self.current_staff().alterations.append(key_obj)
 		return(left)
 
-	def parse_header  (self, ls):
+	def parse_preamble  (self, ls):
 		def atonum(a):
 			if re.search('\\.', a):
 				return string.atof (a)
@@ -1649,82 +1649,165 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			sys.stderr.write("\nFIXME: volta close outside repeat")
 
 
+	def set_lyrics(self, label, lyrics):
+		sys.stderr.write("\nSet lyrics{%s} to '%s'" % (label, lyrics))
+
+
+	def copy_lyrics(self, label_from, label_to):
+		pass
+
+
+	def assign_lyrics(self, staff, label):
+		sys.stderr.write("\nApply lyrics{%s} to staff[%s]" % (staff, label))
+
+
+	def rewrite_lyrics(self, frm, to):
+		pass
+
+
 	def parse_M_Tx(self, left):
 		left = left[3:]
+
+		# M-Tx font definitions
+		#
+		(left, params) = self.expand_tex(left, 'Instrfont', 0)		# {\twelvebf}
+		# ToDo
+		(left, params) = self.expand_tex(left, 'eightsf', 0)		# {\font\eightsf=cmss8}
+		# ToDo
+		(left, params) = self.expand_tex(left, 'Eightsf', 0)		# {\mtxeightsf\eightsf}
+		# ToDo
+		(left, params) = self.expand_tex(left, 'tensf', 0)		# {\font\tensf=cmss10}
+		# ToDo
+		(left, params) = self.expand_tex(left, 'Tensf', 0)		# {\mtxtensf\tensf}
+		# ToDo
+		(left, params) = self.expand_tex(left, 'elevensf', 0)		# {\font\elevensf=cmss10 scaled \magstephalf}
+		# ToDo
+		(left, params) = self.expand_tex(left, 'Elevensf', 0)		# {\mtxelevensf\elevensf}
+		# ToDo
+		(left, params) = self.expand_tex(left, 'twelvesf', 0)		# {\font\twelvesf=cmss12}
+		# ToDo
+		(left, params) = self.expand_tex(left, 'Twelvesf', 0)		# {\mtxtwelvesf\twelvesf}
+		# ToDo
+		(left, params) = self.expand_tex(left, 'Bigsf', 0)		# {\font\Bigtype=cmss9 scaled \magstep2}
+		# ToDo
+		(left, params) = self.expand_tex(left, 'BIGsf', 0)		# {\font\BIGtype=cmss9 scaled \magstep4}
+		# ToDo
+		(left, params) = self.expand_tex(left, 'Allsf', 0)		# {\mtxElevensf\mtxBigsf\mtxBIGsf}
+		# ToDo
+
+		# M-Tx music sizes
+		#
+		(left, params) = self.expand_tex(left, 'TinySize', 0)		# {\tinyvalue}
+		# ToDo
+		(left, params) = self.expand_tex(left, 'SmallSize', 0)		# {\smallvalue}
+		# ToDo
+		(left, params) = self.expand_tex(left, 'NormalSize', 0)		# {\normalvalue}
+		# ToDo
+		(left, params) = self.expand_tex(left, 'LargeSize', 0)		# {\largevalue}
+		# ToDo
+		(left, params) = self.expand_tex(left, 'HugeSize', 0)		# {\Largevalue}
+		# ToDo
+
+		# M-Tx:musixlyr interface
+		#
+		(left, params) = self.expand_tex(left, 'SetLyrics', 2)
+		if params != None:
+			self.set_lyrics(params[0], params[1])
+		# ToDo
+		(left, params) = self.expand_tex(left, 'CopyLyrics', 2)
+		if params != None:
+			self.copy_lyrics(params[0], params[1])
+		# ToDo
+		(left, params) = self.expand_tex(left, 'AssignLyrics', 2)
+		if params != None:
+			self.assign_lyrics(params[0], params[1])
+		# ToDo
+		(left, params) = self.expand_tex(left, 'AuxLyr', 2)
+		# ToDo
+		(left, params) = self.expand_tex(left, 'LyrLink', 0)
+		if params != None:
+			self.rewrite_lyrics(left, '\s+', '~')
+		(left, params) = self.expand_tex(left, 'LowLyrlink', 0)		# {\lowlyrlink}
+		if params != None:
+			self.rewrite_lyrics(left, '\s+', '~')
+		(left, params) = self.expand_tex(left, 'LyricsAdjust', 2)	# #1#2{\setsongraise{#1}{#2\internote}}
+		# ignore
+		(left, params) = self.expand_tex(left, 'AuxLyricsAdjust', 2)	# #1#2{\auxsetsongraise{#1}{#2\internote}}
+		# ignore
+		(left, params) = self.expand_tex(left, 'LyrModeAlter', 1)	# #1{\lyrmodealter{#1}}
+		# ToDo
+		(left, params) = self.expand_tex(left, 'LyrModeNormal', 1)	# #1{\lyrmodenormal{#1}}
+		# ToDo
+		(left, params) = self.expand_tex(left, 'BM', 0)			# {\beginmel}
+		# ToDo
+		(left, params) = self.expand_tex(left, 'EM', 0)			# {\endmel}
+		# ToDo
+		(left, params) = self.expand_tex(left, 'AuxBM', 0)		# {\auxlyr\mtxBM}
+		# ToDo
+		(left, params) = self.expand_tex(left, 'AuxEM', 0)		# {\auxlyr\mtxEM}
+		# ToDo
+
+		# M-Tx various interface
+		(left, params) = self.expand_tex(left, 'TenorClef', 1)		# #1{\settrebleclefsymbol{#1}\treblelowoct}
+		# ToDo
+		(left, params) = self.expand_tex(left, 'VerseNumber', 1)	# #1{#1 }
+		# ToDo
 		(left, params) = self.expand_tex(left, 'InterInstrument', 2)
 		# ignore
 		(left, params) = self.expand_tex(left, 'StaffBottom', 1)
 		# ignore
 		(left, params) = self.expand_tex(left, 'Group', 3)
-		if params:
+		if params != None:
 			self.staff_groups.append(params)
+		# mtxPageHeight#1{\vsize #1}
+		(left, params) = self.expand_tex(left, 'TwoInstruments', 2)	# #1#2{\vbox{\hbox{#1}\hbox{#2}}}
+		# ToDo
+		(left, params) = self.expand_tex(left, 'TitleLine', 1)		#1{\gdef\mtxTitle{#1}}
+		# ToDo
+		(left, params) = self.expand_tex(left, 'ComposerLine', 2)	# #1#2{\gdef\mtxPoetComposer{#1\hfill #2}}
+		# ToDo
+		(left, params) = self.expand_tex(left, 'InstrName', 1)		# #1{{\mtxInstrfont #1}}
+		# ToDo
 		(left, params) = self.expand_tex(left, 'SetSize', 2)
 		# ignore
-		(left, params) = self.expand_tex(left, 'Zchar', 2)
-		if params:
-			self.add_markup(params[0], params[1])
-		# mtxInstrfont{\twelvebf}
-		# mtxeightsf{\font\eightsf=cmss8}
-		# mtxEightsf{\mtxeightsf\eightsf}
-		# mtxtensf{\font\tensf=cmss10}
-		# mtxTensf{\mtxtensf\tensf}
-		# mtxelevensf{\font\elevensf=cmss10 scaled \magstephalf}
-		# mtxElevensf{\mtxelevensf\elevensf}
-		# mtxtwelvesf{\font\twelvesf=cmss12}
-		# mtxTwelvesf{\mtxtwelvesf\twelvesf}
-		# mtxBigsf{\font\Bigtype=cmss9 scaled \magstep2}
-		# mtxBIGsf{\font\BIGtype=cmss9 scaled \magstep4}
-		# mtxAllsf{\mtxElevensf\mtxBigsf\mtxBIGsf}
-		# mtxTinySize{\tinyvalue}
-		# mtxSmallSize{\smallvalue}
-		# mtxNormalSize{\normalvalue}
-		# mtxLargeSize{\largevalue}
-		# mtxHugeSize{\Largevalue}
-		# mtxSetLyrics, 2):	# #1#2{\setlyrics{#1}{#2}}
-		# mtxCopyLyrics, 2):	# #1#2{\copylyrics{#1}{#2}}
-		# mtxAssignLyrics, 2):	# #1#2{\assignlyrics{#1}{#2}}
-		# mtxAuxLyr#1{\auxlyr{#1}}
-		# mtxLyrlink{\lyrlink}
-		# mtxLowLyrlink{\lowlyrlink}
-		# mtxLyricsAdjust, 2):	# #1#2{\setsongraise{#1}{#2\internote}}
-		# mtxAuxLyricsAdjust, 2):	# #1#2{\auxsetsongraise{#1}{#2\internote}}
-		# mtxLyrModeAlter#1{\lyrmodealter{#1}}
-		# mtxLyrModeNormal#1{\lyrmodenormal{#1}}
-		# mtxBM{\beginmel}
-		# mtxEM{\endmel}
-		# mtxAuxBM{\auxlyr\mtxBM}
-		# mtxAuxEM{\auxlyr\mtxEM}
-		# mtxTenorClef#1{\settrebleclefsymbol{#1}\treblelowoct}
-		# mtxVerseNumber#1{#1 }
-		# mtxInterInstrument, 2):	# #1#2{\setinterinstrument{#1}{#2\Interligne}}
-		# mtxStaffBottom#1{\gdef\atnextline{\stafftopmarg #1\Interligne}}
-		# mtxGroup#1#2#3{\grouptop{#1}{#2}\groupbottom{#1}{#3}}
-		# mtxPageHeight#1{\vsize #1}
-		# mtxTwoInstruments, 2):	# #1#2{\vbox{\hbox{#1}\hbox{#2}}}
-		# mtxTitleLine#1{\gdef\mtxTitle{#1}}
-		# mtxComposerLine, 2):	# #1#2{\gdef\mtxPoetComposer{#1\hfill #2}}
-		# mtxInstrName#1{{\mtxInstrfont #1}}
-		# mtxSetSize, 2):	# #1#2{\setsize{#1}{#2}}
-		# mtxDotted{\dotted}
+		(left, params) = self.expand_tex(left, 'Dotted', 0)		# {\dotted} # \slurDotted
+		# ToDo
+		# \let\mathflat\flat
+		# \let\mathsharp\sharp
+		(left, params) = self.expand_tex(left, 't', 0)			# {\musixfont\char'062}
+		(left, params) = self.expand_tex(left, 'rp', 0)			# {\musixfont\char'064}
 		# %\def\mtxSharp{\raise1ex\hbox{\musicsmallfont\char'064}}
 		# %\def\mtxFlat{\raise1ex\hbox{\musicsmallfont\char'062}}
-		# mtxSharp{\raise1ex\hbox{\sharp}}
-		# mtxFlat{\raise1ex\hbox{\flat}}
-		# mtxIcresc{\icresc}
-		# mtxTcresc{\tcresc}
-		# mtxCresc#1{\crescendo{#1\elemskip}}
-		# mtxIdecresc{\icresc}
-		# mtxTdecresc{\tdecresc}
-		# mtxDecresc#1{\decrescendo{#1\elemskip}}
-		# mtxPF{\ppff}
-		# mtxLchar, 2):	# #1#2{\lchar{#1}{#2}}
-		# mtxCchar, 2):	# #1#2{\cchar{#1}{#2}}
-		# mtxZchar, 2):	# #1#2{\zchar{#1}{#2}}
-		# mtxVerseNumberOffset{3}
-		# mtxVerse{\loffset{\mtxVerseNumberOffset}\lyr}
+		(left, params) = self.expand_tex(left, 'Sharp', 0)		# {\raise1ex\hbox{\sharp}}
+		# ToDo
+		(left, params) = self.expand_tex(left, 'Flat', 0)		# {\raise1ex\hbox{\flat}}
+		# ToDo
+		(left, params) = self.expand_tex(left, 'Icresc', 0)		# {\icresc}
+		# ToDo
+		(left, params) = self.expand_tex(left, 'Tcresc', 0)		# {\tcresc}
+		# ToDo
+		(left, params) = self.expand_tex(left, 'Cresc', 1)		#1{\crescendo{#1\elemskip}}
+		# ToDo
+		(left, params) = self.expand_tex(left, 'Idecresc', 0)		# {\icresc}
+		# ToDo
+		(left, params) = self.expand_tex(left, 'Tdecresc', 0)		# {\tdecresc}
+		# ToDo
+		(left, params) = self.expand_tex(left, 'Decresc', 1)		#1{\decrescendo{#1\elemskip}}
+		# ToDo
+		(left, params) = self.expand_tex(left, 'PF', 0)			# {\ppff}
+		# ToDo
+		(left, params) = self.expand_tex(left, 'Lchar', 2)		# #1#2{\lchar{#1}{#2}}
+		# ToDo
+		(left, params) = self.expand_tex(left, 'Cchar', 2)		# #1#2{\cchar{#1}{#2}}
+		# ToDo
+		(left, params) = self.expand_tex(left, 'Zchar', 2)
+		if params != None:
+			self.add_markup(params[0], params[1])
+		(left, params) = self.expand_tex(left, 'VerseNumberOffset', 0)	# {3}
+		# ignore
+		(left, params) = self.expand_tex(left, 'Verse', 0)		# {\loffset{\mtxVerseNumberOffset}\lyr}
+		# no, no mtx prefix: (left, params) = self.expand_tex(left, 'comma', 1)		# #1{\check@staff\raise1.2\internote\llap{\BIGfont'\kern#1\noteskip}\fi}
 
-		# flat{\musixfont\char'062}
-		# sharp{\musixfont\char'064}
 		return left
 
 
@@ -1736,7 +1819,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			left = left[1:]
 
 		(left, params) = self.expand_tex(left, 'zcharnote', 2)
-		if params:
+		if params != None:
 			self.add_markup(params[0], params[1])
 		(left, params) = self.expand_tex(left, 'lcharnote', 2)
 		# ignore
@@ -1749,7 +1832,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		(left, params) = self.expand_tex(left, 'cchar', 2)
 		# ignore
 		(left, params) = self.expand_tex(left, 'zql', 1)
-		if params:
+		if params != None:
 			sys.stderr.write('\nFIXME: handle MusiXTeX macro \\zql, left %s' % left[:20])
 		(left, params) = self.expand_tex(left, 'sepbarrules', 0)
 		# ignore
@@ -2036,7 +2119,7 @@ Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))
 			return re.sub('\r\n', '\n', s)
 		ls = map(newline, ls)
 		# ls = filter (lambda x: x != '\r', ls)
-		ls = self.parse_header (ls)
+		ls = self.parse_preamble (ls)
 		left = string.join (ls, ' ')
 
 #		print left
