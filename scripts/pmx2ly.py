@@ -1,4 +1,5 @@
 #!@PYTHON@
+# encoding=utf8
 
 # PMX is a Musixtex preprocessor written by Don Simons, see
 # http://www.gmd.de/Misc/Music/musixtex/software/pmx/
@@ -309,23 +310,24 @@ class Grace:
 			sys.stderr.write("\nOrphaned grace")
 
 
+class Melisma:
+	def __init__(self, is_start):
+		self.is_start = is_start
+
+	def dump(self):
+		if (self.is_start):
+			return " \\melisma"
+		else:
+			return " \\melismaEnd"
+
+
 class Voice:
 	def __init__ (self):
 		self.entries = []
 		self.chords = []
 		self.staff = None
 		self.meter = None
-		self.current_slurs = []
-		self.slurs = []
-		self.pending_slur = None
-		self.current_ties = []
-		self.ties = []
-		self.pending_tie = None
-		self.current_grace = None
-		self.pending_grace = None
-		self.volta = []
-		self.pending_volta = None
-		self.graces = []
+
 		self.time = (0, 1)
 		self.bar = 0
 		self.preset_id = None
@@ -333,6 +335,26 @@ class Voice:
 		self.repeats = []
 		self.last_name = 0
 		self.last_oct = 0
+		self.lyrics = ''
+
+		self.current_slurs = []
+		self.slurs = []
+		self.pending_slur = None
+
+		self.current_ties = []
+		self.ties = []
+		self.pending_tie = None
+
+		self.current_grace = None
+		self.pending_grace = None
+		self.graces = []
+
+		self.volta = []
+		self.pending_volta = None
+
+		self.pending_beam = False
+		self.pending_melisma = None
+
 
 	def set_preset_id(self, preset):
 		self.preset_id = preset
@@ -408,6 +430,13 @@ class Voice:
 			if s.pending == s.items - 1:
 				s.start_chord = self.chords[-1]
 				self.graces.append(s)
+		if self.pending_beam:
+			ch = self.chords[-1]
+			ch.chord_suffix = ch.chord_suffix + "["
+			self.pending_beam = False
+		if self.pending_melisma:
+			self.add_nonchord(self.pending_melisma)
+			self.pending_melisma = None
 
 	def last_chord (self):
 		return self.chords[-1]
@@ -470,10 +499,14 @@ class Voice:
 		out = out  + ln
 		id = self.idstring ()
 
+		lyrics = ''
+		if self.lyrics != '':
+			out = ' \\autoBeamOff\n\n   ' + out
+			lyrics = '\n\\addlyrics {\n    %s\n}' % self.lyrics
 		if self.preset_id:
-			out = '%s = {\n   %s}\n' % (self.preset_id, out)
+			out = '%s = {\n   %s}%s\n' % (self.preset_id, out, lyrics)
 		else:
-			out = '%s = <<\n{\n   %s\n}\n>>\n'% (id, out)
+			out = '%s = <<\n{\n   %s\n}%s\n>>\n'% (id, out, lyrics)
 		return out
 
 	def calculate_graces (self):
@@ -597,6 +630,8 @@ class Staff:
 		self.alterations = []
 		self.alteration_spans_octaves = False
 		self.accidental_mode = ACCIDENTAL_ABSOLUTE
+		self.lyrics_voice = 0
+		self.lyrics = ''
 
 		i = 0
 		for v  in self.voices:
@@ -892,6 +927,125 @@ ornament_table = {
 	}
 
 
+def expand_tex_assign(left):
+	m = re.match(r'\A([^=]+)=([a-zA-Z0-9]+)', left)
+	if not m:
+		raise Exception("Expect 'name=value' but have %s", left[:20])
+	name = m.groups()[0]
+	value = m.groups()[1]
+	left = left[len(m.group()):]
+	return (left, name, value)
+
+
+def expand_tex(left, name, nparam):
+	pattern = re.compile(r'\A(' + name + r')[^A-Za-z]')
+	m = re.match(pattern, left)
+	if not m:
+		return (left, None)
+
+	pattern = re.compile(r'\A' + name)
+	left = re.sub(pattern, '', left)
+	params = []
+	for i in range(nparam):
+		if left[0] in DIGITS:
+			p = ''
+			while left[0] in DIGITS:
+				p = p + left[0]
+				left = left[1:]
+			params.append(p)
+		elif left[0] == '{':
+			b = left.find('}')
+			if b == -1:
+				raise Exception('TeX parameter close not found')
+			p = left[1:b]
+			left = left[b+1:]
+			if p.startswith('\\ref'):
+				p = p[len('\\ref'):]
+			p = re.sub('\A\\\\kern-?\d*\.?\d+pt', r'', p)
+			p = re.sub('\A\\\\kern-?\.?\d+\\\\noteskip', r'', p)
+			params.append(p)
+		else:
+			raise Exception('TeX parameter must start with \'{\'', left[0])
+	return (left, params)
+
+
+accented = {
+	r'`a': 'à',
+	r'\'a': 'á',
+	r'"a': 'ä',
+	r'Ha': 'ä',
+	r'\~a': 'ã',
+
+	r'`e': 'è',
+	r'\'e': 'é',
+	r'"e': 'ë',
+	r'He': 'ë',
+	r'\~e': 'e',
+
+	r'`i': 'ì',
+	r'\'i': 'í',
+	r'"i': 'ï',
+
+	r'`o': 'ò',
+	r'\'o': 'ó',
+	r'"o': 'ö',
+	r'Ho': 'ő',
+
+	r'`u': 'ù',
+	r'\'u': 'ú',
+	r'"u': 'ü',
+	r'Hu': 'ű',
+
+	r'\"y': 'ÿ',
+
+	r'`A': 'À',
+	r'\'A': 'Á',
+	r'"A': 'Ä',
+	r'hA': 'Ä',
+	r'\~A': 'Ã',
+
+	r'`E': 'È',
+	r'\'E': 'É',
+	r'"E': 'Ë',
+	r'hE': 'Ë',
+	r'\~E': 'E',
+
+	r'`I': 'Ì',
+	r'\'I': 'Í',
+	r'"I': 'Ï',
+
+	r'`O': 'Ò',
+	r'\'O': 'Ó',
+	r'"O': 'Ö',
+	r'hO': 'Ő',
+
+	r'`U': 'Ù',
+	r'\'U': 'Ú',
+	r'"U': 'Ü',
+	r'hU': 'Ű',
+
+	r'\"Y': 'Ÿ',
+
+	r'l': 'ł',
+	r'L': 'Ł',
+	r'\~n': 'ñ',
+	r'\~N': 'Ñ',
+
+	r'\~': ' ',
+}
+
+
+def expand_tex_lyrics(lyrics):
+	for c in accented.keys():
+		lyrics = re.sub('\\\\' + c, accented[c], lyrics)
+		if len(c) > 1 and c[1] in 'aeiou':
+			lyrics = re.sub('\\\\' + c[0] + '{' + c[1] + '}', accented[c], lyrics)
+	lyrics = re.sub('\\\\mtxLyrlink\s+', '~', lyrics)
+	lyrics = re.sub('_', '~', lyrics)
+	lyrics = re.sub('-', ' -- ', lyrics)
+	return lyrics
+
+
 class Parser:
 	def __init__ (self, filename):
 		self.staffs = []
@@ -913,6 +1067,8 @@ class Parser:
 		self.last_repeat = None
 		self.volta = None
 		self.staff_groups = []
+		self.lyrics = {}
+		self.defined_fonts = []
 
 		self.parse (filename)
 
@@ -1281,17 +1437,21 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			left=left[1:]
 		return left
 
+
 	def parse_beams (self,left):
 		c = left[0]
-	#	self.current_voice().add_nonchord (Beam(c))
 		if left[0] == '[':
 			left = left[1:]
 			while left[0] in 'ulfhm+-0123456789':
 				left=left[1:]
+			self.current_voice().pending_beam = True
 		else:
+			ch = self.current_voice().chords[-1]
+			ch.chord_suffix = ch.chord_suffix + "]"
 			left = left[1:]
 
 		return left
+
 
 	def parse_key (self, left):
 		key = ""
@@ -1313,6 +1473,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			self.current_staff().alterations.append(key_obj)
 		return(left)
 
+
 	def parse_preamble  (self, ls):
 		def atonum(a):
 			if re.search('\\.', a):
@@ -1326,10 +1487,16 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		if ls[0] == '---\n':
 			sys.stderr.write("\nFIXME: parse TeX pre-header")
 			i = 1
+			tex_defs = ''
 			while ls[i] != '---\n':
-				sys.stderr.write('\nFIXME: parse TeX line \'%s\'' % ls[i])
+				tex_defs = tex_defs + ls[i]
 				i = i + 1
 			ls = ls[i + 1:]
+			sys.stderr.write('\nFIXME: parse TeX pre-header \'%s\'' % tex_defs)
+			while not tex_defs in ' \t\n':
+				tex_defs = re.sub('\A\s*', '', tex_defs)
+				tex_defs = self.parse_tex(tex_defs)
+				sys.stderr.write('\nFIXME: parse rest of TeX pre-header \'%s\'' % tex_defs)
 
 		while len (numbers) < number_count:
 			opening = ls[0]
@@ -1541,46 +1708,14 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		return left
 
 
-	def expand_tex(self, left, name, nparam):
-		pattern = re.compile(r'\A(' + name + r')[^A-Za-z]')
-		m = re.match(pattern, left)
-		if not m:
-			return (left, None)
-
-		pattern = re.compile(r'\A' + name)
-		left = re.sub(pattern, '', left)
-		params = []
-		for i in range(nparam):
-			if left[0] in DIGITS:
-				p = ''
-				while left[0] in DIGITS:
-					p = p + left[0]
-					left = left[1:]
-				params.append(p)
-			elif left[0] == '{':
-				b = left.find('}')
-				if b == -1:
-					raise Exception('TeX parameter close not found')
-				p = left[1:b]
-				left = left[b+1:]
-				if p.startswith('\\ref'):
-					p = p[len('\\ref'):]
-				p = re.sub('\A\\\\kern-?\d*\.?\d+pt', r'', p)
-				p = re.sub('\A\\\\kern-?\.?\d+\\\\noteskip', r'', p)
-				params.append(p)
-			else:
-				raise Exception('TeX parameter must start with \'{\'', left[0])
-		return (left, params)
-
-
 	def parse_meter(self, left):
 		left = left[1:]
-		m = re.match ('([o0-9]/[o0-9]/[o0-9]/[o0-9])', left)
+		patt = re.compile(r'([o0-9]/[o0-9]/[o0-9]/[o0-9])')
+		m = re.match (patt, left)
 		if m:
-			comps = m.split('/')
-			nums = m.group (1)
-			left = left[len (nums):]
-			nums = map (string.atoi , nums)
+			comps = re.split('/', m.group())
+			left = left[len(m.group()):]
+			comps = map (string.atoi , comps)
 		else:
 			ix = 0
 			comps = [0] * 4
@@ -1650,6 +1785,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 
 
 	def set_lyrics(self, label, lyrics):
+		self.lyrics[label] = expand_tex_lyrics(lyrics)
 		sys.stderr.write("\nSet lyrics{%s} to '%s'" % (label, lyrics))
 
 
@@ -1658,7 +1794,9 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 
 
 	def assign_lyrics(self, staff, label):
-		sys.stderr.write("\nApply lyrics{%s} to staff[%s]" % (staff, label))
+		sys.stderr.write("\nAssign lyrics{%s} to staff[%s]" % (staff, label))
+		s = self.staffs[int(staff) - 1]
+		s.voices[s.lyrics_voice].lyrics = self.lyrics[label]
 
 
 	def rewrite_lyrics(self, frm, to):
@@ -1670,143 +1808,180 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 
 		# M-Tx font definitions
 		#
-		(left, params) = self.expand_tex(left, 'Instrfont', 0)		# {\twelvebf}
+		(left, params) = expand_tex(left, 'Instrfont', 0)		# {\twelvebf}
 		# ToDo
-		(left, params) = self.expand_tex(left, 'eightsf', 0)		# {\font\eightsf=cmss8}
+		(left, params) = expand_tex(left, 'eightsf', 0)		# {\font\eightsf=cmss8}
 		# ToDo
-		(left, params) = self.expand_tex(left, 'Eightsf', 0)		# {\mtxeightsf\eightsf}
+		(left, params) = expand_tex(left, 'Eightsf', 0)		# {\mtxeightsf\eightsf}
 		# ToDo
-		(left, params) = self.expand_tex(left, 'tensf', 0)		# {\font\tensf=cmss10}
+		(left, params) = expand_tex(left, 'tensf', 0)		# {\font\tensf=cmss10}
 		# ToDo
-		(left, params) = self.expand_tex(left, 'Tensf', 0)		# {\mtxtensf\tensf}
+		(left, params) = expand_tex(left, 'Tensf', 0)		# {\mtxtensf\tensf}
 		# ToDo
-		(left, params) = self.expand_tex(left, 'elevensf', 0)		# {\font\elevensf=cmss10 scaled \magstephalf}
+		(left, params) = expand_tex(left, 'elevensf', 0)		# {\font\elevensf=cmss10 scaled \magstephalf}
 		# ToDo
-		(left, params) = self.expand_tex(left, 'Elevensf', 0)		# {\mtxelevensf\elevensf}
+		(left, params) = expand_tex(left, 'Elevensf', 0)		# {\mtxelevensf\elevensf}
 		# ToDo
-		(left, params) = self.expand_tex(left, 'twelvesf', 0)		# {\font\twelvesf=cmss12}
+		(left, params) = expand_tex(left, 'twelvesf', 0)		# {\font\twelvesf=cmss12}
 		# ToDo
-		(left, params) = self.expand_tex(left, 'Twelvesf', 0)		# {\mtxtwelvesf\twelvesf}
+		(left, params) = expand_tex(left, 'Twelvesf', 0)		# {\mtxtwelvesf\twelvesf}
 		# ToDo
-		(left, params) = self.expand_tex(left, 'Bigsf', 0)		# {\font\Bigtype=cmss9 scaled \magstep2}
+		(left, params) = expand_tex(left, 'Bigsf', 0)		# {\font\Bigtype=cmss9 scaled \magstep2}
 		# ToDo
-		(left, params) = self.expand_tex(left, 'BIGsf', 0)		# {\font\BIGtype=cmss9 scaled \magstep4}
+		(left, params) = expand_tex(left, 'BIGsf', 0)		# {\font\BIGtype=cmss9 scaled \magstep4}
 		# ToDo
-		(left, params) = self.expand_tex(left, 'Allsf', 0)		# {\mtxElevensf\mtxBigsf\mtxBIGsf}
+		(left, params) = expand_tex(left, 'Allsf', 0)		# {\mtxElevensf\mtxBigsf\mtxBIGsf}
 		# ToDo
 
 		# M-Tx music sizes
 		#
-		(left, params) = self.expand_tex(left, 'TinySize', 0)		# {\tinyvalue}
+		(left, params) = expand_tex(left, 'TinySize', 0)		# {\tinyvalue}
 		# ToDo
-		(left, params) = self.expand_tex(left, 'SmallSize', 0)		# {\smallvalue}
+		(left, params) = expand_tex(left, 'SmallSize', 0)		# {\smallvalue}
 		# ToDo
-		(left, params) = self.expand_tex(left, 'NormalSize', 0)		# {\normalvalue}
+		(left, params) = expand_tex(left, 'NormalSize', 0)		# {\normalvalue}
 		# ToDo
-		(left, params) = self.expand_tex(left, 'LargeSize', 0)		# {\largevalue}
+		(left, params) = expand_tex(left, 'LargeSize', 0)		# {\largevalue}
 		# ToDo
-		(left, params) = self.expand_tex(left, 'HugeSize', 0)		# {\Largevalue}
+		(left, params) = expand_tex(left, 'HugeSize', 0)		# {\Largevalue}
 		# ToDo
 
 		# M-Tx:musixlyr interface
 		#
-		(left, params) = self.expand_tex(left, 'SetLyrics', 2)
+		(left, params) = expand_tex(left, 'SetLyrics', 2)
 		if params != None:
 			self.set_lyrics(params[0], params[1])
 		# ToDo
-		(left, params) = self.expand_tex(left, 'CopyLyrics', 2)
+		(left, params) = expand_tex(left, 'CopyLyrics', 2)
 		if params != None:
 			self.copy_lyrics(params[0], params[1])
 		# ToDo
-		(left, params) = self.expand_tex(left, 'AssignLyrics', 2)
+		(left, params) = expand_tex(left, 'AssignLyrics', 2)
 		if params != None:
 			self.assign_lyrics(params[0], params[1])
 		# ToDo
-		(left, params) = self.expand_tex(left, 'AuxLyr', 2)
+		(left, params) = expand_tex(left, 'AuxLyr', 2)
 		# ToDo
-		(left, params) = self.expand_tex(left, 'LyrLink', 0)
+		(left, params) = expand_tex(left, 'LyrLink', 0)
 		if params != None:
 			self.rewrite_lyrics(left, '\s+', '~')
-		(left, params) = self.expand_tex(left, 'LowLyrlink', 0)		# {\lowlyrlink}
+		(left, params) = expand_tex(left, 'LowLyrlink', 0)		# {\lowlyrlink}
 		if params != None:
 			self.rewrite_lyrics(left, '\s+', '~')
-		(left, params) = self.expand_tex(left, 'LyricsAdjust', 2)	# #1#2{\setsongraise{#1}{#2\internote}}
+		(left, params) = expand_tex(left, 'LyricsAdjust', 2)	# #1#2{\setsongraise{#1}{#2\internote}}
 		# ignore
-		(left, params) = self.expand_tex(left, 'AuxLyricsAdjust', 2)	# #1#2{\auxsetsongraise{#1}{#2\internote}}
+		(left, params) = expand_tex(left, 'AuxLyricsAdjust', 2)	# #1#2{\auxsetsongraise{#1}{#2\internote}}
 		# ignore
-		(left, params) = self.expand_tex(left, 'LyrModeAlter', 1)	# #1{\lyrmodealter{#1}}
+		(left, params) = expand_tex(left, 'LyrModeAlter', 1)	# #1{\lyrmodealter{#1}}
 		# ToDo
-		(left, params) = self.expand_tex(left, 'LyrModeNormal', 1)	# #1{\lyrmodenormal{#1}}
+		(left, params) = expand_tex(left, 'LyrModeNormal', 1)	# #1{\lyrmodenormal{#1}}
 		# ToDo
-		(left, params) = self.expand_tex(left, 'BM', 0)			# {\beginmel}
+
+		(left, params) = expand_tex(left, 'BM', 0)			# {\beginmel}
+		if params != None:
+			self.current_voice().pending_melisma = Melisma(True)
 		# ToDo
-		(left, params) = self.expand_tex(left, 'EM', 0)			# {\endmel}
+		(left, params) = expand_tex(left, 'EM', 0)			# {\endmel}
+		if params != None:
+			self.current_voice().pending_melisma = Melisma(False)
+		(left, params) = expand_tex(left, 'AuxBM', 0)		# {\auxlyr\mtxBM}
+		if params != None:
+			sys.stderr.write("\nFIXME: handle begin of aux M-Tx melisma")
 		# ToDo
-		(left, params) = self.expand_tex(left, 'AuxBM', 0)		# {\auxlyr\mtxBM}
-		# ToDo
-		(left, params) = self.expand_tex(left, 'AuxEM', 0)		# {\auxlyr\mtxEM}
+		(left, params) = expand_tex(left, 'AuxEM', 0)		# {\auxlyr\mtxEM}
+		if params != None:
+			sys.stderr.write("\nFIXME: handle begin of aux M-Tx melisma")
 		# ToDo
 
 		# M-Tx various interface
-		(left, params) = self.expand_tex(left, 'TenorClef', 1)		# #1{\settrebleclefsymbol{#1}\treblelowoct}
+		(left, params) = expand_tex(left, 'TenorClef', 1)		# #1{\settrebleclefsymbol{#1}\treblelowoct}
 		# ToDo
-		(left, params) = self.expand_tex(left, 'VerseNumber', 1)	# #1{#1 }
+		(left, params) = expand_tex(left, 'VerseNumber', 1)	# #1{#1 }
 		# ToDo
-		(left, params) = self.expand_tex(left, 'InterInstrument', 2)
+		(left, params) = expand_tex(left, 'InterInstrument', 2)
 		# ignore
-		(left, params) = self.expand_tex(left, 'StaffBottom', 1)
+		(left, params) = expand_tex(left, 'StaffBottom', 1)
 		# ignore
-		(left, params) = self.expand_tex(left, 'Group', 3)
+		(left, params) = expand_tex(left, 'Group', 3)
 		if params != None:
 			self.staff_groups.append(params)
 		# mtxPageHeight#1{\vsize #1}
-		(left, params) = self.expand_tex(left, 'TwoInstruments', 2)	# #1#2{\vbox{\hbox{#1}\hbox{#2}}}
+		(left, params) = expand_tex(left, 'TwoInstruments', 2)	# #1#2{\vbox{\hbox{#1}\hbox{#2}}}
 		# ToDo
-		(left, params) = self.expand_tex(left, 'TitleLine', 1)		#1{\gdef\mtxTitle{#1}}
+		(left, params) = expand_tex(left, 'TitleLine', 1)		#1{\gdef\mtxTitle{#1}}
 		# ToDo
-		(left, params) = self.expand_tex(left, 'ComposerLine', 2)	# #1#2{\gdef\mtxPoetComposer{#1\hfill #2}}
+		(left, params) = expand_tex(left, 'ComposerLine', 2)	# #1#2{\gdef\mtxPoetComposer{#1\hfill #2}}
 		# ToDo
-		(left, params) = self.expand_tex(left, 'InstrName', 1)		# #1{{\mtxInstrfont #1}}
+		(left, params) = expand_tex(left, 'InstrName', 1)		# #1{{\mtxInstrfont #1}}
 		# ToDo
-		(left, params) = self.expand_tex(left, 'SetSize', 2)
+		(left, params) = expand_tex(left, 'SetSize', 2)
 		# ignore
-		(left, params) = self.expand_tex(left, 'Dotted', 0)		# {\dotted} # \slurDotted
+		(left, params) = expand_tex(left, 'Dotted', 0)		# {\dotted} # \slurDotted
 		# ToDo
 		# \let\mathflat\flat
 		# \let\mathsharp\sharp
-		(left, params) = self.expand_tex(left, 't', 0)			# {\musixfont\char'062}
-		(left, params) = self.expand_tex(left, 'rp', 0)			# {\musixfont\char'064}
+		(left, params) = expand_tex(left, 't', 0)			# {\musixfont\char'062}
+		(left, params) = expand_tex(left, 'rp', 0)			# {\musixfont\char'064}
 		# %\def\mtxSharp{\raise1ex\hbox{\musicsmallfont\char'064}}
 		# %\def\mtxFlat{\raise1ex\hbox{\musicsmallfont\char'062}}
-		(left, params) = self.expand_tex(left, 'Sharp', 0)		# {\raise1ex\hbox{\sharp}}
+		(left, params) = expand_tex(left, 'Sharp', 0)		# {\raise1ex\hbox{\sharp}}
 		# ToDo
-		(left, params) = self.expand_tex(left, 'Flat', 0)		# {\raise1ex\hbox{\flat}}
+		(left, params) = expand_tex(left, 'Flat', 0)		# {\raise1ex\hbox{\flat}}
 		# ToDo
-		(left, params) = self.expand_tex(left, 'Icresc', 0)		# {\icresc}
+		(left, params) = expand_tex(left, 'Icresc', 0)		# {\icresc}
 		# ToDo
-		(left, params) = self.expand_tex(left, 'Tcresc', 0)		# {\tcresc}
+		(left, params) = expand_tex(left, 'Tcresc', 0)		# {\tcresc}
 		# ToDo
-		(left, params) = self.expand_tex(left, 'Cresc', 1)		#1{\crescendo{#1\elemskip}}
+		(left, params) = expand_tex(left, 'Cresc', 1)		#1{\crescendo{#1\elemskip}}
 		# ToDo
-		(left, params) = self.expand_tex(left, 'Idecresc', 0)		# {\icresc}
+		(left, params) = expand_tex(left, 'Idecresc', 0)		# {\icresc}
 		# ToDo
-		(left, params) = self.expand_tex(left, 'Tdecresc', 0)		# {\tdecresc}
+		(left, params) = expand_tex(left, 'Tdecresc', 0)		# {\tdecresc}
 		# ToDo
-		(left, params) = self.expand_tex(left, 'Decresc', 1)		#1{\decrescendo{#1\elemskip}}
+		(left, params) = expand_tex(left, 'Decresc', 1)		#1{\decrescendo{#1\elemskip}}
 		# ToDo
-		(left, params) = self.expand_tex(left, 'PF', 0)			# {\ppff}
+		(left, params) = expand_tex(left, 'PF', 0)			# {\ppff}
 		# ToDo
-		(left, params) = self.expand_tex(left, 'Lchar', 2)		# #1#2{\lchar{#1}{#2}}
+		(left, params) = expand_tex(left, 'Lchar', 2)		# #1#2{\lchar{#1}{#2}}
 		# ToDo
-		(left, params) = self.expand_tex(left, 'Cchar', 2)		# #1#2{\cchar{#1}{#2}}
+		(left, params) = expand_tex(left, 'Cchar', 2)		# #1#2{\cchar{#1}{#2}}
 		# ToDo
-		(left, params) = self.expand_tex(left, 'Zchar', 2)
+		(left, params) = expand_tex(left, 'Zchar', 2)
 		if params != None:
 			self.add_markup(params[0], params[1])
-		(left, params) = self.expand_tex(left, 'VerseNumberOffset', 0)	# {3}
+		(left, params) = expand_tex(left, 'VerseNumberOffset', 0)	# {3}
 		# ignore
-		(left, params) = self.expand_tex(left, 'Verse', 0)		# {\loffset{\mtxVerseNumberOffset}\lyr}
-		# no, no mtx prefix: (left, params) = self.expand_tex(left, 'comma', 1)		# #1{\check@staff\raise1.2\internote\llap{\BIGfont'\kern#1\noteskip}\fi}
+		(left, params) = expand_tex(left, 'Verse', 0)		# {\loffset{\mtxVerseNumberOffset}\lyr}
+		# no, no mtx prefix: (left, params) = expand_tex(left, 'comma', 1)		# #1{\check@staff\raise1.2\internote\llap{\BIGfont'\kern#1\noteskip}\fi}
+
+		return left
+
+
+	def parse_tex_font(self, left):
+		left = left[4:]
+		if left[0] != '\\':
+			raise Exception("Expect backslash-name, but have %s" % left[:20])
+		(left, font, value) = expand_tex_assign(left)
+		self.defined_fonts.append((font, value))
+		m = re.match(r'\A\s+(at|scaled)\s+', left)
+		if not m:
+			return left
+		left = left[len(m.group()):]
+		if m.groups()[0] == 'at':
+			m = re.match(r'\A\S+', len)
+			left = left[len(m.group())]
+		elif m.groups()[0] == 'scaled':
+			if left.startswith('\\magstep'):
+				left = left[len('\\magstep'):]
+				m = re.match(r'\A([1-5]|half)', left)
+				if not m:
+					raise Exception("magstep must be [1-5]|half", left[:20])
+				left = left[len(m.group()):]
+			else:
+				m = re.match(r'\A\d+')
+				if not m:
+					raise Exception("scaled must be number", left[:20])
+				left = left[len(m.group()):]
 
 		return left
 
@@ -1818,32 +1993,58 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			type = type + 1
 			left = left[1:]
 
-		(left, params) = self.expand_tex(left, 'zcharnote', 2)
+		(left, params) = expand_tex(left, 'zcharnote', 2)
 		if params != None:
 			self.add_markup(params[0], params[1])
-		(left, params) = self.expand_tex(left, 'lcharnote', 2)
+		(left, params) = expand_tex(left, 'lcharnote', 2)
 		# ignore
-		(left, params) = self.expand_tex(left, 'ccharnote', 2)
+		(left, params) = expand_tex(left, 'ccharnote', 2)
 		# ignore
-		(left, params) = self.expand_tex(left, 'zchar', 2)
+		(left, params) = expand_tex(left, 'zchar', 2)
 		# ignore
-		(left, params) = self.expand_tex(left, 'lchar', 2)
+		(left, params) = expand_tex(left, 'lchar', 2)
 		# ignore
-		(left, params) = self.expand_tex(left, 'cchar', 2)
+		(left, params) = expand_tex(left, 'cchar', 2)
 		# ignore
-		(left, params) = self.expand_tex(left, 'zql', 1)
+		(left, params) = expand_tex(left, 'zql', 1)
 		if params != None:
 			sys.stderr.write('\nFIXME: handle MusiXTeX macro \\zql, left %s' % left[:20])
-		(left, params) = self.expand_tex(left, 'sepbarrules', 0)
+		(left, params) = expand_tex(left, 'sepbarrules', 0)
 		# ignore
-		(left, params) = self.expand_tex(left, 'indivbarrules', 0)
+		(left, params) = expand_tex(left, 'indivbarrules', 0)
 		# ignore
-		(left, params) = self.expand_tex(left, 'sepbarrule', 1)
+		(left, params) = expand_tex(left, 'sepbarrule', 1)
 		# ignore
+		(left, params) = expand_tex(left, 'groupbottom', 2)
+		if params != None:
+			sys.stderr.write('\nFIXME: handle MusixTeX staff grouping')
+		(left, params) = expand_tex(left, 'grouptop', 2)
+		if params != None:
+			sys.stderr.write('\nFIXME: handle MusixTeX staff grouping')
+		if left.startswith('startbarno'):
+			(left, name, value) = expand_tex_assign(left)
+
+		# Some TeX commands that are spewed by M-Tx
+		(left, params) = expand_tex(left, 'sixrm', 0)
+		(left, params) = expand_tex(left, 'sevenrm', 0)
+		(left, params) = expand_tex(left, 'eightrm', 0)
+		(left, params) = expand_tex(left, 'ninerm', 0)
+		(left, params) = expand_tex(left, 'tenrm', 0)
+		(left, params) = expand_tex(left, 'elevenrm', 0)
+		(left, params) = expand_tex(left, 'twelverm', 0)
+		(left, params) = expand_tex(left, 'fourteenrm', 0)
+		for i in self.defined_fonts:
+			(left, params) = expand_tex(left, i[0], 0)
+		# handle
+
 		if left.startswith('input'):
 			left = left[len('input'):];
 			left = re.sub('\A\s+', '', left)
+			m = re.match(r'\A\S+', left)
+			sys.stderr.write("\nFIXME: need to include file '%s'" % m.group())
 			left = re.sub('\A\S+', '', left)
+		elif left.startswith('font'):
+			left = self.parse_tex_font(left)
 		# to handle:
 		# \zq{note}
 		# \zh{note}
@@ -1949,7 +2150,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				sys.stderr.write('\nFIXME: support MIDI options')
 				left = left[1:]
 				left = re.sub(r'\A\S*', '', left)
-			elif c in "[]":
+			elif c in '[]':
 				left = self.parse_beams (left)
 			elif left[:2] == "//":
 				self.current_staff().next_voice()
@@ -2066,9 +2267,9 @@ Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))
 		refs = ''
 		for s in self.staffs:
 			out = out + s.dump()
-			refs = '\\' + s.idstring() + refs
+			refs = '\\' + s.idstring() + '\n    ' + refs
 
-		out = out + "\n\n\\score { <<\n    %s\n    %s\n >> }" % (refs , defaults)
+		out = out + "\n\n\\score { <<\n    %s%s\n >> }" % (refs , defaults)
 		return out
 
 

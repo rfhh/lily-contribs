@@ -3,17 +3,16 @@
  TODO:
 ------
 
+- pickup for timeline
 - accidentals must work through grace time
 - movement breaks
 - line breaks???
 - page breaks???
 - afterGrace
 - forced accidentals
-- expand --- --- sections
-- expand \def... sections using tme http://www.astro.indiana.edu/~jthorn/software.html#tme
 - handle end-of-tex\def correctly: a '\' on its own
 - keep line/column counts into input
-- variable number of beams
+- variable number of beams [[ ][ ]]
 - segno
 - work-around for continuing ties from M-Tx (weird mix of slurs and non-toggling ties)
 - fermata on multimeasure rest (Sinfonia 209, flute, bar 112)
@@ -39,6 +38,8 @@
  DONE:
 ------
 
+- expand \def... sections using tme http://www.astro.indiana.edu/~jthorn/software.html#tme
+- expand --- --- sections
 - add options:
    - accidental for all octaves or only for explicitly set octaves? This
      is a well-known musical issue
