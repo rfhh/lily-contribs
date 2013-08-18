@@ -22,6 +22,15 @@ if version == '@' + 'TOPLEVEL_VERSION' + '@':
 MAX_OCTAVE	= 10
 OCTAVE		= 7
 
+DIRECTION_NEUTRAL	= 0
+DIRECTION_UP		= 1
+DIRECTION_DOWN		= 2
+
+FILL_SOLID		= 0
+FILL_DOTTED		= 1
+FILL_DASHED		= 2
+
+
 def encodeint (i):
 	return chr ( i  + ord ('A'))
 
@@ -1611,6 +1620,58 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		left = left[1:]
 
 		(id, left) = self.parse_id(left)
+
+		slur_direction = DIRECTION_NEUTRAL
+		slur_fill = FILL_SOLID
+		while len(left) > 0 and left[0] in 'udltb+-fnhHspst':
+			p = left[0]
+			left = left[1:]
+			if False:
+				pass
+			elif p == 'u':
+				slur_direction = DIRECTION_UP
+			elif p in 'dl':
+				slur_direction = DIRECTION_DOWN
+			elif p == 't':
+				c = 't'
+			elif p == 'b':
+				slur_fill = FILL_DOTTED
+			elif p in '+-':
+				m = re.match(r'\A-?[0-9]+', left)
+				left = left[len(m.group()):]
+				sys.stderr.write("\nIGNORE: raise slur by %s" % m.group())
+				p = left[0]
+				if p in '+-':
+					left = left[1:]
+					m = re.match(r'\A-?[0-9]+', left)
+					left = left[len(m.group()):]
+					sys.stderr.write("\nIGNORE: shift slur by %s" % m.group())
+					p = left[0]
+					if p in '+-':
+						left = left[1:]
+						m = re.match(r'\A-?[0-9]+', left)
+						left = left[len(m.group()):]
+						sys.stderr.write("\nIGNORE: alter slur by %s" % m.group())
+						p = left[0]
+						if p == ':':
+							left = left[1:]
+							m = re.match(r'\A([1-7])([1-7])', left)
+							left = left[len(m.group()):]
+							sys.stderr.write("\nIGNORE: alter slur slope by %s" % m.group())
+			elif p in 'fnhH':
+				sys.stderr.write("\nIGNORE: alter slur curvature by %s" % p)
+			elif p == 'p':
+				m = re.match(r'\A([+-])([st])')
+				sys.stderr.write("\nIGNORE: alter slur height %s" % m.group())
+			elif p == 's':
+				m = re.match(r'\A(-?[0-9])(-?[0-9])', left)
+				sys.stderr.write("\nIGNORE: alter broken slur by %s" % m.group())
+				left = left[len(m.group()):]
+				p = left[0]
+				if p == 's':
+					left = left[1:]
+					m = re.match(r'\A(-?[0-9])(-?[0-9])', left)
+					sys.stderr.write("\nIGNORE: alter broken slur by %s" % m.group())
 
 		if c == 's':
 			self.current_voice().toggle_slur(id)

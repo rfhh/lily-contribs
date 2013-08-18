@@ -14,7 +14,6 @@
 - keep line/column counts into input
 - variable number of beams [[ ][ ]]
 - segno
-- work-around for continuing ties from M-Tx (weird mix of slurs and non-toggling ties)
 - fermata on multimeasure rest (Sinfonia 209, flute, bar 112)
 - compact multi-measure rests (and skips?) in live voices
 
@@ -38,6 +37,7 @@
  DONE:
 ------
 
+- work-around for continuing ties from M-Tx (weird mix of slurs and non-toggling ties)
 - expand \def... sections using tme http://www.astro.indiana.edu/~jthorn/software.html#tme
 - expand --- --- sections
 - add options:
