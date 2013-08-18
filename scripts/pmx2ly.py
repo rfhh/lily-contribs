@@ -327,7 +327,7 @@ class Melisma:
 		if (self.is_start):
 			return " \\melisma"
 		else:
-			return " \\melismaEnd"
+			return " \\melismaEnd \\autoBeamOff"
 
 
 class Voice:
@@ -444,6 +444,8 @@ class Voice:
 			ch.chord_suffix = ch.chord_suffix + "["
 			self.pending_beam = False
 		if self.pending_melisma:
+			ch = self.chords[-1]
+			ch.chord_prefix = ch.chord_prefix + "\\autoBeamOn "
 			self.add_nonchord(self.pending_melisma)
 			self.pending_melisma = None
 
@@ -1945,6 +1947,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		(left, params) = expand_tex(left, 'EM', 0)			# {\endmel}
 		if params != None:
 			self.current_voice().pending_melisma = Melisma(False)
+			e = self.current_voice().chords[-1]
 		(left, params) = expand_tex(left, 'AuxBM', 0)		# {\auxlyr\mtxBM}
 		if params != None:
 			sys.stderr.write("\nFIXME: handle begin of aux M-Tx melisma")
