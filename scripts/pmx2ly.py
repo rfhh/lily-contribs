@@ -569,10 +569,14 @@ class Key:
 		return ' \\key ' + key_table[key] + '\n   '
 
 
-class Accidental:
+class Alteration:
 	def __init__(self, note, octave, alteration, flags, bar, time):
 		# if alteration == 'ff' or alteration == 'ss':
 		#	sys.stderr.write("\nSee alteration %s" % alteration)
+		if note == None:
+			raise Exception("Cannot have an Alteration without a note name", note)
+		if octave == None:
+			raise Exception("Cannot have an Alteration without an octave", note)
 		self.note = note
 		self.octave = octave
 		self.alteration = alteration
@@ -651,7 +655,7 @@ class Staff:
 		self.voices[0].add_nonchord(Key(keysig, 0, (0, 1)))
 
 	def set_alteration(self, note, octave, alteration, flags):
-		self.alterations.append(Accidental(note, octave, alteration, flags,
+		self.alterations.append(Alteration(note, octave, alteration, flags,
 						   self.current_voice().bar,
 						   self.current_voice().time))
 
@@ -667,6 +671,7 @@ class Staff:
 
 
 	def calculate_alteration(self, voice):
+		# sys.stderr.write("traverse the voice to calculate the alterations\n")
 		alteration = [[0] * MAX_OCTAVE for i in range(OCTAVE)]
 		default_alteration = [[0] * MAX_OCTAVE for i in range(OCTAVE)]
 		alterations = sorted(self.alterations, key = lambda alt: (alt.bar, alt.time[0] / (1.0 * alt.time[1])))
@@ -702,7 +707,7 @@ class Staff:
 					for k in range(OCTAVE):
 						for o in range(MAX_OCTAVE):
 							alteration[k][o] = default_alteration[k][o]
-				elif isinstance(a, Accidental):
+				elif isinstance(a, Alteration):
 					c = a.alteration
 					if False:
 						pass
@@ -739,8 +744,6 @@ class Staff:
 					(o, n, a, f) = ch.pitches[p]
 					a = alteration[n][o]
 					ch.pitches[p] = (o, n, a, f)
-
-		sys.stderr.write("traverse the voice to calculate the alterations\n")
 
 
 	def calculate (self):
@@ -1180,10 +1183,8 @@ class Parser:
 				pass
 			elif c == 'm':
 				multibar = 1
-				left = left[1:]
 			elif c == 'p':
 				multibar = 1
-				left = left[1:]
 				if left[0] == 'o':
 					# ignore off-center attribute
 					left = left[1:]
@@ -1326,7 +1327,6 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 
 		return (left, tup, dots)
 		
-
 
 	def parse_note (self, left):
 		name = None
@@ -1501,7 +1501,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				self.current_voice().time = rat_add(self.current_voice().time, t)
 				# sys.stderr.write("%s: add time %d/%d\n" % (self.current_voice().idstring(), t[0], t[1]))
 
-			# sys.stderr.write("%s: check current time %d/%d against bar time %d/%d\n" % (self.current_voice().idstring(), self.current_voice().time[0], self.current_voice().time[1], self.meter.to_rat()[0], self.meter.to_rat()[1]))
+			# sys.stderr.write("%s: check current bar %d time %d/%d against bar time %d/%d\n" % (self.current_voice().idstring(), self.current_voice().bar, self.current_voice().time[0], self.current_voice().time[1], self.meter.to_rat()[0], self.meter.to_rat()[1]))
 			if self.current_voice().time == self.meter.to_rat():
 				self.current_voice().time = (0, 1)
 				if multibar > 0:
