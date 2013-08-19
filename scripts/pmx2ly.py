@@ -119,29 +119,12 @@ def rat_neg (a):
 	return (-p,q)
 
 
-
 def rat_larger (a,b):
 	return rat_subtract (a, b )[0] > 0
 
 
 def rat_subtract (a,b ):
 	return rat_add (a, rat_neg (b))
-
-
-def rat_to_duration (frac):
-	log = 1
-	d = (1,1)
-	while rat_larger (d, frac):
-		d = rat_multiply (d, (1,2))
-		log = log << 1
-
-	frac = rat_subtract (frac, d)
-	dots = 0
-	if frac == rat_multiply (d, (1,2)):
-		dots = 1
-	elif frac == rat_multiply (d, (3,4)):
-		dots = 2
-	return (log, dots)
 
 
 class Bar:
@@ -801,22 +784,28 @@ class Tuplet:
 	def __init__ (self, number, base, dots):
 		self.chords = []
 		self.number = number
-		self.replaces = tuplet_table[number]
+		if dots == 1:
+			self.replaces = 3
+		elif dots == 2:
+			self.replaces = 7
+		else:
+			self.replaces = tuplet_table[number]
 		self.base = base
 		self.dots = dots
 
-		length = (1,base)
-		if dots == 1:
-			length = rat_multiply (length, (3,2))
-		elif dots == 2:
-			length = rat_multiply (length, (7,4))
-
-		length = rat_multiply (length, (1,self.replaces))
-
-		(nb,nd) =rat_to_duration (length)
-
-		self.note_base = nb
-		self.note_dots = nd
+		# <n>x<T>
+		# algorithm: iterate over 2-powers <p> while just holds <T> / <b> >= 1 <n>
+		# rewrite to: while just holds <b> <= <n> <T>
+		nT = (base * number, 1)
+		while dots > 0:
+			nT = rat_multiply(nT, (2, 3))
+			dots = dots - 1
+		note_base = 1
+		while not rat_larger((note_base, 1), nT):
+			note_base = note_base * 2
+		note_base = note_base / 2
+		self.note_base = note_base
+		self.note_dots = 0
 
 	def add_chord (self, ch):
 		ch.dots = self.note_dots
@@ -825,8 +814,16 @@ class Tuplet:
 
 		if len (self.chords) == 1:
 			ch.chord_prefix = '\\times %d/%d { ' % (self.replaces, self.number)
-		elif len (self.chords) == self.number:
-			ch.chord_suffix = ' }'
+		# elif len (self.chords) == self.number:
+		# 	ch.chord_suffix = ' }'
+
+	def dump(self):
+		return ' \\times %d/%d { ' % (self.replaces, self.number)
+
+
+class TupletEnd:
+	def dump(self):
+		return '} '
 
 
 FLAG_CAUTIONARY = 0x1 << 0
@@ -959,11 +956,8 @@ def expand_tex(left, name, nparam):
 	params = []
 	for i in range(nparam):
 		if left[0] in DIGITS:
-			p = ''
-			while left[0] in DIGITS:
-				p = p + left[0]
-				left = left[1:]
-			params.append(p)
+			params.append(left[0])
+			left = left[1:]
 		elif left[0] == '{':
 			b = left.find('}')
 			if b == -1:
@@ -1066,6 +1060,7 @@ class Parser:
 		self.tuplets_expected = 0
 		self.tuplets = []
 		self.last_basic_duration = 4
+		self.last_tuplet_duration = None
 		self.meter = None
 		self.pickup = (0, 1)
 		self.keysig = 0
@@ -1175,6 +1170,27 @@ class Parser:
 		ch.chord_suffix = ch.chord_suffix + direction + "\\markup{" + text + "}"
 
 
+	def parse_rest(self, left):
+		multibar = 0
+		left = left[1:]
+		while left[0] in 'mp':
+			c = left[0]
+			left = left[1:]
+			if False:
+				pass
+			elif c == 'm':
+				multibar = 1
+				left = left[1:]
+			elif c == 'p':
+				multibar = 1
+				left = left[1:]
+				if left[0] == 'o':
+					# ignore off-center attribute
+					left = left[1:]
+
+		return (left, multibar)
+
+
 	def parse_grace(self, left):
 		left = left[1:]
 		slashed = 0
@@ -1224,6 +1240,94 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 		return (left, grace, basic_duration)
 
 
+	def parse_alteration(self, c, left):
+		alteration = c
+		if c == left[0]:
+			alteration = c + c
+			left = left[1:]
+		alteration_flags = 0
+		while left[0] in '+-<>ciA':
+			c = left[0]
+			if False:
+				pass
+			elif c in '+-':
+				sys.stderr.write("\nFIXME: alteration shift not implemented")
+				m = re.match('\A([+-][0-9]+)([+-][0-9]+)', left)
+				if not m:
+					break	# the +- is not an alteration, it's an octave
+				left = left[len(m.group()) - 1:]
+			elif c in '<>':
+				sys.stderr.write("\nFIXME: alteration shift not implemented")
+				if not left[0] in DIGITS:
+					raise Exception("alteration shift malformed", c + left[:1])
+				left = left[1:]
+			elif c == 'c':
+				alteration_flags = alteration_flags | FLAG_CAUTIONARY;
+				left = left[1:]
+			elif c == 'i':
+				alteration_flags = alteration_flags | FLAG_SUPPRESS;
+				left = left[1:]
+			elif c == 'A':
+				sys.stderr.write("\nFIXME: accidental post order")
+				if left[1] == 'o':
+					left = left[1:]
+			left = left[1:]
+
+		return (left, alteration, alteration_flags)
+
+
+	def parse_tuplet(self, left, basic_duration, dots):
+		first_dots = 0
+		m = re.match(r'\A\d\d?', left)
+		tupnumber = string.atoi(m.group())
+		left = left[len(m.group()):]
+		subs = None
+		while left[0] in 'dn':
+			c = left[0]
+			left = left[1:]
+			if False:
+				pass
+			elif c == 'd':
+				first_dots = 1
+				sys.stderr.write("\nFIXME: handle dotted first note under tuplet")
+			elif c == 'n':
+				if left[0] in ' \t\n':
+					sys.stderr.write("\nFIXME: handle tuplet without number")
+					subs = 0
+				else:
+					while left[0] in '+-0123456789fs':
+						if left[0] == 'f':
+							sys.stderr.write("\nIgnore: tuplet number flip")
+							left = left[1:]
+						elif left[0] == 's':
+							m = re.match(r'\A[.0-9]+', left)
+							if m:
+								sys.stderr.write("\nIgnore: tuplet slope")
+								left = left[len(m.group()):]
+							else:
+								raise Exception("Tuplet slope should carry a number", left[:20])
+						else:
+							m = re.match(r'\A\d+', left)
+							if m:
+								sys.stderr.write("\nIgnore: tuplet number subst")
+								subs = atoi(m.group())
+								left = left[len(m.group()):]
+							else:
+								m = re.match(r'\A([+-][.0-9]+)(([+-][.0-9]+))', left)
+								if m:
+									sys.stderr.write("\nIgnore: tuplet shape shifts")
+									left = left[len(m.group()):]
+
+
+		tup = Tuplet(tupnumber, basic_duration, dots)
+		self.tuplets_expected = tupnumber
+		self.tuplets.append (tup)
+		# self.current_voice().add_nonchord(tup)
+
+		return (left, tup, dots)
+		
+
+
 	def parse_note (self, left):
 		name = None
 		ch = None
@@ -1250,13 +1354,14 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 		self.current_voice().handle_pending()
 
 		# what about 's'?
-		alteration = 0
-		if left[0] <> 'r':
+		if left[0] == 'r':
+			# sys.stderr.write("Process note: rest from '%s'" % left[:20])
+			(left, multibar) = self.parse_rest(left)
+		else:
+			multibar = 0
 			name = (ord (left[0]) - ord('a') + 5) % 7
 			# sys.stderr.write("Process note '%s' name '%d'\n" % (left[0], name))
-
-		# sys.stderr.write("Process note: name %s from '%s'" % (name, left[:20]))
-		left = left[1:]
+			left = left[1:]
 
 		count = 1
 		forced_duration  = 0
@@ -1264,50 +1369,19 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 		octave = None
 		durdigit = None
 		alteration = None
-		multibar = 0
-		tupnumber = 0
+		alteration_flags = 0
 		extra_oct = 0
 		flats = 0
 		sharps = 0
-		alteration_flags = 0
-		while left[0] in 'aber</>dsfmpnul0123456789.,+-\\':
+		while left[0] in '0123456789dsfnuleraber.,+-S':
 			c = left[0]
-			if c == 'a':
-				ch.chord_suffix = ch.chord_suffix + '\\noBeam'
-			elif c == 'b':
-				ch.skip = True
-			elif c in 'er</>':
-				sys.stderr.write("\nFIXME: horizontal shift not implemented")
-			elif c in 'fns':
-				alteration = c
-				if left[:2] == 'ff' or left[:2] == 'ss':
-					alteration = left[:2]
-					left = left[1:]
-				if len(left) == 1:
-					pass
-				elif left[1] in '+-':
-					sys.stderr.write("\nFIXME: alteration/dot horizontal shift not implemented")
-				elif left[1] == 'c':
-					alteration_flags = alteration_flags | FLAG_CAUTIONARY;
-					left = left[1:]
-				elif left[1] == 'i':
-					alteration_flags = alteration_flags | FLAG_SUPPRESS;
-					left = left[1:]
-			elif c == 'm':
-				multibar = 1
-			elif c == 'p':
-				multibar = 1
-				if len(left) > 1 and left[1] == 'o':
-					# ignore off-center attribute
-					left = left[1:]
-			elif c == 'd':
-				dots = dots + 1
-				if left[1] in '+-':
-					sys.stderr.write("\nFIXME: alteration/dot horizontal shift not implemented")
+			left = left[1:]
+			if False:
+				pass
 			elif c in DIGITS and durdigit == None and \
-			     self.tuplets_expected == 0:
+					self.tuplets_expected == 0:
 				if multibar != 0:
-					bars = ""
+					bars = c
 					while left[0] in DIGITS:
 						bars = bars + left[0]
 						left = left[1:]
@@ -1318,22 +1392,41 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 						durdigit = 7
 			elif c in DIGITS:
 				octave = string.atoi (c) - 3
+			elif c == 'd':
+				dots = dots + 1
+				m = re.match(r'\A([+-][.\d]+)([+-][.\d]+)?', left)
+				if m:
+					sys.stderr.write("\nFIXME: dot horizontal/vertical shift not implemented")
+					left = left[len(m.group()):]
+			elif c in 'fns':
+				(left, alteration, alteration_flags) = self.parse_alteration(c, left)
+			elif c in 'ul':
+				sys.stderr.write("\nFIXME: stem direction")
+			elif c == 'a':
+				ch.chord_suffix = ch.chord_suffix + '\\noBeam'
+			elif c == 'b':
+				ch.skip = True
+			elif c in 'er':
+				sys.stderr.write("\nFIXME: horizontal shift not implemented")
 			elif c == '+':
 				extra_oct = extra_oct + 1
 			elif c == '-':
 				extra_oct = extra_oct - 1
 			elif c == '.':
-				dots = dots+ 1
-				forced_duration = 2
+				dots = dots + 1
+				forced_duration = 3
 			elif c == ',':
 				forced_duration = 2
-			left = left[1:]
-
-		if left[0] == 'x':
-			left = left[1:]
-			tupnumber = string.atoi (left[0])
-			left = left[1:]
-			left = re.sub (r'\An?f?[+-0-9.]*', '' , left)
+			elif c == 'S':
+				sys.stderr.write("\nFIXME: stem length")
+				while left[0] in DIGITS:
+					left = left[1:]
+				if left[0] == ':':
+					left = left[1:]
+			elif c == 'D':
+				sys.stderr.write("\nFIXME: double duration within tuplet")
+			elif c == 'F':
+				sys.stderr.write("\nFIXME: dotted double duration within tuplet")
 
 		if multibar != 0:
 			count = self.meter.num
@@ -1348,6 +1441,13 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				basic_duration = 4
 		elif not grace:
 			basic_duration = self.last_basic_duration
+
+		if left[0] == 'x':
+			left = left[1:]
+			(left, tup, first_dots) = self.parse_tuplet(left, basic_duration, dots)
+			dots = 0
+			self.last_tuplet_duration = basic_duration
+			basic_duration = self.tuplets[-1].note_base
 
 		self.last_basic_duration = basic_duration
 
@@ -1370,7 +1470,6 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		if alteration:
 			self.current_staff().set_alteration(name, octave, alteration, alteration_flags)
 
-		# do before adding to tuplet.
 		ch.multibar = multibar
 		ch.count = count
 		ch.basic_duration = basic_duration
@@ -1380,14 +1479,9 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			if forced_duration:
 				self.forced_duration = ch.basic_duration / forced_duration
 
-			if tupnumber:
-				tup =Tuplet (tupnumber, basic_duration, dots)
-				self.tuplets_expected = tupnumber
-				self.tuplets.append (tup)
-
 		if not pending_grace and not chord_continuation:
-			# if tupnumber != 0:
-			#	sys.stderr.write("Would add tuplet basic_duration %f tupnumber %d\n" % (basic_duration, tupnumber))
+			# if tup != None
+			#	sys.stderr.write("Would add tuplet basic_duration %f tupnumber %d\n" % (basic_duration, tup.number))
 			# calculate the current time in the bar. Correct for tuplets.
 			# If current time fills the bar, start a new bar, and reset
 			# incidental alterations.
@@ -1403,15 +1497,11 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				for d in range(dots):
 					t = rat_multiply(t, (3, 2))
 				if self.tuplets_expected > 0:
-					(d, n) = t
-					t = rat_multiply(t, (1, self.tuplets[-1].replaces))
 					t = rat_multiply(t, (self.tuplets[-1].replaces, self.tuplets[-1].number))
 				self.current_voice().time = rat_add(self.current_voice().time, t)
+				# sys.stderr.write("%s: add time %d/%d\n" % (self.current_voice().idstring(), t[0], t[1]))
 
-			if False:
-				(dc, nc) = self.current_voice().time
-				(dm, nm) = self.meter.to_rat()
-				sys.stderr.write("%s: check current time %d/%d against bar time %d/%d\n" % (self.current_voice().idstring(), dc, nc, dm, nm))
+			# sys.stderr.write("%s: check current time %d/%d against bar time %d/%d\n" % (self.current_voice().idstring(), self.current_voice().time[0], self.current_voice().time[1], self.meter.to_rat()[0], self.meter.to_rat()[1]))
 			if self.current_voice().time == self.meter.to_rat():
 				self.current_voice().time = (0, 1)
 				if multibar > 0:
@@ -1431,6 +1521,9 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			if self.tuplets_expected > 0:
 				self.tuplets[-1].add_chord (ch)
 				self.tuplets_expected = self.tuplets_expected - 1
+				if self.tuplets_expected == 0:
+					self.current_voice().add_nonchord(TupletEnd())
+					self.last_basic_duration = self.last_tuplet_duration
 
 		return left
 
@@ -2087,6 +2180,18 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			sys.stderr.write('\nFIXME: handle MusixTeX staff grouping')
 		if left.startswith('startbarno'):
 			(left, name, value) = expand_tex_assign(left)
+		(left, params) = expand_tex(left, 'Figu', 2)
+		if params != None:
+			sys.stderr.write('\nFIXME: handle \\Figu{}{} macro')
+		(left, params) = expand_tex(left, 'global', 0)
+		if params != None:
+			sys.stderr.write('\nFIXME: handle \\global macro')
+		(left, params) = expand_tex(left, 'figdrop', 1)
+		if params != None:
+			sys.stderr.write('\nFIXME: handle \\figdrop{} macro')
+		(left, params) = expand_tex(left, 'nbbbbl', 1)
+		if params != None:
+			sys.stderr.write('\nFIXME: do I need to handle \\nbbbblx?')
 
 		# Some TeX commands that are spewed by M-Tx
 		(left, params) = expand_tex(left, 'sixrm', 0)
