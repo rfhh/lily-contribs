@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# deffiles="pg_a4hoch.tex"
+
+MTX=`kpsewhich mtx.tex`
+
+# deffiles="`dirname $MTX`/`basename $MTX`"
+
+for f in "$@"; do
+	b="`basename "$f" .mtx`"
+	prepmx "$b"
+	egrep '^\\\\*def' "$b".pmx > "$b"-defs.tex
+	egrep -v '^\\\\*def' "$b".pmx > "$b"-nodefs.pmx
+	/home/rutger/private/muziek/lilypond/scripts/tme.perl "$b"-defs.tex $deffiles < "$b"-nodefs.pmx > "$b"-expanded.pmx
+	python /home/rutger/private/muziek/lilypond/scripts/pmx2ly.py "$b"-expanded.pmx -o "$b".ly
+done
