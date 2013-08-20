@@ -792,7 +792,9 @@ class Tuplet:
 		elif dots == 2:
 			self.replaces = 7
 		else:
-			self.replaces = tuplet_table[number]
+			self.replace = 1
+			while 2 * self.replace < number:
+				self.replace = 2 * self.replace
 		self.base = base
 		self.dots = dots
 
@@ -937,123 +939,6 @@ ornament_table = {
 	'^': '^',
 	}
 
-
-def expand_tex_assign(left):
-	m = re.match(r'\A([^=]+)=([a-zA-Z0-9]+)', left)
-	if not m:
-		raise Exception("Expect 'name=value' but have %s", left[:20])
-	name = m.groups()[0]
-	value = m.groups()[1]
-	left = left[len(m.group()):]
-	return (left, name, value)
-
-
-def expand_tex(left, name, nparam):
-	pattern = re.compile(r'\A(' + name + r')[^A-Za-z]')
-	m = re.match(pattern, left)
-	if not m:
-		return (left, None)
-
-	pattern = re.compile(r'\A' + name)
-	left = re.sub(pattern, '', left)
-	params = []
-	for i in range(nparam):
-		if left[0] in DIGITS:
-			params.append(left[0])
-			left = left[1:]
-		elif left[0] == '{':
-			b = left.find('}')
-			if b == -1:
-				raise Exception('TeX parameter close not found')
-			p = left[1:b]
-			left = left[b+1:]
-			if p.startswith('\\ref'):
-				p = p[len('\\ref'):]
-			p = re.sub('\A\\\\kern-?\d*\.?\d+pt', r'', p)
-			p = re.sub('\A\\\\kern-?\.?\d+\\\\noteskip', r'', p)
-			params.append(p)
-		else:
-			raise Exception('TeX parameter must start with \'{\'', left[0])
-	return (left, params)
-
-
-accented = {
-	r'`a': 'à',
-	r'\'a': 'á',
-	r'"a': 'ä',
-	r'Ha': 'ä',
-	r'\~a': 'ã',
-
-	r'`e': 'è',
-	r'\'e': 'é',
-	r'"e': 'ë',
-	r'He': 'ë',
-	r'\~e': 'e',
-
-	r'`i': 'ì',
-	r'\'i': 'í',
-	r'"i': 'ï',
-
-	r'`o': 'ò',
-	r'\'o': 'ó',
-	r'"o': 'ö',
-	r'Ho': 'ő',
-
-	r'`u': 'ù',
-	r'\'u': 'ú',
-	r'"u': 'ü',
-	r'Hu': 'ű',
-
-	r'\"y': 'ÿ',
-
-	r'`A': 'À',
-	r'\'A': 'Á',
-	r'"A': 'Ä',
-	r'hA': 'Ä',
-	r'\~A': 'Ã',
-
-	r'`E': 'È',
-	r'\'E': 'É',
-	r'"E': 'Ë',
-	r'hE': 'Ë',
-	r'\~E': 'E',
-
-	r'`I': 'Ì',
-	r'\'I': 'Í',
-	r'"I': 'Ï',
-
-	r'`O': 'Ò',
-	r'\'O': 'Ó',
-	r'"O': 'Ö',
-	r'hO': 'Ő',
-
-	r'`U': 'Ù',
-	r'\'U': 'Ú',
-	r'"U': 'Ü',
-	r'hU': 'Ű',
-
-	r'\"Y': 'Ÿ',
-
-	r'l': 'ł',
-	r'L': 'Ł',
-	r'\~n': 'ñ',
-	r'\~N': 'Ñ',
-
-	r'\~': ' ',
-}
-
-
-def expand_tex_lyrics(lyrics):
-	for c in accented.keys():
-		lyrics = re.sub('\\\\' + c, accented[c], lyrics)
-		if len(c) > 1 and c[1] in 'aeiou':
-			lyrics = re.sub('\\\\' + c[0] + '{' + c[1] + '}', accented[c], lyrics)
-	lyrics = re.sub('\\\\mtxLyrlink\s+', '~', lyrics)
-	lyrics = re.sub('_', '~', lyrics)
-	lyrics = re.sub('-', ' -- ', lyrics)
-	return lyrics
-
-
 class Parser:
 	def __init__ (self, filename):
 		self.staffs = []
@@ -1079,7 +964,10 @@ class Parser:
 		self.lyrics = {}
 		self.defined_fonts = []
 
+		self.tex_dispatch_table()
+
 		self.parse (filename)
+
 
 	def set_staffs (self, number):
 		self.staffs = map (lambda x: Staff (), range(0, number))
@@ -1096,15 +984,19 @@ class Parser:
 			s.set_accidental_mode(self.accidental_mode)
 			i = i+1
 
+
 	def current_staff (self):
 		return self.staffs[self.staff_idx]
+
 
 	def current_voice (self):
 		return self.current_staff ().current_voice ()
 
+
 	def next_staff (self):
 		self.staff_idx = (self.staff_idx + 1)% len (self.staffs)
 		self.current_staff().voice_idx = 0
+
 
 	def add_skip_bars(self, voice, target_bar):
 		bars = target_bar - voice.bar
@@ -1115,6 +1007,7 @@ class Parser:
 		voice.bar += bars
 		# (d, s) = voice.time
 		# sys.stderr.write("%s add_skip_bars(%d): bar %d target %d time %d/%d\n" % (voice.idstring(), bars, voice.bar, target_bar, d, s))
+
 
 	def catch_up(self, voice, target_bar):
 		# sys.stderr.write("%s: catch up from %d to bar %d\n" % (voice.idstring(), voice.bar, target_bar))
@@ -1155,41 +1048,6 @@ class Parser:
 				voice.add_skip_bar(self.meter.num, self.meter.denom)
 				voice.add_nonchord(barnumber)
 		voice.bar = target_bar
-
-
-	def add_markup(self, elevation, text):
-		ch = Chord()
-		self.current_voice().add_chord(ch)
-		ch.basic_duration = self.meter.denom
-		ch.count = 0
-		ch.skip = True
-		ch.time = self.current_voice().time
-		ch.bar  = self.current_voice().bar
-		if int(elevation) >= 0:
-			direction = '^'
-		else:
-			direction = '-'
-		text = re.sub('~', '\char ##x00A0 ', text)
-		ch.chord_suffix = ch.chord_suffix + direction + "\\markup{" + text + "}"
-
-
-	def parse_rest(self, left):
-		multibar = 0
-		left = left[1:]
-		while left[0] in 'mp':
-			c = left[0]
-			left = left[1:]
-			if False:
-				pass
-			elif c == 'm':
-				multibar = 1
-			elif c == 'p':
-				multibar = 1
-				if left[0] == 'o':
-					# ignore off-center attribute
-					left = left[1:]
-
-		return (left, multibar)
 
 
 	def parse_grace(self, left):
@@ -1239,6 +1097,25 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 		grace = Grace(items, slashed, slurred, after, direction)
 
 		return (left, grace, basic_duration)
+
+
+	def parse_rest(self, left):
+		multibar = 0
+		left = left[1:]
+		while left[0] in 'mp':
+			c = left[0]
+			left = left[1:]
+			if False:
+				pass
+			elif c == 'm':
+				multibar = 1
+			elif c == 'p':
+				multibar = 1
+				if left[0] == 'o':
+					# ignore off-center attribute
+					left = left[1:]
+
+		return (left, multibar)
 
 
 	def parse_alteration(self, c, left):
@@ -1292,7 +1169,7 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 				first_dots = 1
 				sys.stderr.write("\nFIXME: handle dotted first note under tuplet")
 			elif c == 'n':
-				if left[0] in ' \t\n':
+				if left[0] in SPACE:
 					sys.stderr.write("\nFIXME: handle tuplet without number")
 					subs = 0
 				else:
@@ -1326,7 +1203,7 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 		# self.current_voice().add_nonchord(tup)
 
 		return (left, tup, dots)
-		
+
 
 	def parse_note (self, left):
 		name = None
@@ -1578,6 +1455,468 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		return(left)
 
 
+	def tex_ignore(self, name, nparams):
+		sys.stderr.write("\nIgnore TeX function '%s'" % name)
+
+
+	def tex_require(self, name, params):
+		sys.stderr.write("\nFIXME: implement TeX function '%s'" % name)
+
+
+	def tex_def(self, name, nparams):
+		sys.stderr.write("\nFIXME: add \\def\\%s" % name)
+
+
+	def tex_set_lyrics(self, name, params):
+		(label, lyrics) = params
+		self.lyrics[label] = expand_tex_lyrics(lyrics)
+		sys.stderr.write("\nSet lyrics{%s} to '%s'" % (label, lyrics))
+
+
+	def tex_copy_lyrics(self, name, params):
+		pass
+
+
+	def tex_assign_lyrics(self, name, params):
+		(staff, label) = params
+		sys.stderr.write("\nAssign lyrics{%s} to staff[%s]" % (staff, label))
+		s = self.staffs[int(staff) - 1]
+		s.voices[s.lyrics_voice].lyrics = self.lyrics[label]
+
+
+	def tex_melisma_begin(self, name, params):
+		self.current_voice().pending_melisma = Melisma(True)
+
+
+	def tex_melisma_end(self, name, params):
+		self.current_voice().pending_melisma = Melisma(False)
+
+
+	def tex_add_title(self, name, params):
+		self.title = params[0]
+
+
+	def tex_add_composer(self, name, params):
+		self.composer = params[0]
+
+
+	def tex_add_instrument(self, name, params):
+		self.instrument = params[0]
+
+
+	def tex_rewrite_lyrics(self, name, params):
+		sys.stderr.write("\nFIXME: implement TeX rewrite_lyrics")
+		pass
+
+
+	def tex_input(self, name, params):
+		sys.stderr.write("\nFIXME: need to include file '%s'" % params[0])
+
+
+	def tex_add_markup(self, name, params):
+		(elevation, text) = params
+		ch = Chord()
+		self.current_voice().add_chord(ch)
+		ch.basic_duration = self.meter.denom
+		ch.count = 0
+		ch.skip = True
+		ch.time = self.current_voice().time
+		ch.bar  = self.current_voice().bar
+		if int(elevation) >= 0:
+			direction = '^'
+		else:
+			direction = '-'
+		text = re.sub('~', '\char ##x00A0 ', text)
+		ch.chord_suffix = ch.chord_suffix + direction + "\\markup{" + text + "}"
+
+
+	TEX_CONTROLS = '~`!@#$%^&*()_-+=|\\{}][:;"\'<>,.?/'
+
+	accented = {
+		r'`a': 'à',
+		r'\'a': 'á',
+		r'"a': 'ä',
+		r'Ha': 'ä',
+		r'\~a': 'ã',
+
+		r'`e': 'è',
+		r'\'e': 'é',
+		r'"e': 'ë',
+		r'He': 'ë',
+		r'\~e': 'e',
+
+		r'`i': 'ì',
+		r'\'i': 'í',
+		r'"i': 'ï',
+
+		r'`o': 'ò',
+		r'\'o': 'ó',
+		r'"o': 'ö',
+		r'Ho': 'ő',
+
+		r'`u': 'ù',
+		r'\'u': 'ú',
+		r'"u': 'ü',
+		r'Hu': 'ű',
+
+		r'\"y': 'ÿ',
+
+		r'`A': 'À',
+		r'\'A': 'Á',
+		r'"A': 'Ä',
+		r'hA': 'Ä',
+		r'\~A': 'Ã',
+
+		r'`E': 'È',
+		r'\'E': 'É',
+		r'"E': 'Ë',
+		r'hE': 'Ë',
+		r'\~E': 'E',
+
+		r'`I': 'Ì',
+		r'\'I': 'Í',
+		r'"I': 'Ï',
+
+		r'`O': 'Ò',
+		r'\'O': 'Ó',
+		r'"O': 'Ö',
+		r'hO': 'Ő',
+
+		r'`U': 'Ù',
+		r'\'U': 'Ú',
+		r'"U': 'Ü',
+		r'hU': 'Ű',
+
+		r'\"Y': 'Ÿ',
+
+		r'l': 'ł',
+		r'L': 'Ł',
+		r'\~n': 'ñ',
+		r'\~N': 'Ñ',
+
+		r'\~': ' ',
+	}
+
+
+	def tex_expand_lyrics(self, lyrics):
+		for c in accented.keys():
+			lyrics = re.sub('\\\\' + c, accented[c], lyrics)
+			if len(c) > 1 and c[1] in 'aeiou':
+				lyrics = re.sub('\\\\' + c[0] + '{' + c[1] + '}', accented[c], lyrics)
+		lyrics = re.sub('\\\\mtxLyrlink\s+', '~', lyrics)
+		lyrics = re.sub('_', '~', lyrics)
+		lyrics = re.sub('-', ' -- ', lyrics)
+
+		return lyrics
+
+
+	def parse_tex_font(self, left):
+		left = left[4:]
+		if left[0] != '\\':
+			raise Exception("Expect backslash-name, but have %s" % left[:20])
+		(left, font, value) = expand_tex_assign(left)
+		self.defined_fonts.append((font, value))
+		m = re.match(r'\A\s+(at|scaled)\s+', left)
+		if not m:
+			return left
+		left = left[len(m.group()):]
+		if m.groups()[0] == 'at':
+			m = re.match(r'\A\S+', len)
+			left = left[len(m.group())]
+		elif m.groups()[0] == 'scaled':
+			if left.startswith('\\magstep'):
+				left = left[len('\\magstep'):]
+				m = re.match(r'\A([1-5]|half)', left)
+				if not m:
+					raise Exception("magstep must be [1-5]|half", left[:20])
+				left = left[len(m.group()):]
+			else:
+				m = re.match(r'\A\d+')
+				if not m:
+					raise Exception("scaled must be number", left[:20])
+				left = left[len(m.group()):]
+
+		return left
+
+
+	def parse_tex_text(self, left):
+		words = []
+		while left[0] != '}':
+			if left[0] in SPACE:
+				left = left[1:]
+			elif left[0] == '\\':
+				(left, w) = self.parse_tex_functions(left)
+				words.append(w)
+			elif left[0] == '{':
+				(left, w) = self.parse_tex_text(left[1:])
+				if left[0] != '}':
+					raise Exception("parse_tex_text does not leave '}'", left[:20])
+				words.append(w)
+				left = left[1:]
+			else:
+				m = re.match(r'\A[^\\\s}]+', left)
+				words.append(m.group())
+				left = left[len(m.group()):]
+
+		return (left, words)
+
+
+	def tex_params(self, left, nparams):
+		sys.stderr.write("\n**** FIXME: eat/expand %d params from input stream '%s'" % (len(nparams), left[:10 + len(nparams) * 10]))
+		# TeX parameters are of a number of types:
+		#  - numbers
+		#  - dimensions
+		#  - rest, including function invocations
+		params = []
+		for i in range(len(nparams)):
+			if left[0] in SPACE:
+				while left[0] in SPACE:
+					left = left[1:]
+				if left[0] == '\\':
+					(left, p) = self.parse_tex_functions(left[1:])
+					params = params + p
+				elif left[0] == '{':
+					(left, p) = self.parse_tex_text(left[1:])
+					if left[0] != '}':
+						raise Exception("parse_tex_text does not leave '}'", left[:20])
+					params = params + p
+					left = left[1:]
+				else:
+					if False:
+						pass
+					elif nparams[i] == 'a':
+						m = re.match(r'\A[A-Za-z]+', left)
+					elif nparams[i] == 't':
+						m = re.match(r'\A[A-Za-z_0-9]+', left)
+					elif nparams[i] == 'l':
+						m = re.match(r'\A[^\n]+', left)
+					elif nparams[i] == 'd':
+						m = re.match(r'\A-?[0-9.]+(pt|\\noteskip|cm|mm|in)', left)
+					elif nparams[i] == 'p':
+						m = re.match(r'\A\S+', left)
+					else:
+						raise Exception("Unknown TeX parameter type", nparams[i])
+					params.append(m.group())
+					left = left[len(m.group()):]
+			elif left[0] == '\\':
+				(left, p) = self.parse_tex_functions(left[1:])
+				params = params + p
+			elif left[0] == '{':
+				(left, p) = self.parse_tex_text(left[1:])
+				if left[0] != '}':
+					raise Exception("parse_tex_text does not leave '}'", left[:20])
+				params = params + p
+				left = left[1:]
+			elif left[0] in '-0123456789.':
+				sys.stderr.write("\nFIXME: what if this is a dimension, not just a number?")
+				m = re.match(r'\A[-.\d]+', left)
+				params.append(m.group())
+				left = left[len(m.group()):]
+			elif left[0] in self.TEX_CONTROLS:
+				sys.stderr.write("\nFIXME: handle TeX control sequences")
+			else:
+				sys.stderr.write("\nFIXME: handle parameter string '%s'" % left[:20])
+		return (left, params)
+
+
+	def parse_tex_functions(self, left):
+		# handle just a few MusiXTeX commands
+		params = []
+		while left[0] == '\\' and not left[1] in SPACE:
+			type = 1
+			while left[1] == '\\':
+				type = type + 1
+				left = left[1:]
+
+			m = re.match(r'\A\\[A-Za-z]+', left)
+			if not m:
+				return (left, [])
+
+			left = left[len(m.group()):]
+			if m.group() in self.tex_functions.keys():
+				(nparams, func) = self.tex_functions[m.group()]
+				(left, params) = self.tex_params(left, nparams)
+				func(m.group(), params)
+			else:
+				sys.stderr.write("\nFIXME: unsupported TeX function '%s'" % m.group())
+		if left[0] == '\\' and left[1] in SPACE:
+			left = left[1:]
+		return (left, params)
+
+
+	def tex_dispatch_table(self):
+		# parameter types:
+		#  a - alphabetic [A-Za-z]
+		#  t - text [A-Za-z0-9]
+		#  d - dimen
+		#  l - until end of line
+		#  p - any parameter type
+		self.tex_functions = {
+			# M-Tx
+			'\\mtxInstrfont':	('', self.tex_require),
+			'\\mtxeightsf':		('', self.tex_require),
+			'\\mtxEightsf':		('', self.tex_require),
+			'\\mtxtensf':		('', self.tex_require),
+			'\\mtxTensf':		('', self.tex_require),
+			'\\mtxelevensf':	('', self.tex_require),
+			'\\mtxElevensf':	('', self.tex_require),
+			'\\mtxtwelvesf':	('', self.tex_require),
+			'\\mtxTwelvesf':	('', self.tex_require),
+			'\\mtxBigsf':		('', self.tex_require),
+			'\\mtxBIGsf':		('', self.tex_require),
+			'\\mtxAllsf':		('', self.tex_require),
+			'\\mtxTinySize':	('', self.tex_require),
+			'\\mtxSmallSize':	('', self.tex_require),
+			'\\mtxNormalSize':	('', self.tex_require),
+			'\\mtxLargeSize':	('', self.tex_require),
+			'\\mtxHugeSize':	('', self.tex_require),
+
+			# M-Tx:musixlyr interface
+			'\\mtxSetLyrics':	('p', self.tex_set_lyrics),
+			'\\mtxCopyLyrics':	('tp', self.tex_require),
+			'\\mtxAssignLyrics':	('tp', self.tex_assign_lyrics),
+			'\\mtxAuxLyr':		('p', self.tex_require),
+			'\\mtxLyrLink':		('', self.tex_rewrite_lyrics),
+			'\\mtxLowLyrlink':	('', self.tex_rewrite_lyrics),
+			'\\mtxLyricsAdjust':	('td', self.tex_ignore),
+			'\\mtxAuxLyricsAdjust':	('td', self.tex_ignore),
+			'\\mtxLyrModeAlter':	('t', self.tex_require),
+			'\\mtxLyrModeNormal':	('t', self.tex_require),
+			'\\mtxBM':		('', self.tex_melisma_begin),
+			'\\mtxEM':		('', self.tex_melisma_end),
+			'\\mtxAuxBM':		('', self.tex_require),
+			'\\mtxAuxEM':		('', self.tex_require),
+			'\\mtxTenorClef':	('', self.tex_require),
+			'\\mtxVerseNumber':	('t', self.tex_require),
+			'\\mtxInterInstrument':	('td', self.tex_ignore),
+			'\\mtxStaffBottom':	('d', self.tex_ignore),
+			'\\mtxGroup':		('ttt', self.tex_require),
+			'\\mtxTwoInstruments':	('tt', self.tex_require),
+			'\\mtxTitleLine':	('t', self.tex_add_title),
+			'\\mtxComposerLine':	('tp', self.tex_add_composer),
+			'\\mtxInstrName':	('t', self.tex_add_instrument),
+			'\\mtxSetSize':		('td', self.tex_ignore),
+			'\\mtxDotted':		('', self.tex_require),
+			# do not follow: 't':			('', self.tex_require),
+			# do not follow: 'rp':			('', self.tex_require),
+			'\\mtxSharp':		('', self.tex_require),
+			'\\mtxFlat':		('', self.tex_require),
+			'\\mtxIcresc':		('', self.tex_require),
+			'\\mtxTcresc':		('', self.tex_require),
+			'\\mtxCresc':		('', self.tex_require),
+			'\\mtxIdecresc':	('', self.tex_require),
+			'\\mtxTdecresc':	('', self.tex_require),
+			'\\mtxDecresc':		('', self.tex_require),
+			'\\mtxPF':		('', self.tex_require),
+			'\\mtxLchar':		('tp', self.tex_require),
+			'\\mtxCchar':		('tp', self.tex_require),
+			'\\mtxZchar':		('tp', self.tex_add_markup),
+			'\\mtxVerseNumberOffset':('', self.tex_ignore),
+			'\\mtxVerse':		('', self.tex_require),
+
+			# MusiXTeX
+			'\\zcharnote':		('ap', self.tex_add_markup),
+			'\\lcharnote':		('ap', self.tex_require),
+			'\\ccharnote':		('ap', self.tex_require),
+			'\\zchar':		('ap', self.tex_require),
+			'\\lchar':		('ap', self.tex_require),
+			'\\cchar':		('ap', self.tex_require),
+			'\\zql':		('', self.tex_require),
+			'\\sepbarrules':	('', self.tex_ignore),
+			'\\indivbarrules':	('', self.tex_ignore),
+			'\\sepbarrule':		('t', self.tex_ignore),
+			'\\groupbottom':	('tt', self.tex_require),
+			'\\grouptop':		('tt', self.tex_require),
+			'\\Figu':		('p', self.tex_require),
+			'\\figdrop':		('p', self.tex_require),
+			'\\nbbbbl':		('', self.tex_ignore),
+			'\\zq':			('', self.tex_require),
+			'\\zh':			('', self.tex_require),
+			'\\rw':			('', self.tex_require),
+			'\\lw':			('', self.tex_require),
+			'\\rh':			('', self.tex_require),
+			'\\lh':			('', self.tex_require),
+			'\\rq':			('', self.tex_require),
+			'\\lq':			('', self.tex_require),
+			'\\zhu':		('', self.tex_require),
+			'\\zhl':		('', self.tex_require),
+			'\\zqu':		('', self.tex_require),
+			'\\zcu':		('', self.tex_require),
+			'\\zcl':		('', self.tex_require),
+			'\\zccu':		('', self.tex_require),
+			'\\zccl':		('', self.tex_require),
+			'\\zcccu':		('', self.tex_require),
+			'\\zcccl':		('', self.tex_require),
+			'\\zccccu':		('', self.tex_require),
+			'\\zccccl':		('', self.tex_require),
+
+			'\\smalltype':		('', self.tex_require),
+			'\\Smalltype':		('', self.tex_require),
+			'\\normtype':		('', self.tex_require),
+			'\\medtype':		('', self.tex_require),
+			'\\Bigtype':		('', self.tex_require),
+			'\\BIgtype':		('', self.tex_require),
+			'\\BIGtype':		('', self.tex_require),
+
+			# Plain TeX
+			'\\ref':		('', self.tex_ignore),
+			'\\sixrm':		('', self.tex_require),
+			'\\sevenrm':		('', self.tex_require),
+			'\\eightrm':		('', self.tex_require),
+			'\\ninerm':		('', self.tex_require),
+			'\\tenrm':		('', self.tex_require),
+			'\\elevenrm':		('', self.tex_require),
+			'\\twelverm':		('', self.tex_require),
+			'\\fourteenrm':		('', self.tex_require),
+			'\\vbox':		('p', self.tex_require),
+			'\\centerline':		('p', self.tex_require),
+			'\\def':		('ap', self.tex_def),
+			'\\input':		('l', self.tex_input),
+			'\\global':		('', self.tex_require),
+		}
+
+
+	def expand_tex_assign(self, left):
+		m = re.match(r'\A([^=]+)=([a-zA-Z0-9]+)', left)
+		if not m:
+			raise Exception("Expect 'name=value' but have %s", left[:20])
+		name = m.groups()[0]
+		value = m.groups()[1]
+		left = left[len(m.group()):]
+		return (left, name, value)
+
+
+	def expand_tex(self, left, name, nparam):
+		pattern = re.compile(r'\A(' + name + r')[^A-Za-z]')
+		m = re.match(pattern, left)
+		if not m:
+			return (left, None)
+
+		pattern = re.compile(r'\A' + name)
+		left = re.sub(pattern, '', left)
+		params = []
+		for i in range(len(nparam)):
+			if left[0] in DIGITS:
+				params.append(left[0])
+				left = left[1:]
+			elif left[0] == '{':
+				left = left[1:]
+				(left, subparams) = expand_tex(left)
+				b = left.find('}')
+				if b == -1:
+					raise Exception('TeX parameter close not found')
+				p = left[1:b]
+				left = left[b+1:]
+				if p.startswith('\\ref'):
+					p = p[len('\\ref'):]
+				p = re.sub('\A\\\\kern-?\d*\.?\d+pt', r'', p)
+				p = re.sub('\A\\\\kern-?\.?\d+\\\\noteskip', r'', p)
+				params.append(p)
+			else:
+				raise Exception('TeX parameter must start with \'{\'', left[0])
+		return (left, params)
+
+
 	def parse_preamble  (self, ls):
 		def atonum(a):
 			if re.search('\\.', a):
@@ -1597,9 +1936,9 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				i = i + 1
 			ls = ls[i + 1:]
 			sys.stderr.write('\nFIXME: parse TeX pre-header \'%s\'' % tex_defs)
-			while not tex_defs in ' \t\n':
+			while not tex_defs in SPACE:
 				tex_defs = re.sub('\A\s*', '', tex_defs)
-				tex_defs = self.parse_tex(tex_defs)
+				(tex_defs, params) = self.parse_tex_functions(tex_defs)
 				sys.stderr.write('\nFIXME: parse rest of TeX pre-header \'%s\'' % tex_defs)
 
 		while len (numbers) < number_count:
@@ -1638,6 +1977,8 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 
 		instruments = []
 		while len (instruments) < no_instruments:
+			if ls[0][0] == '\\':
+				sys.stderr.write('\nFIXME: expand TeX instrument definitions')
 			instruments.append (ls[0])
 			ls = ls[1:]
 
@@ -1694,10 +2035,12 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			e.scripts.append (orn)
 		return left
 
+
 	def parse_barcheck (self, left):
 		self.current_voice ().add_nonchord (Barcheck ())
 
 		return left [1:]
+
 
 	def parse_id(self, left):
 		id = None
@@ -1709,6 +2052,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			left= left[1:]
 
 		return (id, left)
+
 
 	def parse_slur (self, left):
 		c = left[0]
@@ -1783,6 +2127,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 
 		return left
 
+
 	def parse_mumbo_jumbo (self,left):
 		left = left[1:]
 		while left and  left[0] <> '\\':
@@ -1791,12 +2136,14 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		left  = left[1:]
 		return left
 
+
 	def parsex (self,left):
 		left = left[1:]
 		while left[0] in DIGITS:
 			left = left[1:]
 
 		return left
+
 
 	def parse_global(self, left):
 		while left[0] in 'abcdeIiKNprRSsTv':
@@ -1834,7 +2181,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				# ignore multi-voice rest placement directive
 				pass
 			elif c == 'N':
-				f = left.find(' \t\n')
+				f = left.find(SPACE)
 				part_base = left[0:f]
 				left = left[f:]
 				sys.stderr.write('\nFIXME: set scor2prt file names to \'%s\'' % part_base)
@@ -1846,7 +2193,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				for s in self.staffs:
 					s.set_accidental_mode(self.accidental_mode)
 			elif c == 'R':
-				f = left.find(' \t\n')
+				f = left.find(SPACE)
 				filename = left[0:f]
 				left = left[f:]
 				sys.stderr.write('\nFIXME: include file \'%s\'' % filename)
@@ -1940,333 +2287,8 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			sys.stderr.write("\nFIXME: volta close outside repeat")
 
 
-	def set_lyrics(self, label, lyrics):
-		self.lyrics[label] = expand_tex_lyrics(lyrics)
-		sys.stderr.write("\nSet lyrics{%s} to '%s'" % (label, lyrics))
-
-
-	def copy_lyrics(self, label_from, label_to):
-		pass
-
-
-	def assign_lyrics(self, staff, label):
-		sys.stderr.write("\nAssign lyrics{%s} to staff[%s]" % (staff, label))
-		s = self.staffs[int(staff) - 1]
-		s.voices[s.lyrics_voice].lyrics = self.lyrics[label]
-
-
-	def rewrite_lyrics(self, frm, to):
-		pass
-
-
-	def parse_M_Tx(self, left):
-		left = left[3:]
-
-		# M-Tx font definitions
-		#
-		(left, params) = expand_tex(left, 'Instrfont', 0)		# {\twelvebf}
-		# ToDo
-		(left, params) = expand_tex(left, 'eightsf', 0)		# {\font\eightsf=cmss8}
-		# ToDo
-		(left, params) = expand_tex(left, 'Eightsf', 0)		# {\mtxeightsf\eightsf}
-		# ToDo
-		(left, params) = expand_tex(left, 'tensf', 0)		# {\font\tensf=cmss10}
-		# ToDo
-		(left, params) = expand_tex(left, 'Tensf', 0)		# {\mtxtensf\tensf}
-		# ToDo
-		(left, params) = expand_tex(left, 'elevensf', 0)		# {\font\elevensf=cmss10 scaled \magstephalf}
-		# ToDo
-		(left, params) = expand_tex(left, 'Elevensf', 0)		# {\mtxelevensf\elevensf}
-		# ToDo
-		(left, params) = expand_tex(left, 'twelvesf', 0)		# {\font\twelvesf=cmss12}
-		# ToDo
-		(left, params) = expand_tex(left, 'Twelvesf', 0)		# {\mtxtwelvesf\twelvesf}
-		# ToDo
-		(left, params) = expand_tex(left, 'Bigsf', 0)		# {\font\Bigtype=cmss9 scaled \magstep2}
-		# ToDo
-		(left, params) = expand_tex(left, 'BIGsf', 0)		# {\font\BIGtype=cmss9 scaled \magstep4}
-		# ToDo
-		(left, params) = expand_tex(left, 'Allsf', 0)		# {\mtxElevensf\mtxBigsf\mtxBIGsf}
-		# ToDo
-
-		# M-Tx music sizes
-		#
-		(left, params) = expand_tex(left, 'TinySize', 0)		# {\tinyvalue}
-		# ToDo
-		(left, params) = expand_tex(left, 'SmallSize', 0)		# {\smallvalue}
-		# ToDo
-		(left, params) = expand_tex(left, 'NormalSize', 0)		# {\normalvalue}
-		# ToDo
-		(left, params) = expand_tex(left, 'LargeSize', 0)		# {\largevalue}
-		# ToDo
-		(left, params) = expand_tex(left, 'HugeSize', 0)		# {\Largevalue}
-		# ToDo
-
-		# M-Tx:musixlyr interface
-		#
-		(left, params) = expand_tex(left, 'SetLyrics', 2)
-		if params != None:
-			self.set_lyrics(params[0], params[1])
-		# ToDo
-		(left, params) = expand_tex(left, 'CopyLyrics', 2)
-		if params != None:
-			self.copy_lyrics(params[0], params[1])
-		# ToDo
-		(left, params) = expand_tex(left, 'AssignLyrics', 2)
-		if params != None:
-			self.assign_lyrics(params[0], params[1])
-		# ToDo
-		(left, params) = expand_tex(left, 'AuxLyr', 2)
-		# ToDo
-		(left, params) = expand_tex(left, 'LyrLink', 0)
-		if params != None:
-			self.rewrite_lyrics(left, '\s+', '~')
-		(left, params) = expand_tex(left, 'LowLyrlink', 0)		# {\lowlyrlink}
-		if params != None:
-			self.rewrite_lyrics(left, '\s+', '~')
-		(left, params) = expand_tex(left, 'LyricsAdjust', 2)	# #1#2{\setsongraise{#1}{#2\internote}}
-		# ignore
-		(left, params) = expand_tex(left, 'AuxLyricsAdjust', 2)	# #1#2{\auxsetsongraise{#1}{#2\internote}}
-		# ignore
-		(left, params) = expand_tex(left, 'LyrModeAlter', 1)	# #1{\lyrmodealter{#1}}
-		# ToDo
-		(left, params) = expand_tex(left, 'LyrModeNormal', 1)	# #1{\lyrmodenormal{#1}}
-		# ToDo
-
-		(left, params) = expand_tex(left, 'BM', 0)			# {\beginmel}
-		if params != None:
-			self.current_voice().pending_melisma = Melisma(True)
-		# ToDo
-		(left, params) = expand_tex(left, 'EM', 0)			# {\endmel}
-		if params != None:
-			self.current_voice().pending_melisma = Melisma(False)
-			e = self.current_voice().chords[-1]
-		(left, params) = expand_tex(left, 'AuxBM', 0)		# {\auxlyr\mtxBM}
-		if params != None:
-			sys.stderr.write("\nFIXME: handle begin of aux M-Tx melisma")
-		# ToDo
-		(left, params) = expand_tex(left, 'AuxEM', 0)		# {\auxlyr\mtxEM}
-		if params != None:
-			sys.stderr.write("\nFIXME: handle begin of aux M-Tx melisma")
-		# ToDo
-
-		# M-Tx various interface
-		(left, params) = expand_tex(left, 'TenorClef', 1)		# #1{\settrebleclefsymbol{#1}\treblelowoct}
-		# ToDo
-		(left, params) = expand_tex(left, 'VerseNumber', 1)	# #1{#1 }
-		# ToDo
-		(left, params) = expand_tex(left, 'InterInstrument', 2)
-		# ignore
-		(left, params) = expand_tex(left, 'StaffBottom', 1)
-		# ignore
-		(left, params) = expand_tex(left, 'Group', 3)
-		if params != None:
-			self.staff_groups.append(params)
-		# mtxPageHeight#1{\vsize #1}
-		(left, params) = expand_tex(left, 'TwoInstruments', 2)	# #1#2{\vbox{\hbox{#1}\hbox{#2}}}
-		# ToDo
-		(left, params) = expand_tex(left, 'TitleLine', 1)		#1{\gdef\mtxTitle{#1}}
-		# ToDo
-		(left, params) = expand_tex(left, 'ComposerLine', 2)	# #1#2{\gdef\mtxPoetComposer{#1\hfill #2}}
-		# ToDo
-		(left, params) = expand_tex(left, 'InstrName', 1)		# #1{{\mtxInstrfont #1}}
-		# ToDo
-		(left, params) = expand_tex(left, 'SetSize', 2)
-		# ignore
-		(left, params) = expand_tex(left, 'Dotted', 0)		# {\dotted} # \slurDotted
-		# ToDo
-		# \let\mathflat\flat
-		# \let\mathsharp\sharp
-		(left, params) = expand_tex(left, 't', 0)			# {\musixfont\char'062}
-		(left, params) = expand_tex(left, 'rp', 0)			# {\musixfont\char'064}
-		# %\def\mtxSharp{\raise1ex\hbox{\musicsmallfont\char'064}}
-		# %\def\mtxFlat{\raise1ex\hbox{\musicsmallfont\char'062}}
-		(left, params) = expand_tex(left, 'Sharp', 0)		# {\raise1ex\hbox{\sharp}}
-		# ToDo
-		(left, params) = expand_tex(left, 'Flat', 0)		# {\raise1ex\hbox{\flat}}
-		# ToDo
-		(left, params) = expand_tex(left, 'Icresc', 0)		# {\icresc}
-		# ToDo
-		(left, params) = expand_tex(left, 'Tcresc', 0)		# {\tcresc}
-		# ToDo
-		(left, params) = expand_tex(left, 'Cresc', 1)		#1{\crescendo{#1\elemskip}}
-		# ToDo
-		(left, params) = expand_tex(left, 'Idecresc', 0)		# {\icresc}
-		# ToDo
-		(left, params) = expand_tex(left, 'Tdecresc', 0)		# {\tdecresc}
-		# ToDo
-		(left, params) = expand_tex(left, 'Decresc', 1)		#1{\decrescendo{#1\elemskip}}
-		# ToDo
-		(left, params) = expand_tex(left, 'PF', 0)			# {\ppff}
-		# ToDo
-		(left, params) = expand_tex(left, 'Lchar', 2)		# #1#2{\lchar{#1}{#2}}
-		# ToDo
-		(left, params) = expand_tex(left, 'Cchar', 2)		# #1#2{\cchar{#1}{#2}}
-		# ToDo
-		(left, params) = expand_tex(left, 'Zchar', 2)
-		if params != None:
-			self.add_markup(params[0], params[1])
-		(left, params) = expand_tex(left, 'VerseNumberOffset', 0)	# {3}
-		# ignore
-		(left, params) = expand_tex(left, 'Verse', 0)		# {\loffset{\mtxVerseNumberOffset}\lyr}
-		# no, no mtx prefix: (left, params) = expand_tex(left, 'comma', 1)		# #1{\check@staff\raise1.2\internote\llap{\BIGfont'\kern#1\noteskip}\fi}
-
-		return left
-
-
-	def parse_tex_font(self, left):
-		left = left[4:]
-		if left[0] != '\\':
-			raise Exception("Expect backslash-name, but have %s" % left[:20])
-		(left, font, value) = expand_tex_assign(left)
-		self.defined_fonts.append((font, value))
-		m = re.match(r'\A\s+(at|scaled)\s+', left)
-		if not m:
-			return left
-		left = left[len(m.group()):]
-		if m.groups()[0] == 'at':
-			m = re.match(r'\A\S+', len)
-			left = left[len(m.group())]
-		elif m.groups()[0] == 'scaled':
-			if left.startswith('\\magstep'):
-				left = left[len('\\magstep'):]
-				m = re.match(r'\A([1-5]|half)', left)
-				if not m:
-					raise Exception("magstep must be [1-5]|half", left[:20])
-				left = left[len(m.group()):]
-			else:
-				m = re.match(r'\A\d+')
-				if not m:
-					raise Exception("scaled must be number", left[:20])
-				left = left[len(m.group()):]
-
-		return left
-
-
-	def parse_tex(self, left):
-		# handle just a few MusiXTeX commands
-		type = 1
-		while left[0] == '\\':
-			type = type + 1
-			left = left[1:]
-
-		(left, params) = expand_tex(left, 'zcharnote', 2)
-		if params != None:
-			self.add_markup(params[0], params[1])
-		(left, params) = expand_tex(left, 'lcharnote', 2)
-		# ignore
-		(left, params) = expand_tex(left, 'ccharnote', 2)
-		# ignore
-		(left, params) = expand_tex(left, 'zchar', 2)
-		# ignore
-		(left, params) = expand_tex(left, 'lchar', 2)
-		# ignore
-		(left, params) = expand_tex(left, 'cchar', 2)
-		# ignore
-		(left, params) = expand_tex(left, 'zql', 1)
-		if params != None:
-			sys.stderr.write('\nFIXME: handle MusiXTeX macro \\zql, left %s' % left[:20])
-		(left, params) = expand_tex(left, 'sepbarrules', 0)
-		# ignore
-		(left, params) = expand_tex(left, 'indivbarrules', 0)
-		# ignore
-		(left, params) = expand_tex(left, 'sepbarrule', 1)
-		# ignore
-		(left, params) = expand_tex(left, 'groupbottom', 2)
-		if params != None:
-			sys.stderr.write('\nFIXME: handle MusixTeX staff grouping')
-		(left, params) = expand_tex(left, 'grouptop', 2)
-		if params != None:
-			sys.stderr.write('\nFIXME: handle MusixTeX staff grouping')
-		if left.startswith('startbarno'):
-			(left, name, value) = expand_tex_assign(left)
-		(left, params) = expand_tex(left, 'Figu', 2)
-		if params != None:
-			sys.stderr.write('\nFIXME: handle \\Figu{}{} macro')
-		(left, params) = expand_tex(left, 'global', 0)
-		if params != None:
-			sys.stderr.write('\nFIXME: handle \\global macro')
-		(left, params) = expand_tex(left, 'figdrop', 1)
-		if params != None:
-			sys.stderr.write('\nFIXME: handle \\figdrop{} macro')
-		(left, params) = expand_tex(left, 'nbbbbl', 1)
-		if params != None:
-			sys.stderr.write('\nFIXME: do I need to handle \\nbbbblx?')
-
-		# Some TeX commands that are spewed by M-Tx
-		(left, params) = expand_tex(left, 'sixrm', 0)
-		(left, params) = expand_tex(left, 'sevenrm', 0)
-		(left, params) = expand_tex(left, 'eightrm', 0)
-		(left, params) = expand_tex(left, 'ninerm', 0)
-		(left, params) = expand_tex(left, 'tenrm', 0)
-		(left, params) = expand_tex(left, 'elevenrm', 0)
-		(left, params) = expand_tex(left, 'twelverm', 0)
-		(left, params) = expand_tex(left, 'fourteenrm', 0)
-		for i in self.defined_fonts:
-			(left, params) = expand_tex(left, i[0], 0)
-		# handle
-
-		if left.startswith('input'):
-			left = left[len('input'):];
-			left = re.sub('\A\s+', '', left)
-			m = re.match(r'\A\S+', left)
-			sys.stderr.write("\nFIXME: need to include file '%s'" % m.group())
-			left = re.sub('\A\S+', '', left)
-		elif left.startswith('font'):
-			left = self.parse_tex_font(left)
-		# to handle:
-		# \zq{note}
-		# \zh{note}
-		# \rw{note}
-		# \lw{note}
-		# \rh{note}
-		# \lh{note}
-		# \rq{note}
-		# \lq{note}
-		# \zhu{note}
-		# \zhl{note}
-		# \zqu{note}
-		# \zcu{note}
-		# \zcl{note}
-		# \zccu{note}
-		# \zccl{note}
-		# \zcccu{note}
-		# \zcccl{note}
-		# \zccccu{note}
-		# \zccccl{note}
-
-		elif left.startswith('smalltype'):
-			pass
-		elif left.startswith('Smalltype'):
-			pass
-		elif left.startswith('normtype'):
-			pass
-		elif left.startswith('medtype'):
-			pass
-		elif left.startswith('Bigtype'):
-			pass
-		elif left.startswith('BIgtype'):
-			pass
-		elif left.startswith('BIGtype'):
-			pass
-
-		# and handle a number of M-Tx commands
-		elif left.startswith('mtx'):
-			left = self.parse_M_Tx(left)
-
-		elif left[1] in ' \n\t':
-			left = left[1:]
-		else:
-			# done = left.find('\\')
-			# sys.stderr.write('\nFIXME: ignore TeX command %s' % left[:done+1])
-			# left = left[done + 1:]
-			pass
-
-		return left
-
-
 	def parse_body (self, left):
-		preamble = 1
+
 
 		while left:
 			c = left[0]
@@ -2345,6 +2367,7 @@ Huh? Unknown T parameter `%s', before `%s'""" % (left[1], left[:20] ))
 				s = string.find(left, '\n');
 				f = s + 1 + string.find(left[s+1:], '\n');
 				sys.stderr.write("\nSee title block '%s'\n" % left[0:f])
+				sys.stderr.write("\nFIXME: expand TeX macros in title")
 				if left[1] == 'i':
 					self.instrument = left[s+1:f]
 				elif left[1] == 'c':
@@ -2381,7 +2404,7 @@ Huh? Unknown T parameter `%s', before `%s'""" % (left[1], left[:20] ))
 				left = left[1:]
 				if not left[0] in 'bx \n\r':
 					text = ''
-					while not left[0] in ' \n\r':
+					while not left[0] in SPACE:
 						text = text + left[0]
 						left = left[1:]
 					self.open_volta(text)
@@ -2390,7 +2413,7 @@ Huh? Unknown T parameter `%s', before `%s'""" % (left[1], left[:20] ))
 					if left[0] == 'b':
 						left = left[1:]
 						text = ''
-						while not left[0] in ' \n\r':
+						while not left[0] in SPACE:
 							text = text + left[0]
 							left = left[1:]
 						self.open_volta(text)
@@ -2400,7 +2423,7 @@ Huh? Unknown T parameter `%s', before `%s'""" % (left[1], left[:20] ))
 					pass
 			elif c in 'LPM':
 				sys.stderr.write('\nFIXME: handle line/page/movement breaks')
-				while not left[0] in ' \n\t':
+				while not left[0] in SPACE:
 					left = left[1:]
 			elif c == 'X':
 				left = left[1:]
@@ -2410,7 +2433,7 @@ Huh? Unknown T parameter `%s', before `%s'""" % (left[1], left[:20] ))
 				while left[0] in ".0123456789BP":
 					left = left[1:]
 			elif c == '\\':
-				left = self.parse_tex(left)
+				(left, params) = self.parse_tex_functions(left)
 			else:
 				sys.stderr.write ("""
 Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))
