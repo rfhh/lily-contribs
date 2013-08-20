@@ -12,6 +12,7 @@ import string
 import sys
 import re
 import getopt
+from functools import partial
 
 program_name = 'pmx2ly'
 version = '@TOPLEVEL_VERSION@'
@@ -500,7 +501,7 @@ class Voice:
 		if self.preset_id:
 			out = '%s = {\n   %s}%s\n' % (self.preset_id, out, lyrics)
 		else:
-			out = '%s = <<\n{\n   %s\n}%s\n>>\n'% (id, out, lyrics)
+			out = '%s = <<\n{\n   %s\n}\n\\timeLine%s\n>>\n'% (id, out, lyrics)
 		return out
 
 	def calculate_graces (self):
@@ -621,7 +622,6 @@ class Staff:
 	def __init__ (self):
 		self.voices = (Voice (), Voice())
 		self.clef = None
-		self.instrument = 0
 		self.voice_idx = 0
 		self.number = None
 		self.key = 0
@@ -630,6 +630,7 @@ class Staff:
 		self.accidental_mode = ACCIDENTAL_ABSOLUTE
 		self.lyrics_voice = 0
 		self.lyrics = ''
+		self.instrument_name = None
 
 		i = 0
 		for v  in self.voices:
@@ -777,9 +778,11 @@ class Staff:
 					refs = voice + ' \\\\' + refs
 				else:
 					refs = voice + refs
-		refs = refs + "\n    \\timeLine"
 
-		out = out + '\n\n%s = \\new Staff = %s <<%s\n>>\n\n' % (self.idstring (), self.idstring (), refs)
+		instr = ''
+		if self.instrument_name:
+			instr = '\n    \set Staff.instrumentName = "' + self.instrument_name + '"'
+		out = out + '\n\n%s = \\new Staff = %s <<%s%s\n>>\n\n' % (self.idstring(), self.idstring(), instr, refs)
 		return out
 
 
@@ -968,6 +971,7 @@ class Parser:
 		self.current_repeat = None
 		self.last_repeat = None
 		self.volta = None
+		self.instruments = []
 		self.staff_groups = []
 		self.lyrics = {}
 		self.defined_fonts = []
@@ -992,6 +996,8 @@ class Parser:
 			s.number = i
 			s.set_key(self.keysig)
 			s.set_accidental_mode(self.accidental_mode)
+			if self.instruments:
+				s.instrument_name = self.instruments[i]
 			i = i+1
 
 
@@ -1618,7 +1624,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 
 
 	def tex_ignore(self, name, params):
-		sys.stderr.write("\nIgnore TeX function '%s'" % name)
+		sys.stderr.write("\nWarning: ignore TeX function '%s'" % name)
 		return ('', '')
 
 
@@ -1627,9 +1633,11 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		return ('', '')
 	
 
-	def tex_interpret(self, name, params):
-		sys.stderr.write("\nFIXME: implement TeX interpreter for '%s'" % name)
-		return ('', '')
+	def tex_interpret(self, name, params, replace):
+		# sys.stderr.write("\nFIXME: implement TeX interpreter for '%s': replace with %s" % (name, replace))
+		for i in range(len(params)):
+			replace = re.sub('#%d' % (i + 1), params[i], replace)
+		return (replace, '')
 
 
 	def tex_set_lyrics(self, name, params):
@@ -1674,8 +1682,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 
 
 	def tex_add_instrument(self, name, params):
-		self.instrument = params[0]
-		return ('', '')
+		return (params[0], '')
 
 
 	def tex_rewrite_lyrics(self, name, params):
@@ -1849,8 +1856,13 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		left = left[len(m.group()):]
 		(left, params) = self.tex_params(left, 'p')
 		param_descr = ['p'] * m.groups()[1].count('#')
-		sys.stderr.write("\nFIXME: add \\def\\%s=%s" % (name, params[0]))
-		self.tex_functions[name] = (param_descr, self.tex_interpret)
+		if name == '\\mtxversion':
+			pass
+		elif name == '\\mtxdate':
+			pass
+		else:
+			sys.stderr.write("\nFIXME: add \\def\\%s=%s" % (name, params[0]))
+			self.tex_functions[name] = (param_descr, partial(self.tex_interpret, replace=params[0]))
 
 		return left
 
@@ -2022,17 +2034,26 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				(left, w, p) = self.parse_tex_function(left)
 				if p != '':
 					sys.stderr.write("\nFIXME: parse_tex has post '%s'" % p)
-				post = post + ' ' + p
-				words = words + " " + w
+					post = post + ' ' + p
+				if words:
+					words = words + " " + w
+				else:
+					words = w
 			elif left[0] == '{':
 				(left, w) = self.parse_tex(left[1:])
 				if left[0] != '}':
 					raise Exception("parse_tex does not leave '}'", left[:20])
-				words = words + " " + w
+				if words:
+					words = words + " " + w
+				else:
+					words = w
 				left = left[1:]
 			else:
 				m = re.match(r'\A[^\\\s}]+', left)
-				words = words + " " + self.untex(m.group())
+				if words:
+					words = words + " " + self.untex(m.group())
+				else:
+					words = self.untex(m.group())
 				left = left[len(m.group()):]
 
 		if post != '':
@@ -2042,6 +2063,8 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 
 
 	def expand_tex(self, left, name, nparam):
+		# Old special-case function that handles \ref and \kern<dimen>
+		# TODO: replace with the generic stuff
 		pattern = re.compile(r'\A(' + name + r')[^A-Za-z]')
 		m = re.match(pattern, left)
 		if not m:
@@ -2133,11 +2156,11 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		# ignore this.
 		# opening = map (string.atoi, re.split ('[\t ]+', opening))
 
-		instruments = []
-		while len (instruments) < no_instruments:
+		while len (self.instruments) < no_instruments:
 			if ls[0][0] == '\\':
 				sys.stderr.write('\nFIXME: expand TeX instrument definitions')
-			instruments.append (ls[0])
+				ls[0] = self.parse_tex(ls[0])[1]
+			self.instruments.append (ls[0])
 			ls = ls[1:]
 
 		l = ls[0]
@@ -2624,9 +2647,14 @@ Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))
 
 		out = out + self.timeline.dump()
 		refs = ''
+		i = 0
 		for s in self.staffs:
 			out = out + s.dump()
-			refs = '\\' + s.idstring() + '\n    ' + refs
+			instr = ''
+			if self.instruments[i]:
+				instr = '\n        \\set Staff.instrumentName = "' + self.instruments[i] + '"\n    '
+			refs = '{\n        \\' + s.idstring() + instr + '\n    }\n    ' + refs
+			i = i + 1
 
 		out = out + "\n\n\\score { <<\n    %s%s\n >> }" % (refs , defaults)
 		return out
