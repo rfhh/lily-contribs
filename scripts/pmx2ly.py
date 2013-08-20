@@ -501,7 +501,7 @@ class Voice:
 		if self.preset_id:
 			out = '%s = {\n   %s}%s\n' % (self.preset_id, out, lyrics)
 		else:
-			out = '%s = <<\n{\n   %s\n}\n\\timeLine%s\n>>\n'% (id, out, lyrics)
+			out = '%s = <<\n{\n   %s\n}\n%s\n\\timeLine\n>>\n'% (id, out, lyrics)
 		return out
 
 	def calculate_graces (self):
@@ -1508,12 +1508,12 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			'\\mtxPoetComposer':	('', self.tex_get_composer),
 
 			# M-Tx:musixlyr interface
-			'\\mtxSetLyrics':	('p', self.tex_set_lyrics),
+			'\\mtxSetLyrics':	('pp', self.tex_set_lyrics),
 			'\\mtxCopyLyrics':	('tp', self.tex_require),
 			'\\mtxAssignLyrics':	('tp', self.tex_assign_lyrics),
 			'\\mtxAuxLyr':		('p', self.tex_require),
-			'\\mtxLyrLink':		('', self.tex_rewrite_lyrics),
-			'\\mtxLowLyrlink':	('', self.tex_rewrite_lyrics),
+			'\\mtxLyrlink':		('', self.tex_lyr_link),
+			'\\mtxLowLyrlink':	('', self.tex_lyr_link),
 			'\\mtxLyricsAdjust':	('td', self.tex_ignore),
 			'\\mtxAuxLyricsAdjust':	('td', self.tex_ignore),
 			'\\mtxLyrModeAlter':	('t', self.tex_require),
@@ -1623,6 +1623,10 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		return ('\\markup{\\fill-line{{%s} {%s}}}' % (self.mtx.poet, self.mtx.composer), '')
 
 
+	def tex_lyr_link(self, name, params):
+		return (name, '')
+
+
 	def tex_ignore(self, name, params):
 		sys.stderr.write("\nWarning: ignore TeX function '%s'" % name)
 		return ('', '')
@@ -1642,7 +1646,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 
 	def tex_set_lyrics(self, name, params):
 		(label, lyrics) = params
-		self.lyrics[label] = expand_tex_lyrics(lyrics)
+		self.lyrics[label] = self.tex_expand_lyrics(lyrics)
 		sys.stderr.write("\nSet lyrics{%s} to '%s'" % (label, lyrics))
 		return ('', '')
 
@@ -1760,68 +1764,68 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 	TEX_CONTROLS = '~`!@#$%^&*()_-+=|\\{}][:;"\'<>,.?/'
 
 	accented = {
-		r'\\`a': 'à',
-		r'\\\'a': 'á',
-		r'\\"a': 'ä',
-		r'\\Ha': 'ä',
-		r'\\\~a': 'ã',
+		'\\`a': 'à',
+		'\\\'a': 'á',
+		'\\"a': 'ä',
+		'\\Ha': 'ä',
+		'\\\~a': 'ã',
 
-		r'\\`e': 'è',
-		r'\\\'e': 'é',
-		r'\\"e': 'ë',
-		r'\\He': 'ë',
-		r'\\\~e': 'e',
+		'\\`e': 'è',
+		'\\\'e': 'é',
+		'\\"e': 'ë',
+		'\\He': 'ë',
+		'\\\~e': 'e',
 
-		r'\\`i': 'ì',
-		r'\\\'i': 'í',
-		r'\\"i': 'ï',
+		'\\`i': 'ì',
+		'\\\'i': 'í',
+		'\\"i': 'ï',
 
-		r'\\`o': 'ò',
-		r'\\\'o': 'ó',
-		r'\\"o': 'ö',
-		r'\\Ho': 'ő',
+		'\\`o': 'ò',
+		'\\\'o': 'ó',
+		'\\"o': 'ö',
+		'\\Ho': 'ő',
 
-		r'\\`u': 'ù',
-		r'\\\'u': 'ú',
-		r'\\"u': 'ü',
-		r'\\Hu': 'ű',
+		'\\`u': 'ù',
+		'\\\'u': 'ú',
+		'\\"u': 'ü',
+		'\\Hu': 'ű',
 
-		r'\\\"y': 'ÿ',
+		'\\\"y': 'ÿ',
 
-		r'\\`A': 'À',
-		r'\\\'A': 'Á',
-		r'\\"A': 'Ä',
-		r'\\hA': 'Ä',
-		r'\\\~A': 'Ã',
+		'\\`A': 'À',
+		'\\\'A': 'Á',
+		'\\"A': 'Ä',
+		'\\hA': 'Ä',
+		'\\\~A': 'Ã',
 
-		r'\\`E': 'È',
-		r'\\\'E': 'É',
-		r'\\"E': 'Ë',
-		r'\\hE': 'Ë',
-		r'\\\~E': 'E',
+		'\\`E': 'È',
+		'\\\'E': 'É',
+		'\\"E': 'Ë',
+		'\\hE': 'Ë',
+		'\\\~E': 'E',
 
-		r'\\`I': 'Ì',
-		r'\\\'I': 'Í',
-		r'\\"I': 'Ï',
+		'\\`I': 'Ì',
+		'\\\'I': 'Í',
+		'\\"I': 'Ï',
 
-		r'\\`O': 'Ò',
-		r'\\\'O': 'Ó',
-		r'\\"O': 'Ö',
-		r'\\hO': 'Ő',
+		'\\`O': 'Ò',
+		'\\\'O': 'Ó',
+		'\\"O': 'Ö',
+		'\\hO': 'Ő',
 
-		r'\\`U': 'Ù',
-		r'\\\'U': 'Ú',
-		r'\\"U': 'Ü',
-		r'\\hU': 'Ű',
+		'\\`U': 'Ù',
+		'\\\'U': 'Ú',
+		'\\"U': 'Ü',
+		'\\hU': 'Ű',
 
-		r'\\\"Y': 'Ÿ',
+		'\\\"Y': 'Ÿ',
 
-		r'\\l': 'ł',
-		r'\\L': 'Ł',
-		r'\\\~n': 'ñ',
-		r'\\\~N': 'Ñ',
+		'\\l': 'ł',
+		'\\L': 'Ł',
+		'\\\~n': 'ñ',
+		'\\\~N': 'Ñ',
 
-		r'~': ' ',
+		'~': ' ',
 	}
 
 
@@ -1830,7 +1834,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			lyrics = lyrics.replace(k, self.accented[k])
 			if len(k) > 2 and k[2] in 'aeiou':
 				lyrics = lyrics.replace(k[:2] + '{' + k[2] + '}', self.accented[k])
-		lyrics = re.sub('\\\\mtxLyrlink\s+', '~', lyrics)
+		lyrics = re.sub(r'\s*\\mtxLyrlink\s+', '~', lyrics)
 		lyrics = re.sub('_', '~', lyrics)
 		lyrics = re.sub('-', ' -- ', lyrics)
 
@@ -1987,7 +1991,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 
 			m = re.match(r'\A\\[A-Za-z]+', left)
 			if not m:
-				return (left, [])
+				return (left, '', '')
 
 			left = left[len(m.group()):]
 			if m.group() == '\\def' or m.group() == '\\gdef':
@@ -2031,14 +2035,21 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			if left[0] in SPACE:
 				left = left[1:]
 			elif left[0] == '\\':
-				(left, w, p) = self.parse_tex_function(left)
-				if p != '':
-					sys.stderr.write("\nFIXME: parse_tex has post '%s'" % p)
-					post = post + ' ' + p
-				if words:
-					words = words + " " + w
+				while left[1] == '\\':
+					left = left[1:]
+				m = re.match(r'\A\\([^A-Za-z]({.}|.))', left)
+				if m:
+					words = words + self.untex(m.group())
+					left = left[len(m.group()):]
 				else:
-					words = w
+					(left, w, p) = self.parse_tex_function(left)
+					if p != '':
+						sys.stderr.write("\nFIXME: parse_tex has post '%s'" % p)
+						post = post + ' ' + p
+					if words:
+						words = words + " " + w
+					else:
+						words = w
 			elif left[0] == '{':
 				(left, w) = self.parse_tex(left[1:])
 				if left[0] != '}':
@@ -2158,9 +2169,8 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 
 		while len (self.instruments) < no_instruments:
 			if ls[0][0] == '\\':
-				sys.stderr.write('\nFIXME: expand TeX instrument definitions')
 				ls[0] = self.parse_tex(ls[0])[1]
-			self.instruments.append (ls[0])
+			self.instruments.append(ls[0])
 			ls = ls[1:]
 
 		l = ls[0]
