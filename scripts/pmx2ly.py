@@ -1606,18 +1606,18 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		}
 
 
-	def tex_get_title(self, name, nparams):
+	def tex_get_title(self, name, params):
 		return (self.mtx.title, '')
 
 
-	def tex_get_composer(self, name, nparams):
+	def tex_get_composer(self, name, params):
 		self.composer = self.mtx.composer
 		self.poet = self.mtx.poet
 
 		return ('\\markup{\\fill-line{{%s} {%s}}}' % (self.mtx.poet, self.mtx.composer), '')
 
 
-	def tex_ignore(self, name, nparams):
+	def tex_ignore(self, name, params):
 		sys.stderr.write("\nIgnore TeX function '%s'" % name)
 		return ('', '')
 
@@ -1703,7 +1703,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 
 
 	def tex_vbox(self, name, params):
-		out = '\\column{ '
+		out = '\\center-column{ '
 		for p in params:
 			out = out + '\\line{ ' + p + '}'
 		out = out + '}'
@@ -1714,7 +1714,9 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 
 
 	def tex_centerline(self, name, params):
-		out = '\\center-align { ' + ''.join(params) + ' }'
+		# out = '\\center-align { ' + ''.join(params) + ' }'
+		sys.stderr.write("\nDon't know how to center within a \column thingy")
+		out = ''.join(params)
 
 		sys.stderr.write("\ncenterline returns '%s'" % out)
 
@@ -1751,76 +1753,76 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 	TEX_CONTROLS = '~`!@#$%^&*()_-+=|\\{}][:;"\'<>,.?/'
 
 	accented = {
-		r'`a': 'à',
-		r'\'a': 'á',
-		r'"a': 'ä',
-		r'Ha': 'ä',
-		r'\~a': 'ã',
+		r'\\`a': 'à',
+		r'\\\'a': 'á',
+		r'\\"a': 'ä',
+		r'\\Ha': 'ä',
+		r'\\\~a': 'ã',
 
-		r'`e': 'è',
-		r'\'e': 'é',
-		r'"e': 'ë',
-		r'He': 'ë',
-		r'\~e': 'e',
+		r'\\`e': 'è',
+		r'\\\'e': 'é',
+		r'\\"e': 'ë',
+		r'\\He': 'ë',
+		r'\\\~e': 'e',
 
-		r'`i': 'ì',
-		r'\'i': 'í',
-		r'"i': 'ï',
+		r'\\`i': 'ì',
+		r'\\\'i': 'í',
+		r'\\"i': 'ï',
 
-		r'`o': 'ò',
-		r'\'o': 'ó',
-		r'"o': 'ö',
-		r'Ho': 'ő',
+		r'\\`o': 'ò',
+		r'\\\'o': 'ó',
+		r'\\"o': 'ö',
+		r'\\Ho': 'ő',
 
-		r'`u': 'ù',
-		r'\'u': 'ú',
-		r'"u': 'ü',
-		r'Hu': 'ű',
+		r'\\`u': 'ù',
+		r'\\\'u': 'ú',
+		r'\\"u': 'ü',
+		r'\\Hu': 'ű',
 
-		r'\"y': 'ÿ',
+		r'\\\"y': 'ÿ',
 
-		r'`A': 'À',
-		r'\'A': 'Á',
-		r'"A': 'Ä',
-		r'hA': 'Ä',
-		r'\~A': 'Ã',
+		r'\\`A': 'À',
+		r'\\\'A': 'Á',
+		r'\\"A': 'Ä',
+		r'\\hA': 'Ä',
+		r'\\\~A': 'Ã',
 
-		r'`E': 'È',
-		r'\'E': 'É',
-		r'"E': 'Ë',
-		r'hE': 'Ë',
-		r'\~E': 'E',
+		r'\\`E': 'È',
+		r'\\\'E': 'É',
+		r'\\"E': 'Ë',
+		r'\\hE': 'Ë',
+		r'\\\~E': 'E',
 
-		r'`I': 'Ì',
-		r'\'I': 'Í',
-		r'"I': 'Ï',
+		r'\\`I': 'Ì',
+		r'\\\'I': 'Í',
+		r'\\"I': 'Ï',
 
-		r'`O': 'Ò',
-		r'\'O': 'Ó',
-		r'"O': 'Ö',
-		r'hO': 'Ő',
+		r'\\`O': 'Ò',
+		r'\\\'O': 'Ó',
+		r'\\"O': 'Ö',
+		r'\\hO': 'Ő',
 
-		r'`U': 'Ù',
-		r'\'U': 'Ú',
-		r'"U': 'Ü',
-		r'hU': 'Ű',
+		r'\\`U': 'Ù',
+		r'\\\'U': 'Ú',
+		r'\\"U': 'Ü',
+		r'\\hU': 'Ű',
 
-		r'\"Y': 'Ÿ',
+		r'\\\"Y': 'Ÿ',
 
-		r'l': 'ł',
-		r'L': 'Ł',
-		r'\~n': 'ñ',
-		r'\~N': 'Ñ',
+		r'\\l': 'ł',
+		r'\\L': 'Ł',
+		r'\\\~n': 'ñ',
+		r'\\\~N': 'Ñ',
 
-		r'\~': ' ',
+		r'~': ' ',
 	}
 
 
 	def tex_expand_lyrics(self, lyrics):
-		for c in accented.keys():
-			lyrics = re.sub('\\\\' + c, accented[c], lyrics)
-			if len(c) > 1 and c[1] in 'aeiou':
-				lyrics = re.sub('\\\\' + c[0] + '{' + c[1] + '}', accented[c], lyrics)
+		for k in self.accented.keys():
+			lyrics = lyrics.replace(k, self.accented[k])
+			if len(k) > 2 and k[2] in 'aeiou':
+				lyrics = lyrics.replace(k[:2] + '{' + k[2] + '}', self.accented[k])
 		lyrics = re.sub('\\\\mtxLyrlink\s+', '~', lyrics)
 		lyrics = re.sub('_', '~', lyrics)
 		lyrics = re.sub('-', ' -- ', lyrics)
@@ -1890,7 +1892,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		return left
 
 
-	def tex_params(self, left, nparams):
+	def tex_params(self, left, params):
 		# @return a list of parameter strings; each may be the result of a function call
 
 		# TeX parameters are of a number of types:
@@ -1899,9 +1901,10 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		#  - ' ' <string>
 		#  - \<function>...
 
-		params = []
+		out = []
 		i = 0
-		finished = len(nparams) == 0
+		finished = len(params) == 0
+		nesting = 0
 		while not finished:
 			if left[0] in SPACE:
 				while left[0] in SPACE:
@@ -1911,47 +1914,53 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				else:
 					if False:
 						pass
-					elif nparams[i] == 'a':
+					elif params[i] == 'a':
 						m = re.match(r'\A[A-Za-z]+', left)
-					elif nparams[i] == 't':
+					elif params[i] == 't':
 						m = re.match(r'\A[A-Za-z_0-9]+', left)
-					elif nparams[i] == 'l':
+					elif params[i] == 'l':
 						m = re.match(r'\A[^\n]+', left)
-					elif nparams[i] == 'd':
+					elif params[i] == 'd':
 						m = re.match(r'\A-?[0-9.]+(pt|\\noteskip|cm|mm|in)', left)
-					elif nparams[i] == 'p':
+					elif params[i] == 'p':
 						m = re.match(r'\A\S+', left)
 					else:
-						raise Exception("Unknown TeX parameter type", nparams[i])
-					params.append(m.group())
+						raise Exception("Unknown TeX parameter type", params[i])
+					out.append(m.group())
 					left = left[len(m.group()):]
 			elif left[0] == '\\':
-				(left, p, post) = self.parse_tex_function(left[1:])
+				(left, p, post) = self.parse_tex_function(left)
 				if post != '':
 					sys.stderr.write("\nFIXME: tex_params has post '%s'" % post)
-				params.append(p)
+				out.append(p)
 			elif left[0] == '{':
-				Here, the vbox arguments are all consumed by parse_tex, while I want them to be consumed one at a time so I have control *here*
-				(left, p) = self.parse_tex(left[1:])
-				if left[0] != '}':
-					raise Exception("parse_tex does not leave '}'", left[:20])
-				params.append(p)
-				left = left[1:]
+				if params[i] != '*':
+					(left, p) = self.parse_tex(left[1:])
+					if left[0] != '}':
+						raise Exception("parse_tex does not leave '}'", left[:20])
+					out.append(p)
+					left = left[1:]
+				else:
+					nesting = nesting + 1
+					left = left[1:]
+					continue
 			elif left[0] in '-0123456789.':
 				sys.stderr.write("\nFIXME: what if this is a dimension, not just a number?")
 				m = re.match(r'\A[-.\d]+', left)
-				params.append(m.group())
+				out.append(m.group())
 				left = left[len(m.group()):]
-			elif nparams[i] == '*' and left[0] == '}':
-				break
+			elif params[i] == '*' and left[0] == '}':
+				nesting = nesting - 1
+				left = left[1:]
+				finished = nesting == 0
 			elif left[0] in self.TEX_CONTROLS:
 				sys.stderr.write("\nFIXME: handle TeX control sequences")
-			if nparams[i] != '*':
+			if params[i] != '*':
 				i = i + 1
-				if i == len(nparams):
+				if i == len(params):
 					break
 
-		return (left, params)
+		return (left, out)
 
 
 	def parse_tex_function(self, left):
@@ -1975,21 +1984,28 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				left = self.tex_font(left)
 			elif m.group() == '\\input':
 				left = self.tex_input(left)
+			elif m.group() in self.tex_functions.keys():
+				(params, func) = self.tex_functions[m.group()]
+				(left, params) = self.tex_params(left, params)
+				(result, post) = func(m.group(), params)
+				if post != '':
+					sys.stderr.write("\nFIXME: handle post property at the end of my scope (func = %s)" % m.group())
 			else:
-				if m.group() in self.tex_functions.keys():
-					(nparams, func) = self.tex_functions[m.group()]
-					(left, params) = self.tex_params(left, nparams)
-					(result, post) = func(m.group(), params)
-					if post != '':
-						sys.stderr.write("\nFIXME: handle post property at the end of my scope (func = %s)" % m.group())
-				else:
-					sys.stderr.write("\nFIXME: unsupported TeX function '%s', hope it does not take parameters" % m.group())
+				sys.stderr.write("\nFIXME: unsupported TeX function '%s', hope it does not take parameters" % m.group())
 
 		# strip pending \ that marks end-of-TeX for pmx
 		if len(left) > 0 and left[0] == '\\' and left[1] in SPACE:
 			left = left[1:]
 
 		return (left, result, post)
+
+
+	def untex(self, t):
+		for k in self.accented.keys():
+			t = t.replace(k, self.accented[k])
+			if len(k) > 2:
+				t = t.replace(k[:2] + '{' + k[2] + '}', self.accented[k])
+		return t
 
 
 	def parse_tex(self, left):
@@ -2016,7 +2032,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				left = left[1:]
 			else:
 				m = re.match(r'\A[^\\\s}]+', left)
-				words = words + " " + m.group()
+				words = words + " " + self.untex(m.group())
 				left = left[len(m.group()):]
 
 		if post != '':
