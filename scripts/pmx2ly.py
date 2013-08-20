@@ -963,6 +963,7 @@ class Parser:
 		self.staff_groups = []
 		self.lyrics = {}
 		self.defined_fonts = []
+		self.musicsize = 20
 
 		self.tex_dispatch_table()
 
@@ -1455,26 +1456,39 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		return(left)
 
 
+	def tex_get_title(self, name, nparams):
+		return ''
+
+
+	def tex_get_composer(self, name, nparams):
+		return ''
+
+
 	def tex_ignore(self, name, nparams):
 		sys.stderr.write("\nIgnore TeX function '%s'" % name)
+		return ''
 
 
 	def tex_require(self, name, params):
 		sys.stderr.write("\nFIXME: implement TeX function '%s'" % name)
+		return ''
+	
 
-
-	def tex_def(self, name, nparams):
-		sys.stderr.write("\nFIXME: add \\def\\%s" % name)
+	def tex_interpret(self, name, params):
+		sys.stderr.write("\nFIXME: implement TeX interpreter for '%s'" % name)
+		return ''
 
 
 	def tex_set_lyrics(self, name, params):
 		(label, lyrics) = params
 		self.lyrics[label] = expand_tex_lyrics(lyrics)
 		sys.stderr.write("\nSet lyrics{%s} to '%s'" % (label, lyrics))
+		return ''
 
 
 	def tex_copy_lyrics(self, name, params):
-		pass
+		sys.stderr.write("\nFIXME: implement TeX function '%s'" % name)
+		return ''
 
 
 	def tex_assign_lyrics(self, name, params):
@@ -1482,35 +1496,38 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		sys.stderr.write("\nAssign lyrics{%s} to staff[%s]" % (staff, label))
 		s = self.staffs[int(staff) - 1]
 		s.voices[s.lyrics_voice].lyrics = self.lyrics[label]
+		return ''
 
 
 	def tex_melisma_begin(self, name, params):
 		self.current_voice().pending_melisma = Melisma(True)
+		return ''
 
 
 	def tex_melisma_end(self, name, params):
 		self.current_voice().pending_melisma = Melisma(False)
+		return ''
 
 
 	def tex_add_title(self, name, params):
 		self.title = params[0]
+		return ''
 
 
 	def tex_add_composer(self, name, params):
-		self.composer = params[0]
+		self.poet = params[0]
+		self.composer = params[1]
+		return ''
 
 
 	def tex_add_instrument(self, name, params):
 		self.instrument = params[0]
+		return ''
 
 
 	def tex_rewrite_lyrics(self, name, params):
 		sys.stderr.write("\nFIXME: implement TeX rewrite_lyrics")
-		pass
-
-
-	def tex_input(self, name, params):
-		sys.stderr.write("\nFIXME: need to include file '%s'" % params[0])
+		return ''
 
 
 	def tex_add_markup(self, name, params):
@@ -1528,6 +1545,8 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			direction = '-'
 		text = re.sub('~', '\char ##x00A0 ', text)
 		ch.chord_suffix = ch.chord_suffix + direction + "\\markup{" + text + "}"
+
+		return ''
 
 
 	TEX_CONTROLS = '~`!@#$%^&*()_-+=|\\{}][:;"\'<>,.?/'
@@ -1610,11 +1629,44 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		return lyrics
 
 
-	def parse_tex_font(self, left):
-		left = left[4:]
+	def tex_expand_assign(self, left):
+		m = re.match(r'\A([^=]+)=([a-zA-Z0-9]+)', left)
+		if not m:
+			raise Exception("Expect 'name=value' but have %s", left[:20])
+		name = m.groups()[0]
+		value = m.groups()[1]
+		left = left[len(m.group()):]
+
+		return (left, name, value)
+
+
+	def tex_def(self, left):
 		if left[0] != '\\':
 			raise Exception("Expect backslash-name, but have %s" % left[:20])
-		(left, font, value) = expand_tex_assign(left)
+		m = re.match(r'\A(\\[A-Za-z]+)((#\d)*)', left)
+		name = m.groups()[0]
+		left = left[len(m.group()):]
+		(left, params) = self.tex_params(left, 'p')
+		param_descr = ['p'] * m.groups()[1].count('#')
+		sys.stderr.write("\nFIXME: add \\def\\%s=%s" % (name, params[0]))
+		self.tex_functions[name] = (param_descr, self.tex_interpret)
+
+		return left
+
+
+	def tex_input(self, left):
+		nl = left.find('\n')
+		file = left[:nl].strip(SPACE)
+		left = left[nl + 1:]
+		sys.stderr.write("\nFIXME: need to include file '%s'" % file)
+
+		return left
+
+
+	def tex_font(self, left):
+		if left[0] != '\\':
+			raise Exception("Expect backslash-name, but have %s" % left[:20])
+		(left, font, value) = tex_expand_assign(left)
 		self.defined_fonts.append((font, value))
 		m = re.match(r'\A\s+(at|scaled)\s+', left)
 		if not m:
@@ -1645,24 +1697,26 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			if left[0] in SPACE:
 				left = left[1:]
 			elif left[0] == '\\':
-				(left, w) = self.parse_tex_functions(left)
-				words.append(w)
+				(left, w, out) = self.parse_tex_functions(left)
+				words = words + w
 			elif left[0] == '{':
 				(left, w) = self.parse_tex_text(left[1:])
 				if left[0] != '}':
 					raise Exception("parse_tex_text does not leave '}'", left[:20])
-				words.append(w)
+				words = words + w
 				left = left[1:]
 			else:
 				m = re.match(r'\A[^\\\s}]+', left)
 				words.append(m.group())
 				left = left[len(m.group()):]
 
+		if words == []:
+			words = ['']
+
 		return (left, words)
 
 
 	def tex_params(self, left, nparams):
-		sys.stderr.write("\n**** FIXME: eat/expand %d params from input stream '%s'" % (len(nparams), left[:10 + len(nparams) * 10]))
 		# TeX parameters are of a number of types:
 		#  - numbers
 		#  - dimensions
@@ -1673,7 +1727,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				while left[0] in SPACE:
 					left = left[1:]
 				if left[0] == '\\':
-					(left, p) = self.parse_tex_functions(left[1:])
+					(left, p, out) = self.parse_tex_functions(left[1:])
 					params = params + p
 				elif left[0] == '{':
 					(left, p) = self.parse_tex_text(left[1:])
@@ -1699,7 +1753,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 					params.append(m.group())
 					left = left[len(m.group()):]
 			elif left[0] == '\\':
-				(left, p) = self.parse_tex_functions(left[1:])
+				(left, p, out) = self.parse_tex_functions(left[1:])
 				params = params + p
 			elif left[0] == '{':
 				(left, p) = self.parse_tex_text(left[1:])
@@ -1722,7 +1776,8 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 	def parse_tex_functions(self, left):
 		# handle just a few MusiXTeX commands
 		params = []
-		while left[0] == '\\' and not left[1] in SPACE:
+		out = ''
+		while len(left) > 0 and left[0] == '\\' and not left[1] in SPACE:
 			type = 1
 			while left[1] == '\\':
 				type = type + 1
@@ -1733,15 +1788,39 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				return (left, [])
 
 			left = left[len(m.group()):]
-			if m.group() in self.tex_functions.keys():
-				(nparams, func) = self.tex_functions[m.group()]
-				(left, params) = self.tex_params(left, nparams)
-				func(m.group(), params)
+			if m.group() == '\\def' or m.group() == '\\gdef':
+				left = self.tex_def(left)
+			elif m.group() == '\\font':
+				left = self.tex_font(left)
+			elif m.group() == '\\input':
+				left = self.tex_input(left)
 			else:
-				sys.stderr.write("\nFIXME: unsupported TeX function '%s'" % m.group())
-		if left[0] == '\\' and left[1] in SPACE:
+				if m.group() in self.tex_functions.keys():
+					(nparams, func) = self.tex_functions[m.group()]
+					(left, params) = self.tex_params(left, nparams)
+					out = out + func(m.group(), params)
+				else:
+					sys.stderr.write("\nFIXME: unsupported TeX function '%s', hope it does not take parameters" % m.group())
+		if len(left) > 0 and left[0] == '\\' and left[1] in SPACE:
 			left = left[1:]
-		return (left, params)
+		return (left, params, out)
+
+
+	def parse_tex_string(self, left):
+		out = ''
+		while len(left) > 0:
+			m = re.match(r'(\s*)(\S+)', left)
+			if not m:
+				break
+			word = m.groups()[1]
+			if word[0] == '\\':
+				left = left[len(m.groups()[0]):]
+				(left, params, out) = self.parse_tex_functions(left)
+			else:
+				out = out + ' ' + word
+				left = left[len(m.group()):]
+
+		return out
 
 
 	def tex_dispatch_table(self):
@@ -1749,8 +1828,8 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		#  a - alphabetic [A-Za-z]
 		#  t - text [A-Za-z0-9]
 		#  d - dimen
-		#  l - until end of line
 		#  p - any parameter type
+		#  S - special
 		self.tex_functions = {
 			# M-Tx
 			'\\mtxInstrfont':	('', self.tex_require),
@@ -1770,6 +1849,8 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			'\\mtxNormalSize':	('', self.tex_require),
 			'\\mtxLargeSize':	('', self.tex_require),
 			'\\mtxHugeSize':	('', self.tex_require),
+			'\\mtxTitle':		('', self.tex_get_title),
+			'\\mtxPoetComposer':	('', self.tex_get_composer),
 
 			# M-Tx:musixlyr interface
 			'\\mtxSetLyrics':	('p', self.tex_set_lyrics),
@@ -1793,7 +1874,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			'\\mtxGroup':		('ttt', self.tex_require),
 			'\\mtxTwoInstruments':	('tt', self.tex_require),
 			'\\mtxTitleLine':	('t', self.tex_add_title),
-			'\\mtxComposerLine':	('tp', self.tex_add_composer),
+			'\\mtxComposerLine':	('pp', self.tex_add_composer),
 			'\\mtxInstrName':	('t', self.tex_add_instrument),
 			'\\mtxSetSize':		('td', self.tex_ignore),
 			'\\mtxDotted':		('', self.tex_require),
@@ -1854,6 +1935,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			'\\Smalltype':		('', self.tex_require),
 			'\\normtype':		('', self.tex_require),
 			'\\medtype':		('', self.tex_require),
+			'\\bigtype':		('', self.tex_require),
 			'\\Bigtype':		('', self.tex_require),
 			'\\BIgtype':		('', self.tex_require),
 			'\\BIGtype':		('', self.tex_require),
@@ -1870,20 +1952,9 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			'\\fourteenrm':		('', self.tex_require),
 			'\\vbox':		('p', self.tex_require),
 			'\\centerline':		('p', self.tex_require),
-			'\\def':		('ap', self.tex_def),
-			'\\input':		('l', self.tex_input),
 			'\\global':		('', self.tex_require),
+			'\\hfill':		('', self.tex_require),
 		}
-
-
-	def expand_tex_assign(self, left):
-		m = re.match(r'\A([^=]+)=([a-zA-Z0-9]+)', left)
-		if not m:
-			raise Exception("Expect 'name=value' but have %s", left[:20])
-		name = m.groups()[0]
-		value = m.groups()[1]
-		left = left[len(m.group()):]
-		return (left, name, value)
 
 
 	def expand_tex(self, left, name, nparam):
@@ -1938,7 +2009,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			sys.stderr.write('\nFIXME: parse TeX pre-header \'%s\'' % tex_defs)
 			while not tex_defs in SPACE:
 				tex_defs = re.sub('\A\s*', '', tex_defs)
-				(tex_defs, params) = self.parse_tex_functions(tex_defs)
+				(tex_defs, params, out) = self.parse_tex_functions(tex_defs)
 				sys.stderr.write('\nFIXME: parse rest of TeX pre-header \'%s\'' % tex_defs)
 
 		while len (numbers) < number_count:
@@ -1971,6 +2042,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		self.timeline.add_nonchord(self.meter)
 		self.timeline.set_meter(self.meter, self.pickup)
 		self.keysig = keysig_number
+		self.musicsize = musicsize
 
 		# ignore this.
 		# opening = map (string.atoi, re.split ('[\t ]+', opening))
@@ -2369,11 +2441,11 @@ Huh? Unknown T parameter `%s', before `%s'""" % (left[1], left[:20] ))
 				sys.stderr.write("\nSee title block '%s'\n" % left[0:f])
 				sys.stderr.write("\nFIXME: expand TeX macros in title")
 				if left[1] == 'i':
-					self.instrument = left[s+1:f]
+					self.instrument = self.parse_tex_string(left[s+1:f])
 				elif left[1] == 'c':
-					self.composer = left[s+1:f]
+					self.composer = self.parse_tex_string(left[s+1:f])
 				elif left[1] == 't':
-					self.title = left[s+1:f]
+					self.title = self.parse_tex_string(left[s+1:f])
 				left = left[f:]
 			elif c == 'A':
 				left = self.parse_global(left[1:])
@@ -2433,7 +2505,7 @@ Huh? Unknown T parameter `%s', before `%s'""" % (left[1], left[:20] ))
 				while left[0] in ".0123456789BP":
 					left = left[1:]
 			elif c == '\\':
-				(left, params) = self.parse_tex_functions(left)
+				(left, params, out) = self.parse_tex_functions(left)
 			else:
 				sys.stderr.write ("""
 Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))
@@ -2448,6 +2520,7 @@ Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))
 		if self.instrument:
 			out = out + "    instrument = \"" + self.instrument + "\"\n"
 		out = out + "}\n\n"
+		out = out + '#(set-global-staff-size %d)\n\n' % self.musicsize
 
 		defaults = '\n\
     \\compressFullBarRests\n\
