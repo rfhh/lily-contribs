@@ -939,6 +939,14 @@ ornament_table = {
 	'^': '^',
 	}
 
+
+class M_TX:
+	def __init__(self):
+		poet = None
+		composer = None
+		title = None
+
+
 class Parser:
 	def __init__ (self, filename):
 		self.staffs = []
@@ -964,6 +972,7 @@ class Parser:
 		self.lyrics = {}
 		self.defined_fonts = []
 		self.musicsize = 20
+		self.mtx = M_TX()
 
 		self.tex_dispatch_table()
 
@@ -1453,42 +1462,186 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			key_obj = Key(int(key), self.current_voice().bar, self.current_voice().time)
 			self.current_voice().add_nonchord(key_obj)
 			self.current_staff().alterations.append(key_obj)
-		return(left)
+		return left
+
+
+	#------------------------------------------------------------------------------------
+	#
+	# Handle TeX
+	#
+	#------------------------------------------------------------------------------------
+
+	def tex_dispatch_table(self):
+		# parameter types:
+		#  a - alphabetic [A-Za-z]
+		#  t - text [A-Za-z0-9]
+		#  d - dimen
+		#  p - any parameter type
+		#  * - unlimited number of parameters
+		#  S - special
+		self.tex_functions = {
+			# M-Tx
+			'\\mtxInstrfont':	('', self.tex_require),
+			'\\mtxeightsf':		('', self.tex_require),
+			'\\mtxEightsf':		('', self.tex_require),
+			'\\mtxtensf':		('', self.tex_require),
+			'\\mtxTensf':		('', self.tex_require),
+			'\\mtxelevensf':	('', self.tex_require),
+			'\\mtxElevensf':	('', self.tex_require),
+			'\\mtxtwelvesf':	('', self.tex_require),
+			'\\mtxTwelvesf':	('', self.tex_require),
+			'\\mtxBigsf':		('', self.tex_require),
+			'\\mtxBIGsf':		('', self.tex_require),
+			'\\mtxAllsf':		('', self.tex_require),
+			'\\mtxTinySize':	('', self.tex_require),
+			'\\mtxSmallSize':	('', self.tex_require),
+			'\\mtxNormalSize':	('', self.tex_require),
+			'\\mtxLargeSize':	('', self.tex_require),
+			'\\mtxHugeSize':	('', self.tex_require),
+			'\\mtxTitle':		('', self.tex_get_title),
+			'\\mtxPoetComposer':	('', self.tex_get_composer),
+
+			# M-Tx:musixlyr interface
+			'\\mtxSetLyrics':	('p', self.tex_set_lyrics),
+			'\\mtxCopyLyrics':	('tp', self.tex_require),
+			'\\mtxAssignLyrics':	('tp', self.tex_assign_lyrics),
+			'\\mtxAuxLyr':		('p', self.tex_require),
+			'\\mtxLyrLink':		('', self.tex_rewrite_lyrics),
+			'\\mtxLowLyrlink':	('', self.tex_rewrite_lyrics),
+			'\\mtxLyricsAdjust':	('td', self.tex_ignore),
+			'\\mtxAuxLyricsAdjust':	('td', self.tex_ignore),
+			'\\mtxLyrModeAlter':	('t', self.tex_require),
+			'\\mtxLyrModeNormal':	('t', self.tex_require),
+			'\\mtxBM':		('', self.tex_melisma_begin),
+			'\\mtxEM':		('', self.tex_melisma_end),
+			'\\mtxAuxBM':		('', self.tex_require),
+			'\\mtxAuxEM':		('', self.tex_require),
+			'\\mtxTenorClef':	('', self.tex_require),
+			'\\mtxVerseNumber':	('t', self.tex_require),
+			'\\mtxInterInstrument':	('td', self.tex_ignore),
+			'\\mtxStaffBottom':	('d', self.tex_ignore),
+			'\\mtxGroup':		('ttt', self.tex_require),
+			'\\mtxTwoInstruments':	('tt', self.tex_require),
+			'\\mtxTitleLine':	('t', self.tex_add_title),
+			'\\mtxComposerLine':	('pp', self.tex_add_composer),
+			'\\mtxInstrName':	('t', self.tex_add_instrument),
+			'\\mtxSetSize':		('td', self.tex_ignore),
+			'\\mtxDotted':		('', self.tex_require),
+			# do not follow: 't':			('', self.tex_require),
+			# do not follow: 'rp':			('', self.tex_require),
+			'\\mtxSharp':		('', self.tex_require),
+			'\\mtxFlat':		('', self.tex_require),
+			'\\mtxIcresc':		('', self.tex_require),
+			'\\mtxTcresc':		('', self.tex_require),
+			'\\mtxCresc':		('', self.tex_require),
+			'\\mtxIdecresc':	('', self.tex_require),
+			'\\mtxTdecresc':	('', self.tex_require),
+			'\\mtxDecresc':		('', self.tex_require),
+			'\\mtxPF':		('', self.tex_require),
+			'\\mtxLchar':		('tp', self.tex_require),
+			'\\mtxCchar':		('tp', self.tex_require),
+			'\\mtxZchar':		('tp', self.tex_add_markup),
+			'\\mtxVerseNumberOffset':('', self.tex_ignore),
+			'\\mtxVerse':		('', self.tex_require),
+
+			# MusiXTeX
+			'\\zcharnote':		('ap', self.tex_add_markup),
+			'\\lcharnote':		('ap', self.tex_require),
+			'\\ccharnote':		('ap', self.tex_require),
+			'\\zchar':		('ap', self.tex_require),
+			'\\lchar':		('ap', self.tex_require),
+			'\\cchar':		('ap', self.tex_require),
+			'\\zql':		('', self.tex_require),
+			'\\sepbarrules':	('', self.tex_ignore),
+			'\\indivbarrules':	('', self.tex_ignore),
+			'\\sepbarrule':		('t', self.tex_ignore),
+			'\\groupbottom':	('tt', self.tex_require),
+			'\\grouptop':		('tt', self.tex_require),
+			'\\Figu':		('p', self.tex_require),
+			'\\figdrop':		('p', self.tex_require),
+			'\\nbbbbl':		('', self.tex_ignore),
+			'\\zq':			('', self.tex_require),
+			'\\zh':			('', self.tex_require),
+			'\\rw':			('', self.tex_require),
+			'\\lw':			('', self.tex_require),
+			'\\rh':			('', self.tex_require),
+			'\\lh':			('', self.tex_require),
+			'\\rq':			('', self.tex_require),
+			'\\lq':			('', self.tex_require),
+			'\\zhu':		('', self.tex_require),
+			'\\zhl':		('', self.tex_require),
+			'\\zqu':		('', self.tex_require),
+			'\\zcu':		('', self.tex_require),
+			'\\zcl':		('', self.tex_require),
+			'\\zccu':		('', self.tex_require),
+			'\\zccl':		('', self.tex_require),
+			'\\zcccu':		('', self.tex_require),
+			'\\zcccl':		('', self.tex_require),
+			'\\zccccu':		('', self.tex_require),
+			'\\zccccl':		('', self.tex_require),
+
+			'\\smalltype':		('', self.tex_text_size),
+			'\\Smalltype':		('', self.tex_text_size),
+			'\\normtype':		('', self.tex_text_size),
+			'\\medtype':		('', self.tex_text_size),
+			'\\bigtype':		('', self.tex_text_size),
+			'\\Bigtype':		('', self.tex_text_size),
+			'\\BIgtype':		('', self.tex_text_size),
+			'\\BIGtype':		('', self.tex_text_size),
+
+			# Plain TeX
+			'\\ref':		('', self.tex_ignore),
+			'\\sixrm':		('', self.tex_require),
+			'\\sevenrm':		('', self.tex_require),
+			'\\eightrm':		('', self.tex_require),
+			'\\ninerm':		('', self.tex_require),
+			'\\tenrm':		('', self.tex_require),
+			'\\elevenrm':		('', self.tex_require),
+			'\\twelverm':		('', self.tex_require),
+			'\\fourteenrm':		('', self.tex_require),
+			'\\vbox':		('*', self.tex_vbox),
+			'\\centerline':		('p', self.tex_centerline),
+			'\\global':		('', self.tex_require),
+			'\\hfill':		('', self.tex_require),
+		}
 
 
 	def tex_get_title(self, name, nparams):
-		return ''
+		return (self.mtx.title, '')
 
 
 	def tex_get_composer(self, name, nparams):
-		return ''
+		self.composer = self.mtx.composer
+		self.poet = self.mtx.poet
+
+		return ('\\markup{\\fill-line{{%s} {%s}}}' % (self.mtx.poet, self.mtx.composer), '')
 
 
 	def tex_ignore(self, name, nparams):
 		sys.stderr.write("\nIgnore TeX function '%s'" % name)
-		return ''
+		return ('', '')
 
 
 	def tex_require(self, name, params):
 		sys.stderr.write("\nFIXME: implement TeX function '%s'" % name)
-		return ''
+		return ('', '')
 	
 
 	def tex_interpret(self, name, params):
 		sys.stderr.write("\nFIXME: implement TeX interpreter for '%s'" % name)
-		return ''
+		return ('', '')
 
 
 	def tex_set_lyrics(self, name, params):
 		(label, lyrics) = params
 		self.lyrics[label] = expand_tex_lyrics(lyrics)
 		sys.stderr.write("\nSet lyrics{%s} to '%s'" % (label, lyrics))
-		return ''
+		return ('', '')
 
 
 	def tex_copy_lyrics(self, name, params):
 		sys.stderr.write("\nFIXME: implement TeX function '%s'" % name)
-		return ''
+		return ('', '')
 
 
 	def tex_assign_lyrics(self, name, params):
@@ -1496,38 +1649,38 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		sys.stderr.write("\nAssign lyrics{%s} to staff[%s]" % (staff, label))
 		s = self.staffs[int(staff) - 1]
 		s.voices[s.lyrics_voice].lyrics = self.lyrics[label]
-		return ''
+		return ('', '')
 
 
 	def tex_melisma_begin(self, name, params):
 		self.current_voice().pending_melisma = Melisma(True)
-		return ''
+		return ('', '')
 
 
 	def tex_melisma_end(self, name, params):
 		self.current_voice().pending_melisma = Melisma(False)
-		return ''
+		return ('', '')
 
 
 	def tex_add_title(self, name, params):
-		self.title = params[0]
-		return ''
+		self.mtx.title = '\\markup{ ' + ' '.join(params) + ' }'
+		return ('', '')
 
 
 	def tex_add_composer(self, name, params):
-		self.poet = params[0]
-		self.composer = params[1]
-		return ''
+		self.mtx.poet = params[0]
+		self.mtx.composer = params[1]
+		return ('', '')
 
 
 	def tex_add_instrument(self, name, params):
 		self.instrument = params[0]
-		return ''
+		return ('', '')
 
 
 	def tex_rewrite_lyrics(self, name, params):
 		sys.stderr.write("\nFIXME: implement TeX rewrite_lyrics")
-		return ''
+		return ('', '')
 
 
 	def tex_add_markup(self, name, params):
@@ -1546,7 +1699,53 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		text = re.sub('~', '\char ##x00A0 ', text)
 		ch.chord_suffix = ch.chord_suffix + direction + "\\markup{" + text + "}"
 
-		return ''
+		return ('', '')
+
+
+	def tex_vbox(self, name, params):
+		out = '\\column{ '
+		for p in params:
+			out = out + '\\line{ ' + p + '}'
+		out = out + '}'
+
+		sys.stderr.write("\nvbox returns '%s'" % out)
+
+		return (out, '')
+
+
+	def tex_centerline(self, name, params):
+		out = '\\center-align { ' + ''.join(params) + ' }'
+
+		sys.stderr.write("\ncenterline returns '%s'" % out)
+
+		return (out, '')
+
+
+	def tex_text_size(self, name, params):
+		if False:
+			pass
+		elif name == '\\smalltype':
+			out = '\\fontsize #-2'
+		elif name == '\\Smalltype':
+			out = '\\fontsize #-1'
+		elif name == '\\normtype':
+			out = '\\fontsize #0'
+		elif name == '\\medtype':
+			out = '\\fontsize #+1'
+		elif name == '\\bigtype':
+			out = '\\fontsize #+2'
+		elif name == '\\Bigtype':
+			out = '\\fontsize #+3'
+		elif name == '\\BIgtype':
+			out = '\\fontsize #+4'
+		elif name == '\\BIGtype':
+			out = '\\fontsize #+5'
+		else:
+			raise Exception("Unknown text size", name)
+
+		sys.stderr.write("\ntex_text_size returns '%s'" % out)
+
+		return (out + ' {', '}')
 
 
 	TEX_CONTROLS = '~`!@#$%^&*()_-+=|\\{}][:;"\'<>,.?/'
@@ -1691,50 +1890,24 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		return left
 
 
-	def parse_tex_text(self, left):
-		words = []
-		while left[0] != '}':
-			if left[0] in SPACE:
-				left = left[1:]
-			elif left[0] == '\\':
-				(left, w, out) = self.parse_tex_functions(left)
-				words = words + w
-			elif left[0] == '{':
-				(left, w) = self.parse_tex_text(left[1:])
-				if left[0] != '}':
-					raise Exception("parse_tex_text does not leave '}'", left[:20])
-				words = words + w
-				left = left[1:]
-			else:
-				m = re.match(r'\A[^\\\s}]+', left)
-				words.append(m.group())
-				left = left[len(m.group()):]
-
-		if words == []:
-			words = ['']
-
-		return (left, words)
-
-
 	def tex_params(self, left, nparams):
+		# @return a list of parameter strings; each may be the result of a function call
+
 		# TeX parameters are of a number of types:
-		#  - numbers
-		#  - dimensions
-		#  - rest, including function invocations
+		#  - numbers/dimensions
+		#  - { .... }
+		#  - ' ' <string>
+		#  - \<function>...
+
 		params = []
-		for i in range(len(nparams)):
+		i = 0
+		finished = len(nparams) == 0
+		while not finished:
 			if left[0] in SPACE:
 				while left[0] in SPACE:
 					left = left[1:]
-				if left[0] == '\\':
-					(left, p, out) = self.parse_tex_functions(left[1:])
-					params = params + p
-				elif left[0] == '{':
-					(left, p) = self.parse_tex_text(left[1:])
-					if left[0] != '}':
-						raise Exception("parse_tex_text does not leave '}'", left[:20])
-					params = params + p
-					left = left[1:]
+				if left[0] in '\\{':
+					continue
 				else:
 					if False:
 						pass
@@ -1753,31 +1926,39 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 					params.append(m.group())
 					left = left[len(m.group()):]
 			elif left[0] == '\\':
-				(left, p, out) = self.parse_tex_functions(left[1:])
-				params = params + p
+				(left, p, post) = self.parse_tex_function(left[1:])
+				if post != '':
+					sys.stderr.write("\nFIXME: tex_params has post '%s'" % post)
+				params.append(p)
 			elif left[0] == '{':
-				(left, p) = self.parse_tex_text(left[1:])
+				Here, the vbox arguments are all consumed by parse_tex, while I want them to be consumed one at a time so I have control *here*
+				(left, p) = self.parse_tex(left[1:])
 				if left[0] != '}':
-					raise Exception("parse_tex_text does not leave '}'", left[:20])
-				params = params + p
+					raise Exception("parse_tex does not leave '}'", left[:20])
+				params.append(p)
 				left = left[1:]
 			elif left[0] in '-0123456789.':
 				sys.stderr.write("\nFIXME: what if this is a dimension, not just a number?")
 				m = re.match(r'\A[-.\d]+', left)
 				params.append(m.group())
 				left = left[len(m.group()):]
+			elif nparams[i] == '*' and left[0] == '}':
+				break
 			elif left[0] in self.TEX_CONTROLS:
 				sys.stderr.write("\nFIXME: handle TeX control sequences")
-			else:
-				sys.stderr.write("\nFIXME: handle parameter string '%s'" % left[:20])
+			if nparams[i] != '*':
+				i = i + 1
+				if i == len(nparams):
+					break
+
 		return (left, params)
 
 
-	def parse_tex_functions(self, left):
-		# handle just a few MusiXTeX commands
-		params = []
-		out = ''
-		while len(left) > 0 and left[0] == '\\' and not left[1] in SPACE:
+	def parse_tex_function(self, left):
+		# @return (left, result) where result is a string that is the expansion of a TeX function
+		result = ''
+		post = ''
+		if len(left) > 0 and left[0] == '\\' and not left[1] in SPACE:
 			type = 1
 			while left[1] == '\\':
 				type = type + 1
@@ -1798,163 +1979,50 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				if m.group() in self.tex_functions.keys():
 					(nparams, func) = self.tex_functions[m.group()]
 					(left, params) = self.tex_params(left, nparams)
-					out = out + func(m.group(), params)
+					(result, post) = func(m.group(), params)
+					if post != '':
+						sys.stderr.write("\nFIXME: handle post property at the end of my scope (func = %s)" % m.group())
 				else:
 					sys.stderr.write("\nFIXME: unsupported TeX function '%s', hope it does not take parameters" % m.group())
+
+		# strip pending \ that marks end-of-TeX for pmx
 		if len(left) > 0 and left[0] == '\\' and left[1] in SPACE:
 			left = left[1:]
-		return (left, params, out)
+
+		return (left, result, post)
 
 
-	def parse_tex_string(self, left):
-		out = ''
-		while len(left) > 0:
-			m = re.match(r'(\s*)(\S+)', left)
-			if not m:
-				break
-			word = m.groups()[1]
-			if word[0] == '\\':
-				left = left[len(m.groups()[0]):]
-				(left, params, out) = self.parse_tex_functions(left)
+	def parse_tex(self, left):
+		# @return (left, words) where words is a string that is the expansion of input text
+
+		# How is this a duplicate? This is a top-level wrapper..
+
+		post = ''
+		words = ''
+		while len(left) > 0 and left[0] != '}':
+			if left[0] in SPACE:
+				left = left[1:]
+			elif left[0] == '\\':
+				(left, w, p) = self.parse_tex_function(left)
+				if p != '':
+					sys.stderr.write("\nFIXME: parse_tex has post '%s'" % p)
+				post = post + ' ' + p
+				words = words + " " + w
+			elif left[0] == '{':
+				(left, w) = self.parse_tex(left[1:])
+				if left[0] != '}':
+					raise Exception("parse_tex does not leave '}'", left[:20])
+				words = words + " " + w
+				left = left[1:]
 			else:
-				out = out + ' ' + word
+				m = re.match(r'\A[^\\\s}]+', left)
+				words = words + " " + m.group()
 				left = left[len(m.group()):]
 
-		return out
+		if post != '':
+			words = words + post
 
-
-	def tex_dispatch_table(self):
-		# parameter types:
-		#  a - alphabetic [A-Za-z]
-		#  t - text [A-Za-z0-9]
-		#  d - dimen
-		#  p - any parameter type
-		#  S - special
-		self.tex_functions = {
-			# M-Tx
-			'\\mtxInstrfont':	('', self.tex_require),
-			'\\mtxeightsf':		('', self.tex_require),
-			'\\mtxEightsf':		('', self.tex_require),
-			'\\mtxtensf':		('', self.tex_require),
-			'\\mtxTensf':		('', self.tex_require),
-			'\\mtxelevensf':	('', self.tex_require),
-			'\\mtxElevensf':	('', self.tex_require),
-			'\\mtxtwelvesf':	('', self.tex_require),
-			'\\mtxTwelvesf':	('', self.tex_require),
-			'\\mtxBigsf':		('', self.tex_require),
-			'\\mtxBIGsf':		('', self.tex_require),
-			'\\mtxAllsf':		('', self.tex_require),
-			'\\mtxTinySize':	('', self.tex_require),
-			'\\mtxSmallSize':	('', self.tex_require),
-			'\\mtxNormalSize':	('', self.tex_require),
-			'\\mtxLargeSize':	('', self.tex_require),
-			'\\mtxHugeSize':	('', self.tex_require),
-			'\\mtxTitle':		('', self.tex_get_title),
-			'\\mtxPoetComposer':	('', self.tex_get_composer),
-
-			# M-Tx:musixlyr interface
-			'\\mtxSetLyrics':	('p', self.tex_set_lyrics),
-			'\\mtxCopyLyrics':	('tp', self.tex_require),
-			'\\mtxAssignLyrics':	('tp', self.tex_assign_lyrics),
-			'\\mtxAuxLyr':		('p', self.tex_require),
-			'\\mtxLyrLink':		('', self.tex_rewrite_lyrics),
-			'\\mtxLowLyrlink':	('', self.tex_rewrite_lyrics),
-			'\\mtxLyricsAdjust':	('td', self.tex_ignore),
-			'\\mtxAuxLyricsAdjust':	('td', self.tex_ignore),
-			'\\mtxLyrModeAlter':	('t', self.tex_require),
-			'\\mtxLyrModeNormal':	('t', self.tex_require),
-			'\\mtxBM':		('', self.tex_melisma_begin),
-			'\\mtxEM':		('', self.tex_melisma_end),
-			'\\mtxAuxBM':		('', self.tex_require),
-			'\\mtxAuxEM':		('', self.tex_require),
-			'\\mtxTenorClef':	('', self.tex_require),
-			'\\mtxVerseNumber':	('t', self.tex_require),
-			'\\mtxInterInstrument':	('td', self.tex_ignore),
-			'\\mtxStaffBottom':	('d', self.tex_ignore),
-			'\\mtxGroup':		('ttt', self.tex_require),
-			'\\mtxTwoInstruments':	('tt', self.tex_require),
-			'\\mtxTitleLine':	('t', self.tex_add_title),
-			'\\mtxComposerLine':	('pp', self.tex_add_composer),
-			'\\mtxInstrName':	('t', self.tex_add_instrument),
-			'\\mtxSetSize':		('td', self.tex_ignore),
-			'\\mtxDotted':		('', self.tex_require),
-			# do not follow: 't':			('', self.tex_require),
-			# do not follow: 'rp':			('', self.tex_require),
-			'\\mtxSharp':		('', self.tex_require),
-			'\\mtxFlat':		('', self.tex_require),
-			'\\mtxIcresc':		('', self.tex_require),
-			'\\mtxTcresc':		('', self.tex_require),
-			'\\mtxCresc':		('', self.tex_require),
-			'\\mtxIdecresc':	('', self.tex_require),
-			'\\mtxTdecresc':	('', self.tex_require),
-			'\\mtxDecresc':		('', self.tex_require),
-			'\\mtxPF':		('', self.tex_require),
-			'\\mtxLchar':		('tp', self.tex_require),
-			'\\mtxCchar':		('tp', self.tex_require),
-			'\\mtxZchar':		('tp', self.tex_add_markup),
-			'\\mtxVerseNumberOffset':('', self.tex_ignore),
-			'\\mtxVerse':		('', self.tex_require),
-
-			# MusiXTeX
-			'\\zcharnote':		('ap', self.tex_add_markup),
-			'\\lcharnote':		('ap', self.tex_require),
-			'\\ccharnote':		('ap', self.tex_require),
-			'\\zchar':		('ap', self.tex_require),
-			'\\lchar':		('ap', self.tex_require),
-			'\\cchar':		('ap', self.tex_require),
-			'\\zql':		('', self.tex_require),
-			'\\sepbarrules':	('', self.tex_ignore),
-			'\\indivbarrules':	('', self.tex_ignore),
-			'\\sepbarrule':		('t', self.tex_ignore),
-			'\\groupbottom':	('tt', self.tex_require),
-			'\\grouptop':		('tt', self.tex_require),
-			'\\Figu':		('p', self.tex_require),
-			'\\figdrop':		('p', self.tex_require),
-			'\\nbbbbl':		('', self.tex_ignore),
-			'\\zq':			('', self.tex_require),
-			'\\zh':			('', self.tex_require),
-			'\\rw':			('', self.tex_require),
-			'\\lw':			('', self.tex_require),
-			'\\rh':			('', self.tex_require),
-			'\\lh':			('', self.tex_require),
-			'\\rq':			('', self.tex_require),
-			'\\lq':			('', self.tex_require),
-			'\\zhu':		('', self.tex_require),
-			'\\zhl':		('', self.tex_require),
-			'\\zqu':		('', self.tex_require),
-			'\\zcu':		('', self.tex_require),
-			'\\zcl':		('', self.tex_require),
-			'\\zccu':		('', self.tex_require),
-			'\\zccl':		('', self.tex_require),
-			'\\zcccu':		('', self.tex_require),
-			'\\zcccl':		('', self.tex_require),
-			'\\zccccu':		('', self.tex_require),
-			'\\zccccl':		('', self.tex_require),
-
-			'\\smalltype':		('', self.tex_require),
-			'\\Smalltype':		('', self.tex_require),
-			'\\normtype':		('', self.tex_require),
-			'\\medtype':		('', self.tex_require),
-			'\\bigtype':		('', self.tex_require),
-			'\\Bigtype':		('', self.tex_require),
-			'\\BIgtype':		('', self.tex_require),
-			'\\BIGtype':		('', self.tex_require),
-
-			# Plain TeX
-			'\\ref':		('', self.tex_ignore),
-			'\\sixrm':		('', self.tex_require),
-			'\\sevenrm':		('', self.tex_require),
-			'\\eightrm':		('', self.tex_require),
-			'\\ninerm':		('', self.tex_require),
-			'\\tenrm':		('', self.tex_require),
-			'\\elevenrm':		('', self.tex_require),
-			'\\twelverm':		('', self.tex_require),
-			'\\fourteenrm':		('', self.tex_require),
-			'\\vbox':		('p', self.tex_require),
-			'\\centerline':		('p', self.tex_require),
-			'\\global':		('', self.tex_require),
-			'\\hfill':		('', self.tex_require),
-		}
+		return (left, words)
 
 
 	def expand_tex(self, left, name, nparam):
@@ -1987,6 +2055,8 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				raise Exception('TeX parameter must start with \'{\'', left[0])
 		return (left, params)
 
+	# -------------------------------------------------------------------------------------------
+
 
 	def parse_preamble  (self, ls):
 		def atonum(a):
@@ -2009,7 +2079,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			sys.stderr.write('\nFIXME: parse TeX pre-header \'%s\'' % tex_defs)
 			while not tex_defs in SPACE:
 				tex_defs = re.sub('\A\s*', '', tex_defs)
-				(tex_defs, params, out) = self.parse_tex_functions(tex_defs)
+				(tex_defs, result) = self.parse_tex(tex_defs)
 				sys.stderr.write('\nFIXME: parse rest of TeX pre-header \'%s\'' % tex_defs)
 
 		while len (numbers) < number_count:
@@ -2360,8 +2430,6 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 
 
 	def parse_body (self, left):
-
-
 		while left:
 			c = left[0]
 			# Here, don't remove the first char; keep it for some arguments
@@ -2439,13 +2507,12 @@ Huh? Unknown T parameter `%s', before `%s'""" % (left[1], left[:20] ))
 				s = string.find(left, '\n');
 				f = s + 1 + string.find(left[s+1:], '\n');
 				sys.stderr.write("\nSee title block '%s'\n" % left[0:f])
-				sys.stderr.write("\nFIXME: expand TeX macros in title")
 				if left[1] == 'i':
-					self.instrument = self.parse_tex_string(left[s+1:f])
+					self.instrument = self.parse_tex(left[s+1:f])[1]
 				elif left[1] == 'c':
-					self.composer = self.parse_tex_string(left[s+1:f])
+					self.composer = self.parse_tex(left[s+1:f])[1]
 				elif left[1] == 't':
-					self.title = self.parse_tex_string(left[s+1:f])
+					self.title = self.parse_tex(left[s+1:f])[1]
 				left = left[f:]
 			elif c == 'A':
 				left = self.parse_global(left[1:])
@@ -2505,20 +2572,31 @@ Huh? Unknown T parameter `%s', before `%s'""" % (left[1], left[:20] ))
 				while left[0] in ".0123456789BP":
 					left = left[1:]
 			elif c == '\\':
-				(left, params, out) = self.parse_tex_functions(left)
+				(left, result, post) = self.parse_tex_function(left)
+				if post != '':
+					sys.stderr.write("\nFIXME: parse_body has post '%s'" % post)
 			else:
 				sys.stderr.write ("""
 Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))
 				left = left[1:]
 
+
+	def quote_string(self, string):
+		m = re.match(r'\s*\\markup', string)
+		if m:
+			return string
+		else:
+			return '"' + string + '"'
+
+		
 	def dump (self):
 		out = "\\header {\n"
 		if self.title:
-			out = out + "    title = \"" + self.title + "\"\n"
+			out = out + "    title = " + self.quote_string(self.title) + "\n"
 		if self.composer:
-			out = out + "    composer = \"" + self.composer + "\"\n"
+			out = out + "    composer = " + self.quote_string(self.composer) + "\n"
 		if self.instrument:
-			out = out + "    instrument = \"" + self.instrument + "\"\n"
+			out = out + "    instrument = " + self.quote_string(self.instrument) + "\n"
 		out = out + "}\n\n"
 		out = out + '#(set-global-staff-size %d)\n\n' % self.musicsize
 
