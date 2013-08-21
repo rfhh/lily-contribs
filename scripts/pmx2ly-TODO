@@ -3,7 +3,6 @@
  TODO:
 ------
 
-- check accidental above note: does it still work after the accidental refactor?
 - pickup for timeline
 - accidentals must work through grace time
 - movement breaks
@@ -39,6 +38,8 @@
  DONE:
 ------
 
+- check accidental above note: does it still work after the accidental refactor?
+  ** add an Alteration anyway for each oe[snl]
 - work-around for continuing ties from M-Tx (weird mix of slurs and non-toggling ties)
 - expand \def... sections using tme http://www.astro.indiana.edu/~jthorn/software.html#tme
 - expand --- --- sections

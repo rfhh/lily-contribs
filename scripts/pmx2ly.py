@@ -650,7 +650,7 @@ class Staff:
 
 	def set_key(self, keysig):
 		self.key = keysig
-		sys.stderr.write("Key sig %d\n" % keysig)
+		sys.stderr.write("\nSet staff key sig %d" % keysig)
 		sys.stderr.write("\n********** FIXME: set pickup time for Key")
 		self.alterations.append(Key(keysig, 0, (0, 1)))
 		self.voices[0].add_nonchord(Key(keysig, 0, (0, 1)))
@@ -870,7 +870,7 @@ class Chord:
 			else:
 				rest = 'R'
 			if self.count != 1:
-				multi = str(self.multibar) + "*" + str(self.count)
+				multi = str(self.count) + "*" + str(self.multibar)
 			else:
 				multi = str(self.multibar)
 			v = self.chord_prefix + ' ' + rest + str(self.basic_duration) + "*" + str(multi) + self.chord_suffix
@@ -988,10 +988,9 @@ class Parser:
 
 		self.staff_idx = 0
 
-		i =0
-		sys.stderr.write("Key sig %d\n" % self.keysig)
 		# self.timeline.set_meter(self.meter, self.pickup)
 		# self.timeline.add_nonchord(meter)
+		i = 0
 		for s in self.staffs:
 			s.number = i
 			s.set_key(self.keysig)
@@ -1052,6 +1051,8 @@ class Parser:
 			elif isinstance(b, Volta):
 				pass
 			elif isinstance(b, VoltaClose):
+				pass
+			elif isinstance(b, Bar):
 				pass
 			else:
 				sys.stderr.write("What is this: %s\n" % b.dump())
@@ -1351,7 +1352,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			elif self.current_voice().last_name > name and self.current_voice().last_name - name > 3:
 				e = 1
 
-			octave = self.current_voice().last_oct  +e + extra_oct
+			octave = self.current_voice().last_oct  + e + extra_oct
 
 		if name <> None:
 			self.current_voice().last_oct = octave
@@ -1483,6 +1484,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		#  t - text [A-Za-z0-9]
 		#  d - dimen
 		#  p - any parameter type
+		#  = - assignment of TeX variable
 		#  * - unlimited number of parameters
 		#  S - special
 		self.tex_functions = {
@@ -1563,6 +1565,9 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			'\\sepbarrule':		('t', self.tex_ignore),
 			'\\groupbottom':	('tt', self.tex_require),
 			'\\grouptop':		('tt', self.tex_require),
+			# FIXME: this hangs...
+			# '\\twolines':		('*', self.tex_vbox),
+			'\\startbarno':		('=', self.tex_set_barno),
 			'\\Figu':		('p', self.tex_require),
 			'\\figdrop':		('p', self.tex_require),
 			'\\nbbbbl':		('', self.tex_ignore),
@@ -1710,6 +1715,11 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		text = re.sub('~', '\char ##x00A0 ', text)
 		ch.chord_suffix = ch.chord_suffix + direction + "\\markup{" + text + "}"
 
+		return ('', '')
+
+
+	def tex_set_barno(self, name, params):
+		sys.stderr.write("\nFIXME: set barno to %s" % params[0])
 		return ('', '')
 
 
@@ -1922,6 +1932,8 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		finished = len(params) == 0
 		nesting = 0
 		while not finished:
+			if params[i] == '=' and left[0] == '=':
+				left = left[1:]
 			if left[0] in SPACE:
 				while left[0] in SPACE:
 					left = left[1:]
@@ -2201,13 +2213,18 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		orn = '"orn"'
 		if id == 'e':
 			if left[0] in 'sfn':
+				(octave, name, a, f) = e.pitches[-1]
+				alteration = left[0]
+				self.current_staff().alterations.insert(len(self.current_staff().alterations) - 1,
+									Alteration(name, octave, alteration, 0,
+										   e.bar, e.time))
 				e.chord_prefix = e.chord_prefix + '\\once \\set suggestAccidentals = ##t '
 				left = left[1:]
 		else:
 			try:
 				orn = ornament_table[id]
 			except KeyError:
-				sys.stderr.write ("unknown ornament `%s'\n" % id)
+				sys.stderr.write ("\nFIXME: unknown ornament `%s'\n" % id)
 
 			if id == 'T':
 				if left[0] == 't':
@@ -2661,9 +2678,7 @@ Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))
 		for s in self.staffs:
 			out = out + s.dump()
 			instr = ''
-			if self.instruments[i]:
-				instr = '\n        \\set Staff.instrumentName = "' + self.instruments[i] + '"\n    '
-			refs = '{\n        \\' + s.idstring() + instr + '\n    }\n    ' + refs
+			refs = '{\n        \\' + s.idstring() + '\n    }\n    ' + refs
 			i = i + 1
 
 		out = out + "\n\n\\score { <<\n    %s%s\n >> }" % (refs , defaults)
