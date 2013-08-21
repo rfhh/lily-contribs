@@ -7,8 +7,6 @@
 - pickup for timeline
 - accidentals must work through grace time
 - movement breaks
-- line breaks???
-- page breaks???
 - afterGrace
 - forced accidentals
 - handle end of inline tex calls correctly: a '\' on its own
@@ -37,6 +35,10 @@
  DONE:
 ------
 
+- line breaks
+  ** command-line option -- no support for numbered line breaks
+- page breaks
+  ** command-line option
 - compact multi-measure rests (and skips?) in live voices
 - refactor the figured bass so it actually makes a \FiguredBass{ \figuremode{ }}
   ** this is too much work. Keep it as is, with markup, but corrected
