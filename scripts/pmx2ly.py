@@ -781,7 +781,7 @@ class Staff:
 
 		instr = ''
 		if self.instrument_name:
-			instr = '\n    \set Staff.instrumentName = "' + self.instrument_name + '"'
+			instr = '\n    \set Staff.instrumentName = \markup{' + self.instrument_name + '}'
 		out = out + '\n\n%s = \\new Staff = %s <<%s%s\n>>\n\n' % (self.idstring(), self.idstring(), instr, refs)
 		return out
 
@@ -1591,8 +1591,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			'\\sepbarrule':		('t', self.tex_ignore),
 			'\\groupbottom':	('tt', self.tex_require),
 			'\\grouptop':		('tt', self.tex_require),
-			# FIXME: this hangs...
-			# '\\twolines':		('*', self.tex_vbox),
+			'\\twolines':		('bb', self.tex_vbox),
 			'\\startbarno':		('=', self.tex_set_barno),
 			'\\Figu':		('pp', self.tex_require),
 			'\\figdrop':		('p', self.tex_require),
@@ -1678,7 +1677,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 	def tex_set_lyrics(self, name, params):
 		(label, lyrics) = params
 		self.lyrics[label] = self.tex_expand_lyrics(lyrics)
-		sys.stderr.write("\nSet lyrics{%s} to '%s'" % (label, lyrics))
+		# sys.stderr.write("\nSet lyrics{%s} to '%s'" % (label, lyrics))
 		return ('', '')
 
 
@@ -1755,7 +1754,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			out = out + '\\line{ ' + p + '}'
 		out = out + '}'
 
-		sys.stderr.write("\nvbox returns '%s'" % out)
+		# sys.stderr.write("\nvbox returns '%s'" % out)
 
 		return (out, '')
 
@@ -1901,7 +1900,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		elif name == '\\mtxdate':
 			pass
 		else:
-			sys.stderr.write("\nFIXME: add \\def\\%s=%s" % (name, params[0]))
+			# sys.stderr.write("\nFIXME: add \\def\\%s=%s" % (name, params[0]))
 			self.tex_functions[name] = (param_descr, partial(self.tex_interpret, replace=params[0]))
 
 		return left
@@ -2157,18 +2156,18 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		numbers = []
 
 		if ls[0] == '---\n':
-			sys.stderr.write("\nFIXME: parse TeX pre-header")
+			# sys.stderr.write("\nFIXME: parse TeX pre-header")
 			i = 1
 			tex_defs = ''
 			while ls[i] != '---\n':
 				tex_defs = tex_defs + ls[i]
 				i = i + 1
 			ls = ls[i + 1:]
-			sys.stderr.write('\nFIXME: parse TeX pre-header \'%s\'' % tex_defs)
+			# sys.stderr.write('\nFIXME: parse TeX pre-header \'%s\'' % tex_defs)
 			while not tex_defs in SPACE:
 				tex_defs = re.sub('\A\s*', '', tex_defs)
 				(tex_defs, result) = self.parse_tex(tex_defs)
-				sys.stderr.write('\nFIXME: parse rest of TeX pre-header \'%s\'' % tex_defs)
+				# sys.stderr.write('\nFIXME: parse rest of TeX pre-header \'%s\'' % tex_defs)
 
 		while len (numbers) < number_count:
 			opening = ls[0]
@@ -2838,7 +2837,7 @@ for f in files:
 	if f == '-':
 		f = ''
 
-	sys.stderr.write ('Processing `%s\'\n' % f)
+	sys.stderr.write ('Processing `%s\'' % f)
 	e = Parser(f)
 	if not out_filename:
 		out_filename = os.path.basename (re.sub ('(?i).pmx$', '.ly', f))
@@ -2846,7 +2845,7 @@ for f in files:
 	if out_filename == f:
 		out_filename = os.path.basename (f + '.ly')
 
-	sys.stderr.write ('Writing `%s\'' % out_filename)
+	sys.stderr.write ('\nWriting `%s\'' % out_filename)
 	ly = e.dump() + '\n'
 
 

@@ -3,6 +3,7 @@
  TODO:
 ------
 
+- fix indentation (maintain indent variable? insert Indent objects into the stream?)
 - pickup for timeline
 - accidentals must work through grace time
 - movement breaks
@@ -10,7 +11,7 @@
 - page breaks???
 - afterGrace
 - forced accidentals
-- handle end-of-tex\def correctly: a '\' on its own
+- handle end of inline tex calls correctly: a '\' on its own
 - keep line/column counts into input
 - variable number of beams [[ ][ ]]
 - segno
