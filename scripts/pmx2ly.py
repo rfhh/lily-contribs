@@ -480,7 +480,7 @@ class Voice:
 		ln = ''
 		for e in self.entries:
 			next = e.dump ()
-			if next[-1] == '\n':
+			if next != '' and next[-1] == '\n':
 				out = out + ln + next
 				ln = ''
 				continue
@@ -504,6 +504,18 @@ class Voice:
 			out = '%s = <<\n{\n   %s\n}\n%s\n\\timeLine\n>>\n'% (id, out, lyrics)
 		return out
 
+
+	def calculate_multibar(self):
+		first = True
+		for c in self.chords:
+			if first:
+				first = False
+			elif c.multibar > 0 and p.multibar > 0 and c.skip == p.skip and c.basic_duration == p.basic_duration and c.count == p.count:
+				p.suppressed = True
+				c.multibar = c.multibar + p.multibar
+			p = c
+
+
 	def calculate_graces (self):
 		lastgr = 0
 		lastc = None
@@ -517,9 +529,11 @@ class Voice:
 			lastgr = c.grace
 			lastc = c
 
+
 	def calculate (self):
 		# sys.stderr.write("Skip calculating graces\n")
 		# self.calculate_graces ()
+		self.calculate_multibar()
 		for s in self.slurs:
 			s.calculate ()
 		for t in self.ties:
@@ -860,8 +874,12 @@ class Chord:
 		self.skip = False
 		self.bar = -1
 		self.time = []
+		self.suppressed = False
 
 	def dump (self):
+		if self.suppressed:
+			return ''
+
 		if self.multibar != 0:
 			if self.grace:
 				sys.stderr.write('Ooppsss... multibar grace?????\n')
@@ -873,7 +891,7 @@ class Chord:
 				multi = str(self.count) + "*" + str(self.multibar)
 			else:
 				multi = str(self.multibar)
-			v = self.chord_prefix + ' ' + rest + str(self.basic_duration) + "*" + str(multi) + self.chord_suffix
+			v = self.chord_prefix + ' ' + rest + str(self.basic_duration) + "*" + multi + self.chord_suffix
 			return v
 
 		v = ''
