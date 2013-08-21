@@ -16,7 +16,6 @@
 - segno
 - fermata on multimeasure rest (Sinfonia 209, flute, bar 112)
 - compact multi-measure rests (and skips?) in live voices
-- refactor the figured bass so it actually makes a \FiguredBass{ \figuremode{ }}
 
 - lyrics: implement some M-Tx macros
 
@@ -38,6 +37,8 @@
  DONE:
 ------
 
+- refactor the figured bass so it actually makes a \FiguredBass{ \figuremode{ }}
+  ** this is too much work. Keep it as is, with markup, but corrected
 - check accidental above note: does it still work after the accidental refactor?
   ** add an Alteration anyway for each oe[snl]
 - work-around for continuing ties from M-Tx (weird mix of slurs and non-toggling ties)

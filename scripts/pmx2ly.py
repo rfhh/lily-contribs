@@ -795,9 +795,9 @@ class Tuplet:
 		elif dots == 2:
 			self.replaces = 7
 		else:
-			self.replace = 1
-			while 2 * self.replace < number:
-				self.replace = 2 * self.replace
+			self.replaces = 1
+			while 2 * self.replaces < number:
+				self.replaces = 2 * self.replaces
 		self.base = base
 		self.dots = dots
 
@@ -899,7 +899,7 @@ class Chord:
 
 		v = v + sd
 		for s in self.scripts:
-			v = v + '-' + s
+			v = v + s
 
 		v = self.note_prefix + v + self.note_suffix
 		if self.grace:
@@ -941,6 +941,20 @@ ornament_table = {
 	'>': '>',
 	'^': '^',
 	}
+
+
+figure_table = [
+	'zero',
+	'one',
+	'two',
+	'three',
+	'four',
+	'five',
+	'six',
+	'seven',
+	'eight',
+	'nine',
+	]
 
 
 class M_TX:
@@ -1421,18 +1435,30 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 
 		return left
 
+
 	def parse_basso_continuo (self, left):
 		while left[0] in DIGITS +'#n-':
-			scr = left[0]
+			c = left[0]
+			left = left[1:]
 
-			if scr == '#':
-				scr = '\\\\textsharp'
+			scr = ''
+			if c in '#n-':
+				scr = '\\raise #1.0 '
+				if c == '#':
+					scr = scr + '\\sharp'
+				elif c == 'n':
+					scr = scr + '\\natural'
+				else:
+					scr = scr + '\\flat'
+				if len(left) > 0 and left[0] in DIGITS:
+					scr = '\\concat{{' + scr + '}{' + '\\musicglyph #"' + figure_table[int(left[0])] + '"' +'}}'
+					left = left[1:]
+			else:
+				scr = '\\musicglyph #"' + figure_table[int(c)] + '"'
 
-			if len(scr)>1 or scr not in DIGITS:
-				scr = '"%s"' % scr
+			scr = '_\\markup\\smaller{%s}' % scr
 
 			self.current_voice().last_chord ().scripts.append (scr)
-			left=left[1:]
 		return left
 
 
@@ -1568,7 +1594,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			# FIXME: this hangs...
 			# '\\twolines':		('*', self.tex_vbox),
 			'\\startbarno':		('=', self.tex_set_barno),
-			'\\Figu':		('p', self.tex_require),
+			'\\Figu':		('pp', self.tex_require),
 			'\\figdrop':		('p', self.tex_require),
 			'\\nbbbbl':		('', self.tex_ignore),
 			'\\zq':			('', self.tex_require),
@@ -2240,7 +2266,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 					left = left[1:]
 				else:
 					sys.stderr.write("\nFIXME: trill spanner")
-			e.scripts.append (orn)
+			e.scripts.append('-' + orn)
 		return left
 
 
