@@ -45,7 +45,7 @@ newline(void)
     int         i;
 
     fprintf(lily_out, "\n");
-    for (i = 0; i < indentation; i++) {
+    for (i = 0; i < indentation - 1; i++) {
         fprintf(lily_out, " ");
     }
 }

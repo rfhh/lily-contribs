@@ -187,7 +187,6 @@ main(int argc, char **argv)
             return 2;
         }
     }
-    fprintf(lily_out, "\\version \"1.8.0\"\n");
 
     fprintf(stderr, "Now generate lily output... \n");
     xly_dump(lily_out, do_chording);
