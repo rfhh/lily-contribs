@@ -3,23 +3,19 @@
  TODO:
 ------
 
-- fix indentation (maintain indent variable? insert Indent objects into the stream?)
-- pickup for timeline
+- tuplets upper number must be uprounded by multiplying by power of 2: 4/6 iso 2/6 etc
 - accidentals must work through grace time
-- movement breaks
 - afterGrace
-- forced accidentals
-- handle end of inline tex calls correctly: a '\' on its own
-- keep line/column counts into input
-- variable number of beams [[ ][ ]]
 - segno
 - fermata on multimeasure rest (Sinfonia 209, flute, bar 112)
+- movement breaks
+- forced accidentals
+- handle end of inline tex calls correctly: a '\' on its own
+- fix indentation (maintain indent variable? insert Indent objects into the stream?)
+- variable number of beams [[ ][ ]]
+- keep line/column counts into input
 
 - lyrics: implement some M-Tx macros
-
-- add options:
-   - option to follow line breaks
-   - option to follow page breaks
 
 - write little validation suite for:
    - multi-voice
@@ -35,6 +31,7 @@
  DONE:
 ------
 
+- pickup for timeline
 - line breaks
   ** command-line option -- no support for numbered line breaks
 - page breaks

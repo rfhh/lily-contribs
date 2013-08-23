@@ -328,6 +328,7 @@ class Voice:
 		self.chords = []
 		self.staff = None
 		self.meter = None
+		self.pickup = None
 
 		self.time = (0, 1)
 		self.bar = 0
@@ -362,12 +363,13 @@ class Voice:
 
 	def set_meter(self, meter, pickup):
 		self.meter = meter
+		self.pickup = pickup
 		(pd, pn) = pickup
 		if pd != 0:
 			self.time = rat_subtract(meter.to_rat(), pickup)
 			self.bar = -1
 		(d, n) = self.time
-		sys.stderr.write("set_meter(): time %d / %d\n" % (d, n))
+		# sys.stderr.write("set_meter(): time %d / %d\n" % (d, n))
 
 	def start_tie(self, id):
 		if self.pending_tie != None:
@@ -507,6 +509,8 @@ class Voice:
 			out = ' \\autoBeamOff\n\n   ' + out
 			lyrics = '\n\\addlyrics {\n    %s\n}' % self.lyrics
 		if self.preset_id:
+			if self.pickup:
+				out = (' \\partial %d*%d\n   ' % (self.pickup[1], self.pickup[0])) + out
 			out = '%s = {\n   %s}%s\n' % (self.preset_id, out, lyrics)
 		else:
 			out = '%s = <<\n{\n   %s\n}\n%s\n\\timeLine\n>>\n'% (id, out, lyrics)
@@ -672,8 +676,6 @@ class Staff:
 
 	def set_key(self, keysig):
 		self.key = keysig
-		sys.stderr.write("\nSet staff key sig %d" % keysig)
-		sys.stderr.write("\n********** FIXME: set pickup time for Key")
 		self.alterations.append(Key(keysig, 0, (0, 1)))
 		self.voices[0].add_nonchord(Key(keysig, 0, (0, 1)))
 
@@ -1038,6 +1040,8 @@ class Parser:
 			s.set_accidental_mode(self.accidental_mode)
 			if self.instruments:
 				s.instrument_name = self.instruments[i]
+			for v in s.voices:
+				v.set_meter(self.meter, self.pickup)
 			i = i+1
 
 
@@ -1057,7 +1061,11 @@ class Parser:
 	def add_skip_bars(self, voice, target_bar):
 		bars = target_bar - voice.bar
 		for b in range(bars):
-			voice.add_skip_bar(self.meter.num, self.meter.denom)
+			if voice.bar + b == -1:
+				# special case: we are in pickup time
+				voice.add_skip_bar(self.pickup[0], self.pickup[1])
+			else:
+				voice.add_skip_bar(self.meter.num, self.meter.denom)
 			voice.add_nonchord(Barnumber(voice.bar + b, self.meter))
 		voice.time = (0, 1)
 		voice.bar += bars
@@ -1624,7 +1632,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			'\\startbarno':		('=', self.tex_set_barno),
 			'\\Figu':		('pp', self.tex_require),
 			'\\figdrop':		('p', self.tex_require),
-			'\\nbbbbl':		('', self.tex_ignore),
+			'\\nbbbbl':		('p', self.tex_ignore),
 			'\\zq':			('', self.tex_require),
 			'\\zh':			('', self.tex_require),
 			'\\rw':			('', self.tex_require),
@@ -2793,7 +2801,7 @@ Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))
 					compacted.append(last_bar)
 
 		for b in self.timeline.entries:
-			if isinstance(b, Chord) and b.count > 0:
+			if isinstance(b, Chord) and b.count > 0 and last_chord != None and b.count == last_chord.count:
 				multi = multi + 1
 				last_chord = b
 			elif isinstance(b, Barnumber):
