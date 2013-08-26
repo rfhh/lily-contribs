@@ -837,10 +837,9 @@ class Tuplet:
 			note_base = note_base * 2
 		note_base = note_base / 2
 		self.note_base = note_base
-		self.note_dots = 0
 
 	def add_chord (self, ch):
-		ch.dots = self.note_dots
+		ch.dots = 0
 		ch.basic_duration = self.note_base
 		self.chords.append (ch)
 
@@ -1038,7 +1037,7 @@ class Parser:
 			s.number = i
 			s.set_key(self.keysig)
 			s.set_accidental_mode(self.accidental_mode)
-			if self.instruments:
+			if len(self.instruments) > i:
 				s.instrument_name = self.instruments[i]
 			for v in s.voices:
 				v.set_meter(self.meter, self.pickup)
@@ -1204,9 +1203,11 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 				left = left[len(m.group()) - 1:]
 			elif c in '<>':
 				sys.stderr.write("\nIgnore: no alteration shift")
-				if not left[0] in DIGITS:
-					raise Exception("alteration shift malformed", c + left[:1])
 				left = left[1:]
+				if not left[0] in '-.0123456789':
+					raise Exception("alteration shift malformed", c + left[:1])
+				while left[0] in '-.0123456789]':
+					left = left[1:]
 			elif c == 'c':
 				alteration_flags = alteration_flags | FLAG_CAUTIONARY;
 				left = left[1:]
@@ -1263,7 +1264,6 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 								if m:
 									sys.stderr.write("\nIgnore: no tuplet shape shifts")
 									left = left[len(m.group()):]
-
 
 		tup = Tuplet(tupnumber, basic_duration, dots)
 		self.tuplets_expected = tupnumber
@@ -1521,6 +1521,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		#new key signature.  For now, we won't bother with the transposition.
 		if left[2] != '0':
 			sys.stderr.write("Transposition not implemented yet: ")
+			left = left[1:]
 			while left[0] in '+-0123456789':
 				left = left[1:]
 		else:
@@ -1630,6 +1631,8 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			'\\grouptop':		('tt', self.tex_require),
 			'\\twolines':		('bb', self.tex_vbox),
 			'\\startbarno':		('=', self.tex_set_barno),
+			'\\footline':		('=', self.tex_ignore),
+			'\\pageno':		('=', self.tex_ignore),
 			'\\Figu':		('pp', self.tex_require),
 			'\\figdrop':		('p', self.tex_require),
 			'\\nbbbbl':		('p', self.tex_ignore),
@@ -1676,6 +1679,8 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			'\\centerline':		('p', self.tex_centerline),
 			'\\global':		('', self.tex_require),
 			'\\hfill':		('', self.tex_require),
+			'\\hoffset':		('=', self.tex_ignore),
+			'\\voffset':		('=', self.tex_ignore),
 			'\\kern':		('d', self.tex_ignore)
 		}
 
@@ -2209,6 +2214,9 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		number_count = 12
 		numbers = []
 
+		while ls[0] == '\n':
+			ls = ls[1:]
+
 		if ls[0] == '---\n':
 			# sys.stderr.write("\nFIXME: parse TeX pre-header")
 			i = 1
@@ -2261,7 +2269,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		while len (self.instruments) < no_instruments:
 			if ls[0][0] == '\\':
 				ls[0] = self.parse_tex(ls[0])[1]
-			self.instruments.append(ls[0])
+			self.instruments.append(ls[0].strip(SPACE))
 			ls = ls[1:]
 
 		l = ls[0]
@@ -2738,6 +2746,10 @@ Huh? Unknown T parameter `%s', before `%s'""" % (left[1], left[:20] ))
 				(left, result, post) = self.parse_tex_function(left)
 				if post != '':
 					sys.stderr.write("\nFIXME: parse_body has post '%s'" % post)
+			elif c in 'wh':
+				# ignore page size directives
+				while left[1] in '0123456789.imp':
+					left = left[1:]
 			else:
 				sys.stderr.write ("""
 Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))
