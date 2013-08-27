@@ -32,6 +32,14 @@ FILL_DOTTED		= 1
 FILL_DASHED		= 2
 
 
+warnings = []
+
+def warn(string):
+	if not string in warnings:
+		sys.stderr.write(string)
+		warnings.append(string)
+
+
 def encodeint (i):
 	return chr ( i  + ord ('A'))
 
@@ -62,7 +70,7 @@ def pitch_to_lily_string (tup):
 	if f & FLAG_FORCED:
 		nm = nm + "!"
 	if f & FLAG_SUPPRESS:
-		sys.stderr.write("\n**** Refuse to really suppress the cautionary")
+		warn("\n**** Refuse to really suppress the cautionary")
 	return nm
 
 
@@ -258,7 +266,7 @@ class Tie:
 		else:
 			if s:
 				s.chord_suffix = s.chord_suffix + '~'
-			sys.stderr.write ("\nOrphaned tie")
+			warn ("\nOrphaned tie")
 
 
 class Slur:
@@ -275,7 +283,7 @@ class Slur:
 			s.note_suffix = s.note_suffix + '('
 			e.note_suffix = e.note_suffix + ')'
 		else:
-			sys.stderr.write ("\nOrphaned slur")
+			warn ("\nOrphaned slur")
 
 
 class Grace:
@@ -296,7 +304,7 @@ class Grace:
 
 		if e and s:
 			if self.after:
-				sys.stderr.write('\nFIXME: for \\afterGrace, invert the grace and the graced note');
+				warn('\nFIXME: for \\afterGrace, invert the grace and the graced note');
 			elif self.slashed:
 				if self.slurred:
 					s.note_prefix = s.note_prefix + '\\acciaccatura { '
@@ -311,7 +319,7 @@ class Grace:
 				e.note_suffix = e.note_suffix + ']'
 			e.note_suffix = e.note_suffix + ' }'
 		else:
-			sys.stderr.write("\nOrphaned grace")
+			warn("\nOrphaned grace")
 
 
 class Melisma:
@@ -696,10 +704,9 @@ class Staff:
 		self.alterations.append(Key(keysig, 0, (0, 1)))
 		self.voices[0].add_nonchord(Key(keysig, 0, (0, 1)))
 
-	def set_alteration(self, note, octave, alteration, flags):
+	def set_alteration(self, note, octave, alteration, flags, time):
 		self.alterations.append(Alteration(note, octave, alteration, flags,
-						   self.current_voice().bar,
-						   self.current_voice().time))
+						   self.current_voice().bar, time))
 
 	def reset_alterations(self):
 		self.alterations.append(AlterationReset(self.current_voice().bar,
@@ -1156,7 +1163,7 @@ class Parser:
 			left = left[1:]
 			if c == 'm':
 				if not left[0] in '0123456789':
-					sys.stderr.write("""
+					warn("""
 Huh? expected number of grace note beams, found %s Left was `%s'""" % (left[0], left[:20]))
 				else:
 					item_duration = 4 << (ord(left[0]) - ord('0'))
@@ -1172,12 +1179,12 @@ Huh? expected number of grace note beams, found %s Left was `%s'""" % (left[0], 
 			elif c in 'AW':
 				after = 1
 			elif c == 'X':
-				sys.stderr.write("\nIgnore: no horizontal shift in grace");
+				warn("\nIgnore: no horizontal shift in grace");
 				while left[0] in ".0123456789":
 					left = left[1:]
 			else:
 				if not c in '0123456789':
-					sys.stderr.write("""
+					warn("""
 Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 				elif items == -1:
 					items = ord(c) - ord('0')
@@ -1222,14 +1229,14 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 			if False:
 				pass
 			elif c in '+-':
-				sys.stderr.write("\nIgnore: no alteration shift")
+				warn("\nIgnore: no alteration shift")
 				m = re.match('\A([0-9]+)([+-][0-9]+)', left)
 				if not m:
 					left = c + left
 					break	# the +- is not an alteration, it's an octave
 				left = left[len(m.group()):]
 			elif c in '<>':
-				sys.stderr.write("\nIgnore: no alteration shift")
+				warn("\nIgnore: no alteration shift")
 				if not left[0] in '-.0123456789':
 					raise Exception("alteration shift malformed", c + left[0])
 				while left[0] in '-.0123456789]':
@@ -1239,7 +1246,7 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 			elif c == 'i':
 				alteration_flags = alteration_flags | FLAG_SUPPRESS;
 			elif c == 'A':
-				sys.stderr.write("\nFIXME: accidental post order")
+				warn("\nFIXME: accidental post order")
 				if left[0] == 'o':
 					left = left[1:]
 
@@ -1259,33 +1266,33 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 				pass
 			elif c == 'd':
 				first_dots = 1
-				sys.stderr.write("\nFIXME: handle dotted first note under tuplet")
+				warn("\nFIXME: handle dotted first note under tuplet")
 			elif c == 'n':
 				if left[0] in SPACE:
-					sys.stderr.write("\nFIXME: handle tuplet without number")
+					warn("\nFIXME: handle tuplet without number")
 					subs = 0
 				else:
 					while left[0] in '+-0123456789fs':
 						if left[0] == 'f':
-							sys.stderr.write("\nIgnore: tuplet number flip")
+							warn("\nIgnore: tuplet number flip")
 							left = left[1:]
 						elif left[0] == 's':
 							m = re.match(r'\A[.0-9]+', left)
 							if m:
-								sys.stderr.write("\nIgnore: tuplet slope")
+								warn("\nIgnore: tuplet slope")
 								left = left[len(m.group()):]
 							else:
 								raise Exception("Tuplet slope should carry a number", left[:20])
 						else:
 							m = re.match(r'\A\d+', left)
 							if m:
-								sys.stderr.write("\nIgnore: tuplet number subst")
+								warn("\nIgnore: tuplet number subst")
 								subs = atoi(m.group())
 								left = left[len(m.group()):]
 							else:
 								m = re.match(r'\A([+-][.0-9]+)(([+-][.0-9]+))', left)
 								if m:
-									sys.stderr.write("\nIgnore: no tuplet shape shifts")
+									warn("\nIgnore: no tuplet shape shifts")
 									left = left[len(m.group()):]
 
 		tup = Tuplet(tupnumber, basic_duration, dots)
@@ -1375,18 +1382,18 @@ Huh? expected duration; last_basic_duration is `%d'""" % self.last_basic_duratio
 				dots = dots + 1
 				m = re.match(r'\A([+-][.\d]+)([+-][.\d]+)?', left)
 				if m:
-					sys.stderr.write("\nIgnore: no dot horizontal/vertical shift")
+					warn("\nIgnore: no dot horizontal/vertical shift")
 					left = left[len(m.group()):]
 			elif c in 'sfn':
 				(left, alteration, alteration_flags) = self.parse_alteration(c, left)
 			elif c in 'ul':
-				sys.stderr.write("\nFIXME: stem direction")
+				warn("\nFIXME: stem direction")
 			elif c == 'a':
 				ch.chord_suffix = ch.chord_suffix + '\\noBeam'
 			elif c == 'b':
 				ch.skip = True
 			elif c in 'er':
-				sys.stderr.write("\nIgnore: no note horizontal shift")
+				warn("\nIgnore: no note horizontal shift")
 			elif c == '+':
 				extra_oct = extra_oct + 1
 			elif c == '-':
@@ -1401,15 +1408,15 @@ Huh? expected duration; last_basic_duration is `%d'""" % self.last_basic_duratio
 				forced_duration = 2
 				break
 			elif c == 'S':
-				sys.stderr.write("\nFIXME: stem length")
+				warn("\nFIXME: stem length")
 				while left[0] in DIGITS:
 					left = left[1:]
 				if left[0] == ':':
 					left = left[1:]
 			elif c == 'D':
-				sys.stderr.write("\nFIXME: double duration within tuplet")
+				warn("\nFIXME: double duration within tuplet")
 			elif c == 'F':
-				sys.stderr.write("\nFIXME: dotted double duration within tuplet")
+				warn("\nFIXME: dotted double duration within tuplet")
 
 		if multibar != 0:
 			count = self.meter.num
@@ -1449,10 +1456,12 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			v.last_name = name
 
 		if name <> None:
-			ch.pitches.append ((octave, name, 0, 0))
+			ch.pitches.append((octave, name, 0, 0))
 
 		if alteration:
-			self.current_staff().set_alteration(name, octave, alteration, alteration_flags)
+			if name == None:
+				raise Exception("Cannot have an alteration without a note name", str(alteration))
+			self.current_staff().set_alteration(name, octave, alteration, alteration_flags, ch.time)
 
 		ch.multibar = multibar
 		ch.count = count
@@ -1758,12 +1767,12 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 
 
 	def tex_ignore(self, name, params):
-		sys.stderr.write("\nWarning: ignore TeX function '%s'" % name)
+		warn("\nWarning: ignore TeX function '%s'" % name)
 		return ('', '')
 
 
 	def tex_require(self, name, params):
-		sys.stderr.write("\nFIXME: implement TeX function '%s'" % name)
+		warn("\nFIXME: implement TeX function '%s'" % name)
 		return ('', '')
 	
 
@@ -1790,7 +1799,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 
 	def tex_assign_lyrics(self, name, params):
 		(staff, label) = params
-		sys.stderr.write("\nAssign lyrics{%s} to staff[%s]" % (staff, label))
+		warn("\nAssign lyrics{%s} to staff[%s]" % (staff, label))
 		s = self.staffs[int(staff) - 1]
 		s.voices[s.lyrics_voice].lyrics = self.lyrics[label]
 		return ('', '')
@@ -1822,7 +1831,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 
 
 	def tex_rewrite_lyrics(self, name, params):
-		sys.stderr.write("\nFIXME: implement TeX rewrite_lyrics")
+		warn("\nFIXME: implement TeX rewrite_lyrics")
 		return ('', '')
 
 
@@ -1840,13 +1849,13 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		else:
 			direction = '-'
 		text = re.sub('~', '\char ##x00A0 ', text)
-		ch.chord_suffix = ch.chord_suffix + direction + "\\markup{" + text + "}"
+		ch.chord_suffix = ch.chord_suffix + direction + "\\markup{\"" + text + "\"}"
 
 		return ('', '')
 
 
 	def tex_set_barno(self, name, params):
-		sys.stderr.write("\nFIXME: set barno to %s" % params[0])
+		warn("\nFIXME: set barno to %s" % params[0])
 		return ('', '')
 
 
@@ -2016,7 +2025,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		elif name == '\\mtxdate':
 			pass
 		else:
-			# sys.stderr.write("\nFIXME: add \\def\\%s=%s" % (name, params[0]))
+			# warn("\nFIXME: add \\def\\%s=%s" % (name, params[0]))
 			self.tex_functions[name] = (param_descr, partial(self.tex_interpret, replace=replace))
 
 		return left
@@ -2026,7 +2035,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		nl = left.find('\n')
 		file = left[:nl].strip(SPACE)
 		left = left[nl + 1:]
-		sys.stderr.write("\nFIXME: need to include file '%s'" % file)
+		warn("\nFIXME: need to include file '%s'" % file)
 
 		return left
 
@@ -2101,7 +2110,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			elif left[0] == '\\':
 				(left, p, post) = self.parse_tex_function(left)
 				if post != '':
-					sys.stderr.write("\nFIXME: tex_params has post '%s'" % post)
+					warn("\nFIXME: tex_params has post '%s'" % post)
 				out.append(p)
 			elif left[0] == '{':
 				if params[i] != '*':
@@ -2115,7 +2124,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 					left = left[1:]
 					continue
 			elif left[0] in '-0123456789.':
-				# sys.stderr.write("\nFIXME: what if this is a dimension, not just a number?")
+				# warn("\nFIXME: what if this is a dimension, not just a number?")
 				m = re.match(r'\A-?[0-9.]+' + dimension + '?', left)
 				out.append(m.group())
 				left = left[len(m.group()):]
@@ -2124,7 +2133,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				left = left[1:]
 				finished = nesting == 0
 			elif left[0] in self.TEX_CONTROLS:
-				sys.stderr.write("\nFIXME: handle TeX control sequences")
+				warn("\nFIXME: handle TeX control sequences")
 			if params[i] != '*':
 				i = i + 1
 				if i == len(params):
@@ -2159,9 +2168,9 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				(left, params) = self.tex_params(left, params)
 				(result, post) = func(m.group(), params)
 				if post != '':
-					sys.stderr.write("\nFIXME: handle post property at the end of my scope (func = %s)" % m.group())
+					warn("\nFIXME: handle post property at the end of my scope (func = %s)" % m.group())
 			else:
-				sys.stderr.write("\nFIXME: unsupported TeX function '%s', hope it does not take parameters" % m.group())
+				warn("\nFIXME: unsupported TeX function '%s', hope it does not take parameters" % m.group())
 
 		# strip pending \ that marks end-of-TeX for pmx
 		if len(left) > 0 and left[0] == '\\' and left[1] in SPACE:
@@ -2198,7 +2207,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				else:
 					(left, w, p) = self.parse_tex_function(left)
 					if p != '':
-						sys.stderr.write("\nFIXME: parse_tex has post '%s'" % p)
+						warn("\nFIXME: parse_tex has post '%s'" % p)
 						post = post + ' ' + p
 					if words:
 						words = words + " " + w
@@ -2276,7 +2285,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			ls = ls[1:]
 
 		if ls[0] == '---\n':
-			# sys.stderr.write("\nFIXME: parse TeX pre-header")
+			# warn("\nFIXME: parse TeX pre-header")
 			i = 1
 			tex_defs = ''
 			while ls[i] != '---\n':
@@ -2382,11 +2391,11 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			try:
 				orn = ornament_table[id]
 			except KeyError:
-				sys.stderr.write ("\nFIXME: unknown ornament `%s'\n" % id)
+				warn ("\nFIXME: unknown ornament `%s'\n" % id)
 
 			if id == 'T':
 				if left[0] == 't':
-					sys.stderr.write("\nFIXME: trill wave without \\trill")
+					warn("\nFIXME: trill wave without \\trill")
 					left = left[1:]
 				duration = 0.0
 				dtxt = ''
@@ -2397,10 +2406,10 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 					# OK, trill without spanner
 					left = left[1:]
 				else:
-					sys.stderr.write("\nFIXME: trill spanner")
+					warn("\nFIXME: trill spanner")
 			e.scripts.append('-' + orn)
 			if left[0] in '+-':
-				sys.stderr.write('\nIgnore: no ornament positioning')
+				warn('\nIgnore: no ornament positioning')
 				left = left[1:]
 				while left[0] in '-.0123456789':
 					left = left[1:]
@@ -2455,45 +2464,45 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 					else:
 						c = 't'
 				else:
-					sys.stderr.write('\nOopps... what is this directive: %s' % (c + p))
+					warn('\nOopps... what is this directive: %s' % (c + p))
 			elif p == 'b':
 				slur_fill = FILL_DOTTED
 			elif p in '+-':
 				m = re.match(r'\A-?[0-9]+', left)
 				left = left[len(m.group()):]
-				sys.stderr.write("\nIgnore: raise slur by %s" % m.group())
+				warn("\nIgnore: raise slur by %s" % m.group())
 				p = left[0]
 				if p in '+-':
 					left = left[1:]
 					m = re.match(r'\A-?[0-9]+', left)
 					left = left[len(m.group()):]
-					sys.stderr.write("\nIgnore: shift slur by %s" % m.group())
+					warn("\nIgnore: shift slur by %s" % m.group())
 					p = left[0]
 					if p in '+-':
 						left = left[1:]
 						m = re.match(r'\A-?[0-9]+', left)
 						left = left[len(m.group()):]
-						sys.stderr.write("\nIgnore: alter slur by %s" % m.group())
+						warn("\nIgnore: alter slur by %s" % m.group())
 						p = left[0]
 						if p == ':':
 							left = left[1:]
 							m = re.match(r'\A([1-7])([1-7])', left)
 							left = left[len(m.group()):]
-							sys.stderr.write("\nIgnore: alter slur slope by %s" % m.group())
+							warn("\nIgnore: alter slur slope by %s" % m.group())
 			elif p in 'fnhH':
-				sys.stderr.write("\nIgnore: alter slur curvature by %s" % p)
+				warn("\nIgnore: alter slur curvature by %s" % p)
 			elif p == 'p':
 				m = re.match(r'\A([+-])([st])')
-				sys.stderr.write("\nIgnore: alter slur height %s" % m.group())
+				warn("\nIgnore: alter slur height %s" % m.group())
 			elif p == 's':
 				m = re.match(r'\A(-?[0-9])(-?[0-9])', left)
-				sys.stderr.write("\nIgnore: alter broken slur by %s" % m.group())
+				warn("\nIgnore: alter broken slur by %s" % m.group())
 				left = left[len(m.group()):]
 				p = left[0]
 				if p == 's':
 					left = left[1:]
 					m = re.match(r'\A(-?[0-9])(-?[0-9])', left)
-					sys.stderr.write("\nIgnore: alter broken slur by %s" % m.group())
+					warn("\nIgnore: alter broken slur by %s" % m.group())
 
 		if c == 's':
 			v.toggle_slur(id)
@@ -2524,7 +2533,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 
 
 	def parsex (self,left):
-		sys.stderr.write("\nFIXME: handle 'x' command")
+		warn("\nFIXME: handle 'x' command")
 		left = left[1:]
 		while left[0] in DIGITS:
 			left = left[1:]
@@ -2571,7 +2580,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				f = left.find(SPACE)
 				part_base = left[0:f]
 				left = left[f:]
-				sys.stderr.write('\nFIXME: set scor2prt file names to \'%s\'' % part_base)
+				warn('\nFIXME: set scor2prt file names to \'%s\'' % part_base)
 			elif c == 'p':
 				# ignore the curvature options
 				left = re.sub('\A(([-+][stch])|l)+', '', left)
@@ -2583,7 +2592,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				f = left.find(SPACE)
 				filename = left[0:f]
 				left = left[f:]
-				sys.stderr.write('\nFIXME: include file \'%s\'' % filename)
+				warn('\nFIXME: include file \'%s\'' % filename)
 			elif c == 'S':
 				while left[0] in '-0':
 					left = left[1:]
@@ -2651,7 +2660,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 	def restart_repeat(self):
 		# sys.stderr.write("\nFIXME: restart a repeat in the timeline")
 		if self.volta:
-			sys.stderr.write("\nWarning: assume the repeat restart is handled by the volta")
+			warn("\nWarning: assume the repeat restart is handled by the volta")
 		else:
 			self.close_repeat()
 			self.open_repeat()
@@ -2671,7 +2680,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		if self.volta:
 			self.timeline.add_nonchord(VoltaClose(self.last_repeat))
 		else:
-			sys.stderr.write("\nFIXME: volta close outside repeat")
+			warn("\nFIXME: volta close outside repeat")
 
 
 	def parse_body (self, left):
@@ -2723,7 +2732,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				left = left[1:]
 				left = re.sub(r'\A[lr\d]*', '', left)
 			elif c == 'I':
-				sys.stderr.write('\nFIXME: support MIDI options')
+				warn('\nFIXME: support MIDI options')
 				left = left[1:]
 				left = re.sub(r'\A\S*', '', left)
 			elif c in '[]':
@@ -2744,7 +2753,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				left = left[1:]
 			elif c == 'T':
 				if not left[1] in 'ict':
-					sys.stderr.write ("""
+					warn ("""
 Huh? Unknown T parameter `%s', before `%s'""" % (left[1], left[:20] ))
 					left = left[1:]
 					continue
@@ -2817,30 +2826,30 @@ Huh? Unknown T parameter `%s', before `%s'""" % (left[1], left[:20] ))
 					if option_page_breaks:
 						self.timeline.add_nonchord(Break('\\pageBreak'))
 				if left[0] == 'M':
-					sys.stderr.write('\nFIXME: handle movement breaks')
+					warn('\nFIXME: handle movement breaks')
 					left = left[1:]
 					while not left[0] in SPACE:
 						left = left[1:]
 				elif option_line_breaks:
 					self.timeline.add_nonchord(Break('\\break'))
 			elif c == 'P':
-				sys.stderr.write('\FIXME: set page number')
+				warn('\FIXME: set page number')
 				left = left[1:]
 			elif c == 'X':
 				left = left[1:]
-				sys.stderr.write("\nIgnore: no horizontal shift");
+				warn("\nIgnore: no horizontal shift");
 				while left[0] in '-.0123456789p:SPB':
 					left = left[1:]
 			elif c == '\\':
 				(left, result, post) = self.parse_tex_function(left)
 				if post != '':
-					sys.stderr.write("\nFIXME: parse_body has post '%s'" % post)
+					warn("\nFIXME: parse_body has post '%s'" % post)
 			elif c in 'wh':
 				# ignore page size directives
 				while left[1] in '0123456789.imp':
 					left = left[1:]
 			else:
-				sys.stderr.write ("""
+				warn ("""
 Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))
 				left = left[1:]
 
