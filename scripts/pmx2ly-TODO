@@ -31,6 +31,7 @@
  DONE:
 ------
 
+- fix slurs that turn out to be ties: ( <note> st
 - pickup for timeline
 - line breaks
   ** command-line option -- no support for numbered line breaks

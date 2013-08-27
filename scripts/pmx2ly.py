@@ -246,7 +246,7 @@ class Tie:
 		e = self.end_chord
 
 		if e and s:
-			s.note_suffix = s.note_suffix + '~'
+			s.chord_suffix = s.chord_suffix + '~'
 			# check if the first note is altered. If so, copy the
 			# alteration to the second note.
 			for p in s.pitches:
@@ -256,6 +256,8 @@ class Tie:
 					if op == oq and np == nq and ap != aq:
 						e.pitches[i] = (oq, nq, ap, fq)
 		else:
+			if s:
+				s.chord_suffix = s.chord_suffix + '~'
 			sys.stderr.write ("\nOrphaned tie")
 
 
@@ -376,28 +378,42 @@ class Voice:
 			raise Exception("Already have a pending tie", "")
 		self.pending_tie = Tie(id)
 
+	def replace_tie(self, slur):
+		tie = Tie(slur.id)
+		tie.start_chord = slur.start_chord
+		tie.end_chord = self.chords[-1]
+		self.ties.append(tie)
+
 	def end_tie (self, id):
-		for s in self.current_ties:
-			if s.id == id:
-				self.current_ties.remove (s)
-				s.end_chord = self.chords[-1]
+		for tie in self.current_ties:
+			if tie.id == id:
+				self.current_ties.remove(tie)
+				tie.end_chord = self.chords[-1]
 				return True
 		return False
 
 	def toggle_tie (self, id):
 		if not self.end_tie(id):
-			s = Tie(id)
-			s.start_chord = self.chords[-1]
-			self.current_ties.append (s)
-			self.ties.append (s)
+			tie = Tie(id)
+			tie.start_chord = self.chords[-1]
+			self.current_ties.append(tie)
+			self.ties.append(tie)
 
 	def start_slur(self, id):
 		self.pending_slur = Slur(id)
 
+	def remove_slur(self, id):
+		for s in self.current_slurs:
+			if s.id == id:
+				self.current_slurs.remove(s)
+				self.slurs.remove(s)
+				return s
+		return None
+
 	def end_slur(self, id):
 		for s in self.current_slurs:
 			if s.id == id:
-				self.current_slurs.remove (s)
+				self.current_slurs.remove(s)
 				s.end_chord = self.chords[-1]
 				return True
 		return False
@@ -406,8 +422,8 @@ class Voice:
 		if not self.end_slur(id):
 			s = Slur(id)
 			s.start_chord = self.chords[-1]
-			self.current_slurs.append (s)
-			self.slurs.append (s)
+			self.current_slurs.append(s)
+			self.slurs.append(s)
 
 	def handle_pending(self):
 		if self.pending_slur:
@@ -417,10 +433,10 @@ class Voice:
 			self.slurs.append (s)
 			self.pending_slur = None
 		if self.pending_tie:
-			s = self.pending_tie
-			s.start_chord = self.chords[-1]
-			self.current_ties.append (s)
-			self.ties.append (s)
+			tie = self.pending_tie
+			tie.start_chord = self.chords[-1]
+			self.current_ties.append(tie)
+			self.ties.append(tie)
 			self.pending_tie = None
 		if self.pending_grace:
 			s = self.pending_grace
@@ -1037,8 +1053,6 @@ class Parser:
 			s.number = i
 			s.set_key(self.keysig)
 			s.set_accidental_mode(self.accidental_mode)
-			if len(self.instruments) > i:
-				s.instrument_name = self.instruments[i]
 			for v in s.voices:
 				v.set_meter(self.meter, self.pickup)
 			i = i+1
@@ -1193,32 +1207,30 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 		alteration_flags = 0
 		while left[0] in '+-<>ciA':
 			c = left[0]
+			left = left[1:]
 			if False:
 				pass
 			elif c in '+-':
 				sys.stderr.write("\nIgnore: no alteration shift")
-				m = re.match('\A([+-][0-9]+)([+-][0-9]+)', left)
+				m = re.match('\A([0-9]+)([+-][0-9]+)', left)
 				if not m:
+					left = c + left
 					break	# the +- is not an alteration, it's an octave
-				left = left[len(m.group()) - 1:]
+				left = left[len(m.group()):]
 			elif c in '<>':
 				sys.stderr.write("\nIgnore: no alteration shift")
-				left = left[1:]
 				if not left[0] in '-.0123456789':
-					raise Exception("alteration shift malformed", c + left[:1])
+					raise Exception("alteration shift malformed", c + left[0])
 				while left[0] in '-.0123456789]':
 					left = left[1:]
 			elif c == 'c':
 				alteration_flags = alteration_flags | FLAG_CAUTIONARY;
-				left = left[1:]
 			elif c == 'i':
 				alteration_flags = alteration_flags | FLAG_SUPPRESS;
-				left = left[1:]
 			elif c == 'A':
 				sys.stderr.write("\nFIXME: accidental post order")
-				if left[1] == 'o':
+				if left[0] == 'o':
 					left = left[1:]
-			left = left[1:]
 
 		return (left, alteration, alteration_flags)
 
@@ -1281,22 +1293,23 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 		if left[0] == 'G':
 			(left, grace, basic_duration) = self.parse_grace(left)
 
+		v = self.current_voice()
 		if left[0] == 'z':
 			chord_continuation = True
-			ch = self.current_voice().last_chord()
+			ch = v.last_chord()
 			left = left[1:]
 		else:
 			chord_continuation = False
 			ch = Chord ()
-			ch.time = self.current_voice().time
-			ch.bar = self.current_voice().bar
-			self.current_voice().add_chord (ch)
+			ch.time = v.time
+			ch.bar = v.bar
+			v.add_chord (ch)
 
 		if grace:
-			self.current_voice().pending_grace = grace
-		pending_grace = self.current_voice().pending_grace
+			v.pending_grace = grace
+		pending_grace = v.pending_grace
 
-		self.current_voice().handle_pending()
+		v.handle_pending()
 
 		# what about 's'?
 		if left[0] == 'r':
@@ -1318,7 +1331,7 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 		extra_oct = 0
 		flats = 0
 		sharps = 0
-		while left[0] in '0123456789dsfnuleraber.,+-S':
+		while left[0] in '0123456789dsfnuleraber+-.,SDF':
 			c = left[0]
 			left = left[1:]
 			if False:
@@ -1343,7 +1356,7 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 				if m:
 					sys.stderr.write("\nIgnore: no dot horizontal/vertical shift")
 					left = left[len(m.group()):]
-			elif c in 'fns':
+			elif c in 'sfn':
 				(left, alteration, alteration_flags) = self.parse_alteration(c, left)
 			elif c in 'ul':
 				sys.stderr.write("\nFIXME: stem direction")
@@ -1398,16 +1411,16 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 
 		if name <> None and octave == None:
 			e = 0
-			if self.current_voice().last_name < name and name - self.current_voice().last_name > 3:
+			if v.last_name < name and name - v.last_name > 3:
 				e = -1
-			elif self.current_voice().last_name > name and self.current_voice().last_name - name > 3:
+			elif v.last_name > name and v.last_name - name > 3:
 				e = 1
 
-			octave = self.current_voice().last_oct  + e + extra_oct
+			octave = v.last_oct  + e + extra_oct
 
 		if name <> None:
-			self.current_voice().last_oct = octave
-			self.current_voice().last_name = name
+			v.last_oct = octave
+			v.last_name = name
 
 		if name <> None:
 			ch.pitches.append ((octave, name, 0, 0))
@@ -1431,7 +1444,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			# If current time fills the bar, start a new bar, and reset
 			# incidental alterations.
 			if multibar != 0:
-				self.current_voice().time = self.meter.to_rat()
+				v.time = self.meter.to_rat()
 			else:
 				if basic_duration == 0.5:
 					t = (count * 2, 1)
@@ -1443,23 +1456,23 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 					t = rat_multiply(t, (3, 2))
 				if self.tuplets_expected > 0:
 					t = rat_multiply(t, (self.tuplets[-1].replaces, self.tuplets[-1].number))
-				self.current_voice().time = rat_add(self.current_voice().time, t)
-				# sys.stderr.write("%s: add time %d/%d\n" % (self.current_voice().idstring(), t[0], t[1]))
+				v.time = rat_add(v.time, t)
+				# sys.stderr.write("%s: add time %d/%d\n" % (v.idstring(), t[0], t[1]))
 
-			# sys.stderr.write("%s: check current bar %d time %d/%d against bar time %d/%d\n" % (self.current_voice().idstring(), self.current_voice().bar, self.current_voice().time[0], self.current_voice().time[1], self.meter.to_rat()[0], self.meter.to_rat()[1]))
-			if self.current_voice().time == self.meter.to_rat():
-				self.current_voice().time = (0, 1)
+			# sys.stderr.write("%s: check current bar %d time %d/%d against bar time %d/%d\n" % (v.idstring(), v.bar, v.time[0], v.time[1], self.meter.to_rat()[0], self.meter.to_rat()[1]))
+			if v.time == self.meter.to_rat():
+				v.time = (0, 1)
 				if multibar > 0:
-					self.current_voice().bar += multibar
+					v.bar += multibar
 				else:
-					self.current_voice().bar += 1
-				if self.current_voice() == self.current_staff().voices[0]:
+					v.bar += 1
+				if v == self.current_staff().voices[0]:
 					self.current_staff().reset_alterations()
-				barnumber = Barnumber(self.current_voice().bar, self.meter)
-				self.current_voice ().add_nonchord(barnumber)
-				# sys.stderr.write("%s: increase bar count to %d\n" % (self.current_voice().idstring(), self.current_voice().bar))
-				if self.current_voice() == self.staffs[0].voices[0]:
-					self.add_skip_bars(self.timeline, self.current_voice().bar)
+				barnumber = Barnumber(v.bar, self.meter)
+				v.add_nonchord(barnumber)
+				# sys.stderr.write("%s: increase bar count to %d\n" % (v.idstring(), v.bar))
+				if v == self.staffs[0].voices[0]:
+					self.add_skip_bars(self.timeline, v.bar)
 					# sys.stderr.write("Added bar %d to timeline\n" % barnumber.number)
 
 		if multibar == 0:
@@ -1467,7 +1480,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				self.tuplets[-1].add_chord (ch)
 				self.tuplets_expected = self.tuplets_expected - 1
 				if self.tuplets_expected == 0:
-					self.current_voice().add_nonchord(TupletEnd())
+					v.add_nonchord(TupletEnd())
 					self.last_basic_duration = self.last_tuplet_duration
 
 		return left
@@ -1985,7 +1998,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		left = left[len(m.group()):]
 		if m.groups()[0] == 'at':
 			m = re.match(r'\A\S+', len)
-			left = left[len(m.group())]
+			left = left[len(m.group()):]
 		elif m.groups()[0] == 'scaled':
 			if left.startswith('\\magstep'):
 				left = left[len('\\magstep'):]
@@ -2247,12 +2260,21 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		off = 0
 		(no_staffs, no_instruments) = tuple(numbers[off:2])
 		off = off + 2
+
+		staves = [0] * no_instruments
 		if no_instruments < 0:
 			no_instruments = -no_instruments
-			instrument = [0] * no_instruments
 			for i in range(no_instruments):
-				instrument[i] = numbers[off]
+				staves[i] = numbers[off]
 				off = off + 1
+		elif no_instruments < no_staffs:
+			staves[0] = no_staffs - no_instruments + 1
+			for i in range(no_instruments - 1):
+				staves[i] = 1
+		else:
+			for i in range(no_instruments):
+				staves[i] = 1
+
 		(timesig_num, timesig_den, ptimesig_num, ptimesig_den, pickup_beats, keysig_number) = tuple (numbers[off:off + 6])
 		(no_pages,no_systems, musicsize, fracindent) = tuple (numbers[off + 6:])
 
@@ -2266,20 +2288,24 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		# ignore this.
 		# opening = map (string.atoi, re.split ('[\t ]+', opening))
 
-		while len (self.instruments) < no_instruments:
-			if ls[0][0] == '\\':
-				ls[0] = self.parse_tex(ls[0])[1]
-			self.instruments.append(ls[0].strip(SPACE))
-			ls = ls[1:]
-
-		l = ls[0]
-		ls = ls[1:]
-
 		self.set_staffs (no_staffs)
 
+		staff = 0
+		for s in staves:
+			if ls[0][0] == '\\':
+				ls[0] = self.parse_tex(ls[0])[1]
+			line = ls[0].strip(SPACE)
+			ls = ls[1:]
+			for i in range(s):
+				self.staffs[staff].instrument_name = line
+				staff = staff + 1
+
+		line = ls[0]
+		ls = ls[1:]
+
 		for s in self.staffs:
-			s.set_clef(l[0])
-			l = l[1:]
+			s.set_clef(line[0])
+			line = line[1:]
 
 		# dump path
 		ls = ls[1:]
@@ -2355,9 +2381,10 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 
 		(id, left) = self.parse_id(left)
 
+		v = self.current_voice()
 		slur_direction = DIRECTION_NEUTRAL
 		slur_fill = FILL_SOLID
-		while len(left) > 0 and left[0] in 'udltb+-fnhHspst':
+		while len(left) > 0 and left[0] in 'udltb+-fnhHps':
 			p = left[0]
 			left = left[1:]
 			if False:
@@ -2367,7 +2394,18 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			elif p in 'dl':
 				slur_direction = DIRECTION_DOWN
 			elif p == 't':
-				c = 't'
+				if c == ')':
+					c = 'T'
+				elif c == '(':
+					# c = '{'
+					pass
+				elif c == 's':
+					if v.current_slurs:
+						c = 'T'
+					else:
+						c = 't'
+				else:
+					sys.stderr.write('\nOopps... what is this directive: %s' % (c + p))
 			elif p == 'b':
 				slur_fill = FILL_DOTTED
 			elif p in '+-':
@@ -2408,17 +2446,20 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 					sys.stderr.write("\nIgnore: alter broken slur by %s" % m.group())
 
 		if c == 's':
-			self.current_voice().toggle_slur(id)
+			v.toggle_slur(id)
 		elif c == '(':
-			self.current_voice().start_slur(id)
+			v.start_slur(id)
 		elif c == ')':
-			self.current_voice().end_slur(id)
+			v.end_slur(id)
 		elif c == 't':
-			self.current_voice().toggle_tie(id)
+			v.toggle_tie(id)
 		elif c == '{':
-			self.current_voice().start_tie(id)
+			v.start_tie(id)
 		elif c == '}':
-			self.current_voice().end_tie(id)
+			v.end_tie(id)
+		elif c == 'T':
+			s = v.remove_slur(id);
+			v.replace_tie(s)
 
 		return left
 
