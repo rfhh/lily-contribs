@@ -279,8 +279,9 @@ class Slur:
 
 
 class Grace:
-	def __init__ (self, items, slashed, slurred, after, direction):
+	def __init__ (self, items, item_duration, slashed, slurred, after, direction):
 		self.items = items
+		self.item_duration = item_duration
 		self.pending = items
 		self.slashed = slashed
 		self.slurred = slurred
@@ -965,6 +966,16 @@ basicdur_table = {
 	6: 64
 	}
 
+halftime_table = {
+	0.5:	7,
+	1:	2,
+	2:	4,
+	4:	8,
+	8:	1,
+	16:	3,
+	32:	6,
+	}
+
 
 ornament_table = {
 	't': '\\prall',
@@ -1138,7 +1149,7 @@ class Parser:
 		items = -1
 		after = 0
 		direction = 0
-		basic_duration = 8
+		item_duration = 8
 		# process the grace note options
 		while left[0] in '0123456789msxluAWX':
 			c = left[0]
@@ -1148,7 +1159,7 @@ class Parser:
 					sys.stderr.write("""
 Huh? expected number of grace note beams, found %s Left was `%s'""" % (left[0], left[:20]))
 				else:
-					basic_duration = 4 << (ord(left[0]) - ord('0'))
+					item_duration = 4 << (ord(left[0]) - ord('0'))
 					left = left[1:]
 			elif c == 's':
 				slurred = 1
@@ -1175,9 +1186,9 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 		if items == -1:
 			items = 1
 		# sys.stderr.write("Detect grace items %d\n" % items)
-		grace = Grace(items, slashed, slurred, after, direction)
+		grace = Grace(items, item_duration, slashed, slurred, after, direction)
 
-		return (left, grace, basic_duration)
+		return (left, grace)
 
 
 	def parse_rest(self, left):
@@ -1285,13 +1296,13 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 		return (left, tup, dots)
 
 
-	def parse_note (self, left):
+	def parse_note(self, left):
 		name = None
 		ch = None
 
 		grace = None
 		if left[0] == 'G':
-			(left, grace, basic_duration) = self.parse_grace(left)
+			(left, grace) = self.parse_grace(left)
 
 		v = self.current_voice()
 		if left[0] == 'z':
@@ -1308,8 +1319,21 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 		if grace:
 			v.pending_grace = grace
 		pending_grace = v.pending_grace
+		if pending_grace:
+			basic_duration = pending_grace.item_duration
 
 		v.handle_pending()
+
+		durdigit = None
+		count = 1
+		forced_duration  = 0
+		dots = 0
+		octave = None
+		alteration = None
+		alteration_flags = 0
+		extra_oct = 0
+		flats = 0
+		sharps = 0
 
 		# what about 's'?
 		if left[0] == 'r':
@@ -1317,20 +1341,17 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 			(left, multibar) = self.parse_rest(left)
 		else:
 			multibar = 0
-			name = (ord (left[0]) - ord('a') + 5) % 7
+			if left[0] in '.,':
+				left = left[1:]
+				try:
+					durdigit = halftime_table[self.last_basic_duration]
+				except KeyError:
+					sys.stderr.write ("""
+Huh? expected duration; last_basic_duration is `%d'""" % self.last_basic_duration)
+			name = (ord(left[0]) - ord('a') + 5) % 7
 			# sys.stderr.write("Process note '%s' name '%d'\n" % (left[0], name))
 			left = left[1:]
 
-		count = 1
-		forced_duration  = 0
-		dots = 0
-		octave = None
-		durdigit = None
-		alteration = None
-		alteration_flags = 0
-		extra_oct = 0
-		flats = 0
-		sharps = 0
 		while left[0] in '0123456789dsfnuleraber+-.,SDF':
 			c = left[0]
 			left = left[1:]
@@ -1372,9 +1393,13 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 				extra_oct = extra_oct - 1
 			elif c == '.':
 				dots = dots + 1
+				left = c + left
 				forced_duration = 3
+				break
 			elif c == ',':
+				left = c + left
 				forced_duration = 2
+				break
 			elif c == 'S':
 				sys.stderr.write("\nFIXME: stem length")
 				while left[0] in DIGITS:
@@ -1397,10 +1422,10 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 
 				basic_duration = 4
-		elif not grace:
+		elif not pending_grace:
 			basic_duration = self.last_basic_duration
 
-		if not grace:
+		if not pending_grace:
 			self.last_basic_duration = basic_duration
 
 		if left[0] == 'x':
@@ -2290,7 +2315,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		elif no_instruments < no_staffs:
 			staves[0] = no_staffs - no_instruments + 1
 			for i in range(no_instruments - 1):
-				staves[i] = 1
+				staves[i + 1] = 1
 		else:
 			for i in range(no_instruments):
 				staves[i] = 1
@@ -2374,6 +2399,11 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				else:
 					sys.stderr.write("\nFIXME: trill spanner")
 			e.scripts.append('-' + orn)
+			if left[0] in '+-':
+				sys.stderr.write('\nIgnore: no ornament positioning')
+				left = left[1:]
+				while left[0] in '-.0123456789':
+					left = left[1:]
 		return left
 
 
@@ -2669,7 +2699,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				f = string.find (left, '\n')
 				self.timeline.add_mark(direction, left[:f])
 				left = left[f+1:]
-			elif c in 'Gzabcdefgr':
+			elif c in 'Gzabcdefgr.,':
 				left = self.parse_note(left)
 			elif c in DIGITS + 'n#-':
 				left = self.parse_basso_continuo(left)
