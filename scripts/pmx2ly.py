@@ -507,7 +507,8 @@ class Voice:
 		else:
 			direction = '\\once \\override Score.RehearsalMark #\'direction = #DOWN '
 		text = re.sub('~', '\char ##x00A0 ', text)
-		ch.chord_suffix = ch.chord_suffix + ' ' + direction + "\\mark \\markup{" + text + "}"
+		text = re.sub(r'\\', r'\\\\', text)
+		ch.chord_suffix = ch.chord_suffix + ' ' + direction + "\\mark \\markup{\"" + text + "\"}"
 
 
 	def dump (self):
@@ -1439,6 +1440,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			left = left[1:]
 			(left, tup, first_dots) = self.parse_tuplet(left, basic_duration, dots)
 			dots = 0
+		if self.tuplets_expected > 0:
 			self.last_tuplet_duration = basic_duration
 			basic_duration = self.tuplets[-1].note_base
 
@@ -1505,7 +1507,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 					self.current_staff().reset_alterations()
 				barnumber = Barnumber(v.bar, self.meter)
 				v.add_nonchord(barnumber)
-				# sys.stderr.write("%s: increase bar count to %d\n" % (v.idstring(), v.bar))
+				# sys.stderr.write("\n%s: increase bar count to %d" % (v.idstring(), v.bar))
 				if v == self.staffs[0].voices[0]:
 					self.add_skip_bars(self.timeline, v.bar)
 					# sys.stderr.write("Added bar %d to timeline\n" % barnumber.number)
@@ -2694,20 +2696,26 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				left = left[f+1:]
 			elif c == 'm':
 				left = self.parse_meter(left)
-			elif left[0] in 'lh':
-				if left[0] == 'l':
-					direction = -1
-				else:
-					direction = 1
-				f = string.find (left, '\n')
-				if f <0 :
-					left = ''
-				else:
-					left = left[f+1:]
+			elif left[0] in 'lhw':
+				if left[0] in '+-' + SPACE:
+					if left[0] == 'l':
+						direction = -1
+					else:
+						direction = 1
+					f = string.find (left, '\n')
+					if f <0 :
+						left = ''
+					else:
+						left = left[f+1:]
 
-				f = string.find (left, '\n')
-				self.timeline.add_mark(direction, left[:f])
-				left = left[f+1:]
+					f = string.find (left, '\n')
+					self.timeline.add_mark(direction, left[:f])
+					left = left[f+1:]
+				elif c in 'wh':
+					# ignore page size directives
+					left = left[1:]
+					while len(left) > 0 and left[0] in '0123456789.imp':
+						left = left[1:]
 			elif c in 'Gzabcdefgr.,':
 				left = self.parse_note(left)
 			elif c in DIGITS + 'n#-':
@@ -2746,6 +2754,9 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 					v = self.current_staff().next_voice()
 					self.catch_up(self.current_voice(), bar)
 				self.next_staff()
+				left = left[1:]
+				while left[0] != '\n':
+					left = left[1:]
 				left = self.parse_barcheck(left)
 			# elif c == '\\':
 			# 	left = self.parse_mumbo_jumbo(left)
@@ -2844,10 +2855,6 @@ Huh? Unknown T parameter `%s', before `%s'""" % (left[1], left[:20] ))
 				(left, result, post) = self.parse_tex_function(left)
 				if post != '':
 					warn("\nFIXME: parse_body has post '%s'" % post)
-			elif c in 'wh':
-				# ignore page size directives
-				while left[1] in '0123456789.imp':
-					left = left[1:]
 			else:
 				warn ("""
 Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))

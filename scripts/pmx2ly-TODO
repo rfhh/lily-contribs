@@ -4,7 +4,6 @@
 ------
 
 - merge voices when one of them is silent, so it can be a \oneVoice
-- enclose \command stuff in "quotes" in markup
 - tuplets upper number must be uprounded by multiplying by power of 2: 4/6 iso 2/6 etc
 - accidentals must work through grace time. This requires some refactoring: add grace time...
 - afterGrace
@@ -33,6 +32,9 @@
  DONE:
 ------
 
+- enclose \command stuff in "quotes" in markup
+  ** also replace \ with \\
+  ** problem goes away anyway w/ correct [hw]<x>m? header/footer parsing
 - note length within graces: it has forgotten its multiplier.
 - '.' duration shorthand
 - fix slurs that turn out to be ties: ( <note> st
