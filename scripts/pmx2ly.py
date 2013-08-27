@@ -1630,6 +1630,13 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			'\\mtxVerse':		('', self.tex_require),
 
 			# MusiXTeX
+			'\\setlyrics':		('pp', self.tex_set_lyrics),
+			'\\assignlyrics':	('tp', self.tex_assign_lyrics),
+			'\\lyrlink':		('', self.tex_lyr_link),
+			'\\lowlyrlink':		('', self.tex_lyr_link),
+			'\\setsongraise':	('tp', self.tex_ignore),
+			'\\beginmel':		('', self.tex_melisma_begin),
+			'\\endmel':		('', self.tex_melisma_end),
 			'\\zcharnote':		('ap', self.tex_add_markup),
 			'\\lcharnote':		('ap', self.tex_require),
 			'\\ccharnote':		('ap', self.tex_require),
@@ -1694,7 +1701,10 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			'\\hfill':		('', self.tex_require),
 			'\\hoffset':		('=', self.tex_ignore),
 			'\\voffset':		('=', self.tex_ignore),
-			'\\kern':		('d', self.tex_ignore)
+			'\\vsize':		('=', self.tex_ignore),
+			'\\kern':		('d', self.tex_ignore),
+			'\\write':		('pp', self.tex_ignore),
+			'\\setsize':		('pp', self.tex_ignore),
 		}
 
 
@@ -2024,6 +2034,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		#  - ' ' <string>
 		#  - \<function>...
 
+		dimension = r'(pt|\\noteskip|\\internote|cm|truemm|mm|in)'
 		out = []
 		i = 0
 		finished = len(params) == 0
@@ -2046,7 +2057,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 					elif params[i] == 'l':
 						m = re.match(r'\A[^\n]+', left)
 					elif params[i] == 'd':
-						m = re.match(r'\A-?[0-9.]+(pt|\\noteskip|cm|mm|in)', left)
+						m = re.match(r'\A-?[0-9.]+' + dimension, left)
 					elif params[i] == 'p':
 						m = re.match(r'\A\S+', left)
 					else:
@@ -2071,7 +2082,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 					continue
 			elif left[0] in '-0123456789.':
 				# sys.stderr.write("\nFIXME: what if this is a dimension, not just a number?")
-				m = re.match(r'\A-?[0-9.]+(pt|\\noteskip|cm|mm|in)?', left)
+				m = re.match(r'\A-?[0-9.]+' + dimension + '?', left)
 				out.append(m.group())
 				left = left[len(m.group()):]
 			elif params[i] == '*' and left[0] == '}':
