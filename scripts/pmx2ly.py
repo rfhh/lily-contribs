@@ -1400,14 +1400,15 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		elif not grace:
 			basic_duration = self.last_basic_duration
 
+		if not grace:
+			self.last_basic_duration = basic_duration
+
 		if left[0] == 'x':
 			left = left[1:]
 			(left, tup, first_dots) = self.parse_tuplet(left, basic_duration, dots)
 			dots = 0
 			self.last_tuplet_duration = basic_duration
 			basic_duration = self.tuplets[-1].note_base
-
-		self.last_basic_duration = basic_duration
 
 		if name <> None and octave == None:
 			e = 0
@@ -2798,9 +2799,7 @@ Huh? Unknown T parameter `%s', before `%s'""" % (left[1], left[:20] ))
 			elif c == 'X':
 				left = left[1:]
 				sys.stderr.write("\nIgnore: no horizontal shift");
-				if left[0] in 'S:':
-					left = left[1:]
-				while left[0] in "-.0123456789BP":
+				while left[0] in '-.0123456789p:SPB':
 					left = left[1:]
 			elif c == '\\':
 				(left, result, post) = self.parse_tex_function(left)

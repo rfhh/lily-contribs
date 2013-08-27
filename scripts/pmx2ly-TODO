@@ -3,6 +3,8 @@
  TODO:
 ------
 
+- '.' duration shorthand
+- note length within graces: it has forgotten its multiplier.
 - tuplets upper number must be uprounded by multiplying by power of 2: 4/6 iso 2/6 etc
 - accidentals must work through grace time. This requires some refactoring: add grace time...
 - afterGrace
