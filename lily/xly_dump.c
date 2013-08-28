@@ -566,7 +566,7 @@ dumpNote(mpq_t *t, symbol_p scan, voice_p voice)
     }
 
     if (note->stem->slur_start != NO_ID) {
-        fprintf(lily_out, "( ");
+        fprintf(lily_out, "(");
     }
 
     if (note->chord != NULL && ! (note->flags & FLAG_REST)) {
@@ -574,7 +574,7 @@ dumpNote(mpq_t *t, symbol_p scan, voice_p voice)
     }
 
     if (note->tie_start != NO_ID) {
-        fprintf(lily_out, " ~ ");
+        fprintf(lily_out, "~ ");
     }
 
     mpq_set(dt, note->duration);
