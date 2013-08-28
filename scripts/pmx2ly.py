@@ -40,8 +40,8 @@ def warn(string):
 		warnings.append(string)
 
 
-def encodeint (i):
-	return chr ( i  + ord ('A'))
+def encodeint(i):
+	return chr( i  + ord('A'))
 
 
 actab = {
@@ -53,13 +53,13 @@ actab = {
 }
 
 
-def pitch_to_lily_string (tup):
-	(o,n,a,f) = tup
+def pitch_to_lily_string(tup):
+	(o, n, a, f) = tup
 
 	if n == 's':
 		return n
 
-	nm = chr((n + 2) % OCTAVE + ord ('a'))
+	nm = chr((n + 2) % OCTAVE + ord('a'))
 	nm = nm + actab[a]
 	if o > 0:
 		nm = nm + "'" * o
@@ -74,7 +74,7 @@ def pitch_to_lily_string (tup):
 	return nm
 
 
-def gcd (a,b):
+def gcd(a, b):
 	if b == 0:
 		return a
 	c = a
@@ -85,28 +85,28 @@ def gcd (a,b):
 	return a
 
 
-def rat_simplify (r):
-	(n,d) = r
+def rat_simplify(r):
+	(n, d) = r
 	if d < 0:
 		d = -d
 		n = -n
 	if n == 0:
-		return (0,1)
+		return (0, 1)
 	else:
-		g = gcd (n, d)
+		g = gcd(n, d)
 		return (n/g, d/g)
 
 
-def rat_multiply (a,b):
-	(x,y) = a
-	(p,q) = b
+def rat_multiply(a, b):
+	(x, y) = a
+	(p, q) = b
 
-	return rat_simplify ((x*p, y*q))
+	return rat_simplify((x*p, y*q))
 
 
-def rat_divide (a,b):
-	(p,q) = b
-	return rat_multiply (a, (q,p))
+def rat_divide(a, b):
+	(p, q) = b
+	return rat_multiply(a, (q, p))
 
 
 tuplet_table = {
@@ -116,24 +116,24 @@ tuplet_table = {
 }
 
 
-def rat_add (a,b):
-	(x,y) = a
-	(p,q) = b
+def rat_add(a, b):
+	(x, y) = a
+	(p, q) = b
 
-	return rat_simplify ((x*q + p*y, y*q))
-
-
-def rat_neg (a):
-	(p,q) = a
-	return (-p,q)
+	return rat_simplify((x*q + p*y, y*q))
 
 
-def rat_larger (a,b):
-	return rat_subtract (a, b )[0] > 0
+def rat_neg(a):
+	(p, q) = a
+	return (-p, q)
 
 
-def rat_subtract (a,b ):
-	return rat_add (a, rat_neg (b))
+def rat_larger(a, b):
+	return rat_subtract(a, b )[0] > 0
+
+
+def rat_subtract(a, b ):
+	return rat_add(a, rat_neg(b))
 
 
 class Bar:
@@ -205,24 +205,24 @@ class Break:
 
 
 class Barcheck :
-	def __init__ (self):
+	def __init__(self):
 		pass
 
-	def dump (self):
+	def dump(self):
 		return ' |'
 
 
 class Barnumber :
-	def __init__ (self, number, meter):
+	def __init__(self, number, meter):
 		self.number = number
 		self.meter = meter
 
-	def dump (self):
+	def dump(self):
 		return ' | % ' + str(self.number + 1) + '\n   '
 
 
 class Meter :
-	def __init__ (self,num,denom):
+	def __init__(self, num, denom):
 		if denom == 3:
 			raise Exception('weird denom', basic_duration)
 		self.num = num
@@ -231,25 +231,25 @@ class Meter :
 	def to_rat(self):
 		return rat_simplify((self.num, self.denom))
 
-	def dump (self):
+	def dump(self):
 		return ' \\time ' + str(self.num) + "/" + str(self.denom) + '\n   '
 
 
 class Beam:
-	def __init__ (self, ch):
+	def __init__(self, ch):
 		self.char = ch
 
-	def dump (self):
+	def dump(self):
 		return self.char
 
 
 class Tie:
-	def __init__ (self,id):
+	def __init__(self, id):
 		self.id = id
 		self.start_chord = None
 		self.end_chord = None
 
-	def calculate (self):
+	def calculate(self):
 		s = self.start_chord
 		e = self.end_chord
 
@@ -266,16 +266,16 @@ class Tie:
 		else:
 			if s:
 				s.chord_suffix = s.chord_suffix + '~'
-			warn ("\nOrphaned tie")
+			warn("\nOrphaned tie")
 
 
 class Slur:
-	def __init__ (self,id):
+	def __init__(self, id):
 		self.id = id
 		self.start_chord = None
 		self.end_chord = None
 
-	def calculate (self):
+	def calculate(self):
 		s = self.start_chord
 		e = self.end_chord
 
@@ -283,11 +283,11 @@ class Slur:
 			s.note_suffix = s.note_suffix + '('
 			e.note_suffix = e.note_suffix + ')'
 		else:
-			warn ("\nOrphaned slur")
+			warn("\nOrphaned slur")
 
 
 class Grace:
-	def __init__ (self, items, item_duration, slashed, slurred, after, direction):
+	def __init__(self, items, item_duration, slashed, slurred, after, direction):
 		self.items = items
 		self.item_duration = item_duration
 		self.pending = items
@@ -327,14 +327,14 @@ class Melisma:
 		self.is_start = is_start
 
 	def dump(self):
-		if (self.is_start):
+		if self.is_start:
 			return " \\melisma"
 		else:
 			return " \\melismaEnd \\autoBeamOff"
 
 
 class Voice:
-	def __init__ (self):
+	def __init__(self):
 		self.entries = []
 		self.chords = []
 		self.staff = None
@@ -349,6 +349,7 @@ class Voice:
 		self.last_name = 0
 		self.last_oct = 0
 		self.lyrics = ''
+		self.lyrics_label = None
 
 		self.current_slurs = []
 		self.slurs = []
@@ -393,7 +394,7 @@ class Voice:
 		tie.end_chord = self.chords[-1]
 		self.ties.append(tie)
 
-	def end_tie (self, id):
+	def end_tie(self, id):
 		for tie in self.current_ties:
 			if tie.id == id:
 				self.current_ties.remove(tie)
@@ -401,7 +402,7 @@ class Voice:
 				return True
 		return False
 
-	def toggle_tie (self, id):
+	def toggle_tie(self, id):
 		if not self.end_tie(id):
 			tie = Tie(id)
 			tie.start_chord = self.chords[-1]
@@ -427,7 +428,7 @@ class Voice:
 				return True
 		return False
 
-	def toggle_slur (self, id):
+	def toggle_slur(self, id):
 		if not self.end_slur(id):
 			s = Slur(id)
 			s.start_chord = self.chords[-1]
@@ -438,8 +439,8 @@ class Voice:
 		if self.pending_slur:
 			s = self.pending_slur
 			s.start_chord = self.chords[-1]
-			self.current_slurs.append (s)
-			self.slurs.append (s)
+			self.current_slurs.append(s)
+			self.slurs.append(s)
 			self.pending_slur = None
 		if self.pending_tie:
 			tie = self.pending_tie
@@ -468,18 +469,18 @@ class Voice:
 			self.add_nonchord(self.pending_melisma)
 			self.pending_melisma = None
 
-	def last_chord (self):
+	def last_chord(self):
 		return self.chords[-1]
 
-	def add_chord (self, ch):
-		self.chords.append (ch)
-		self.entries.append (ch)
+	def add_chord(self, ch):
+		self.chords.append(ch)
+		self.entries.append(ch)
 
-	def add_nonchord (self, nch):
-		self.entries.append (nch)
+	def add_nonchord(self, nch):
+		self.entries.append(nch)
 
 	def add_skip_bar(self, count, basic_duration):
-		ch = Chord ()
+		ch = Chord()
 		self.add_chord(ch)
 		ch.multibar = 1
 		ch.skip = True
@@ -487,11 +488,11 @@ class Voice:
 		ch.basic_duration = basic_duration
 		ch.time = (0, 1)
 
-	def idstring (self):
+	def idstring(self):
 		if self.preset_id:
 			return self.preset_id
 		else:
-			return 'staff%svoice%s ' % (encodeint (self.staff.number) , encodeint(self.number))
+			return 'staff%svoice%s ' % (encodeint(self.staff.number) , encodeint(self.number))
 
 
 	def add_mark(self, elevation, text):
@@ -511,24 +512,24 @@ class Voice:
 		ch.chord_suffix = ch.chord_suffix + ' ' + direction + "\\mark \\markup{\"" + text + "\"}"
 
 
-	def dump (self):
+	def dump(self):
 		out = ''
 		ln = ''
 		for e in self.entries:
-			next = e.dump ()
+			next = e.dump()
 			if next != '' and next[-1] == '\n':
 				out = out + ln + next
 				ln = ''
 				continue
 
-			if 0 and len (ln) + len(next) > 72:
+			if 0 and len(ln) + len(next) > 72:
 				out = out + ln + '\n'
 				ln = ''
 			ln = ln + next
 
 
 		out = out  + ln
-		id = self.idstring ()
+		id = self.idstring()
 
 		lyrics = ''
 		if self.lyrics != '':
@@ -554,7 +555,7 @@ class Voice:
 			p = c
 
 
-	def calculate_graces (self):
+	def calculate_graces(self):
 		lastgr = 0
 		lastc = None
 		for c in self.chords:
@@ -568,14 +569,14 @@ class Voice:
 			lastc = c
 
 
-	def calculate (self):
+	def calculate(self):
 		# sys.stderr.write("Skip calculating graces\n")
-		# self.calculate_graces ()
+		# self.calculate_graces()
 		self.calculate_multibar()
 		for s in self.slurs:
-			s.calculate ()
+			s.calculate()
 		for t in self.ties:
-			t.calculate ()
+			t.calculate()
 		for g in self.graces:
 			g.calculate()
 		for s in self.chords:
@@ -585,7 +586,7 @@ class Voice:
 
 
 class Clef:
-	def __init__ (self, cl):
+	def __init__(self, cl):
 		self.type = cl
 
 	def dump(self):
@@ -609,7 +610,7 @@ key_table = {
 
 
 class Key:
-	def __init__ (self, key, bar, time):
+	def __init__(self, key, bar, time):
 		self.key = key
 		self.bar  = bar
 		self.time = time
@@ -671,8 +672,8 @@ clef_table = {
 
 
 class Staff:
-	def __init__ (self):
-		self.voices = (Voice (), Voice())
+	def __init__(self):
+		self.voices = (Voice(), Voice())
 		self.clef = None
 		self.voice_idx = 0
 		self.number = None
@@ -693,12 +694,12 @@ class Staff:
 	def set_accidental_mode(self, mode):
 		self.accidental_mode = mode
 
-	def set_clef (self, letter):
-		if clef_table.has_key (letter):
+	def set_clef(self, letter):
+		if clef_table.has_key(letter):
 			clstr = clef_table[letter]
-			self.voices[0].add_nonchord (Clef (clstr))
+			self.voices[0].add_nonchord(Clef(clstr))
 		else:
-			sys.stderr.write ("Clef type `%c' unknown\n" % letter)
+			sys.stderr.write("Clef type `%c' unknown\n" % letter)
 
 	def set_key(self, keysig):
 		self.key = keysig
@@ -713,10 +714,10 @@ class Staff:
 		self.alterations.append(AlterationReset(self.current_voice().bar,
 							self.current_voice().time))
 
-	def current_voice (self):
+	def current_voice(self):
 		return self.voices[self.voice_idx]
 
-	def next_voice (self):
+	def next_voice(self):
 		self.voice_idx = (self.voice_idx + 1) % len(self.voices)
 
 
@@ -796,18 +797,18 @@ class Staff:
 					ch.pitches[p] = (o, n, a, f)
 
 
-	def calculate (self):
+	def calculate(self):
 		for v in self.voices:
 			self.calculate_alteration(v)
 		for v in self.voices:
-			v.calculate ()
+			v.calculate()
 
 
-	def idstring (self):
-		return 'staff%s' % encodeint (self.number)
+	def idstring(self):
+		return 'staff%s' % encodeint(self.number)
 
 
-	def dump (self):
+	def dump(self):
 		nonempty = 0
 		for v in self.voices:
 			if v.nonempty:
@@ -822,7 +823,7 @@ class Staff:
 			for v in self.voices:
 				out = out + "\n\n" + v.dump()
 			for v in self.voices:
-				voice = '\n    \\' + v.idstring ()
+				voice = '\n    \\' + v.idstring()
 				if v != self.voices[0]:
 					refs = voice + ' \\\\' + refs
 				else:
@@ -836,7 +837,7 @@ class Staff:
 
 
 class Tuplet:
-	def __init__ (self, number, base, dots):
+	def __init__(self, number, base, dots):
 		self.chords = []
 		self.number = number
 		if dots == 1:
@@ -863,14 +864,14 @@ class Tuplet:
 		note_base = note_base / 2
 		self.note_base = note_base
 
-	def add_chord (self, ch):
+	def add_chord(self, ch):
 		ch.dots = 0
 		ch.basic_duration = self.note_base
-		self.chords.append (ch)
+		self.chords.append(ch)
 
-		if len (self.chords) == 1:
+		if len(self.chords) == 1:
 			ch.chord_prefix = '\\times %d/%d { ' % (self.replaces, self.number)
-		# elif len (self.chords) == self.number:
+		# elif len(self.chords) == self.number:
 		# 	ch.chord_suffix = ' }'
 
 	def dump(self):
@@ -893,7 +894,7 @@ PAPER_A4     = 0
 PAPER_LETTER = 1
 
 class Chord:
-	def __init__ (self):
+	def __init__(self):
 		self.pitches = []
 		self.dots = 0
 		self.count = 1
@@ -910,7 +911,7 @@ class Chord:
 		self.time = []
 		self.suppressed = False
 
-	def dump (self):
+	def dump(self):
 		if self.suppressed:
 			return ''
 
@@ -940,13 +941,13 @@ class Chord:
 		for p in self.pitches:
 			if v:
 				v = v + ' '
-			v = v + pitch_to_lily_string (p)
+			v = v + pitch_to_lily_string(p)
 
 		if self.skip:
 			v = v + 's'
-		elif len (self.pitches) > 1:
+		elif len(self.pitches) > 1:
 			v = '<%s>' % v
-		elif len (self.pitches) == 0:
+		elif len(self.pitches) == 0:
 			v = 'r'
 
 		v = v + sd
@@ -1027,7 +1028,7 @@ class M_TX:
 
 
 class Parser:
-	def __init__ (self, filename):
+	def __init__(self, filename):
 		self.staffs = []
 		self.timeline = Voice()
 		self.timeline.set_preset_id('timeLine')
@@ -1057,11 +1058,11 @@ class Parser:
 
 		self.tex_dispatch_table()
 
-		self.parse (filename)
+		self.parse(filename)
 
 
-	def set_staffs (self, number):
-		self.staffs = map (lambda x: Staff (), range(0, number))
+	def set_staffs(self, number):
+		self.staffs = map(lambda x: Staff(), range(0, number))
 
 		self.staff_idx = 0
 
@@ -1077,16 +1078,16 @@ class Parser:
 			i = i+1
 
 
-	def current_staff (self):
+	def current_staff(self):
 		return self.staffs[self.staff_idx]
 
 
-	def current_voice (self):
-		return self.current_staff ().current_voice ()
+	def current_voice(self):
+		return self.current_staff().current_voice()
 
 
-	def next_staff (self):
-		self.staff_idx = (self.staff_idx + 1)% len (self.staffs)
+	def next_staff(self):
+		self.staff_idx = (self.staff_idx + 1)% len(self.staffs)
 		self.current_staff().voice_idx = 0
 
 
@@ -1298,7 +1299,7 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 
 		tup = Tuplet(tupnumber, basic_duration, dots)
 		self.tuplets_expected = tupnumber
-		self.tuplets.append (tup)
+		self.tuplets.append(tup)
 		# self.current_voice().add_nonchord(tup)
 
 		return (left, tup, dots)
@@ -1319,10 +1320,10 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 			left = left[1:]
 		else:
 			chord_continuation = False
-			ch = Chord ()
+			ch = Chord()
 			ch.time = v.time
 			ch.bar = v.bar
-			v.add_chord (ch)
+			v.add_chord(ch)
 
 		if grace:
 			v.pending_grace = grace
@@ -1354,7 +1355,7 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 				try:
 					durdigit = halftime_table[self.last_basic_duration]
 				except KeyError:
-					sys.stderr.write ("""
+					sys.stderr.write("""
 Huh? expected duration; last_basic_duration is `%d'""" % self.last_basic_duration)
 			name = (ord(left[0]) - ord('a') + 5) % 7
 			# sys.stderr.write("Process note '%s' name '%d'\n" % (left[0], name))
@@ -1374,11 +1375,11 @@ Huh? expected duration; last_basic_duration is `%d'""" % self.last_basic_duratio
 						left = left[1:]
 					multibar = string.atoi(bars)
 				else:
-					durdigit = string.atoi (c)
+					durdigit = string.atoi(c)
 					if durdigit == 0:
 						durdigit = 7
 			elif c in DIGITS:
-				octave = string.atoi (c) - 3
+				octave = string.atoi(c) - 3
 			elif c == 'd':
 				dots = dots + 1
 				m = re.match(r'\A([+-][.\d]+)([+-][.\d]+)?', left)
@@ -1426,7 +1427,7 @@ Huh? expected duration; last_basic_duration is `%d'""" % self.last_basic_duratio
 			try:
 				basic_duration =  basicdur_table[durdigit]
 			except KeyError:
-				sys.stderr.write ("""
+				sys.stderr.write("""
 Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 
 				basic_duration = 4
@@ -1514,7 +1515,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 
 		if multibar == 0:
 			if self.tuplets_expected > 0:
-				self.tuplets[-1].add_chord (ch)
+				self.tuplets[-1].add_chord(ch)
 				self.tuplets_expected = self.tuplets_expected - 1
 				if self.tuplets_expected == 0:
 					v.add_nonchord(TupletEnd())
@@ -1523,7 +1524,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		return left
 
 
-	def parse_basso_continuo (self, left):
+	def parse_basso_continuo(self, left):
 		while left[0] in DIGITS +'#n-':
 			c = left[0]
 			left = left[1:]
@@ -1545,11 +1546,11 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 
 			scr = '_\\markup\\smaller{%s}' % scr
 
-			self.current_voice().last_chord ().scripts.append (scr)
+			self.current_voice().last_chord().scripts.append(scr)
 		return left
 
 
-	def parse_beams (self,left):
+	def parse_beams(self, left):
 		c = left[0]
 		if left[0] == '[':
 			left = left[1:]
@@ -1564,7 +1565,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		return left
 
 
-	def parse_key (self, left):
+	def parse_key(self, left):
 		key = ""
 		#The key is changed by a string of the form K[+-]<num>[+-]<num>
 		#where the first number is the transposition and the second number is the
@@ -1789,8 +1790,11 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 
 	def tex_set_lyrics(self, name, params):
 		(label, lyrics) = params
-		self.lyrics[label] = self.tex_expand_lyrics(lyrics)
-		# sys.stderr.write("\nSet lyrics{%s} to '%s'" % (label, lyrics))
+		if label in self.lyrics.keys():
+			self.lyrics[label] = self.lyrics[label] + "\n   " + self.tex_expand_lyrics(lyrics)
+		else:
+			self.lyrics[label] = self.tex_expand_lyrics(lyrics)
+		# sys.stderr.write("\nSet lyrics{%s} to '%s'" % (label, self.lyrics[label]))
 		return ('', '')
 
 
@@ -1803,7 +1807,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		(staff, label) = params
 		warn("\nAssign lyrics{%s} to staff[%s]" % (staff, label))
 		s = self.staffs[int(staff) - 1]
-		s.voices[s.lyrics_voice].lyrics = self.lyrics[label]
+		s.voices[s.lyrics_voice].lyrics_label = label
 		return ('', '')
 
 
@@ -1977,11 +1981,18 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 	}
 
 
-	def tex_expand_lyrics(self, lyrics):
+	def untex(self, t):
 		for k in self.accented.keys():
-			lyrics = lyrics.replace(k, self.accented[k])
-			if len(k) > 2 and k[2] in 'aeiou':
-				lyrics = lyrics.replace(k[:2] + '{' + k[2] + '}', self.accented[k])
+			if k in t:
+				pass
+			t = t.replace(k, self.accented[k])
+			if len(k) > 2:
+				t = t.replace(k[:2] + '{' + k[2] + '}', self.accented[k])
+		return t
+
+
+	def tex_expand_lyrics(self, lyrics):
+		self.untex(lyrics)
 		lyrics = re.sub(r'\s*@MTX_LYRLINK@\s+', '~', lyrics)
 		lyrics = re.sub('_', '~', lyrics)
 		lyrics = re.sub('-', ' -- ', lyrics)
@@ -2181,14 +2192,6 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		return (left, result, post)
 
 
-	def untex(self, t):
-		for k in self.accented.keys():
-			t = t.replace(k, self.accented[k])
-			if len(k) > 2:
-				t = t.replace(k[:2] + '{' + k[2] + '}', self.accented[k])
-		return t
-
-
 	def parse_tex(self, left):
 		# @return (left, words) where words is a string that is the expansion of input text
 
@@ -2196,25 +2199,30 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 
 		post = ''
 		words = ''
+		sep = ' '
 		while len(left) > 0 and left[0] != '}':
 			if left[0] in SPACE:
 				left = left[1:]
 			elif left[0] == '\\':
 				while left[1] == '\\':
 					left = left[1:]
-				m = re.match(r'\A\\([^A-Za-z]({.}|.))', left)
-				if m:
-					words = words + self.untex(m.group())
-					left = left[len(m.group()):]
+				if left[0] == ' ':
+					sep = ' '
 				else:
-					(left, w, p) = self.parse_tex_function(left)
-					if p != '':
-						warn("\nFIXME: parse_tex has post '%s'" % p)
-						post = post + ' ' + p
-					if words:
-						words = words + " " + w
+					m = re.match(r'\A\\([^A-Za-z]({.}|.))', left)
+					if m:
+						words = words + self.untex(m.group())
+						left = left[len(m.group()):]
 					else:
-						words = w
+						(left, w, p) = self.parse_tex_function(left)
+						if p != '':
+							warn("\nFIXME: parse_tex has post '%s'" % p)
+							post = post + ' ' + p
+						if words:
+							words = words + " " + w
+						else:
+							words = w
+					sep = ''
 			elif left[0] == '{':
 				(left, w) = self.parse_tex(left[1:])
 				if left[0] != '}':
@@ -2224,12 +2232,15 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				else:
 					words = w
 				left = left[1:]
+				sep = ''
 			else:
 				m = re.match(r'\A[^\\\s}]+', left)
+				w = self.untex(m.group())
 				if words:
-					words = words + " " + self.untex(m.group())
+					words = words + sep + w
 				else:
-					words = self.untex(m.group())
+					words = w
+				sep = ' '
 				left = left[len(m.group()):]
 
 		if post != '':
@@ -2273,12 +2284,12 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 	# -------------------------------------------------------------------------------------------
 
 
-	def parse_preamble  (self, ls):
+	def parse_preamble(self, ls):
 		def atonum(a):
 			if re.search('\\.', a):
-				return string.atof (a)
+				return string.atof(a)
 			else:
-				return string.atoi (a)
+				return string.atoi(a)
 
 		number_count = 12
 		numbers = []
@@ -2300,18 +2311,18 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				(tex_defs, result) = self.parse_tex(tex_defs)
 				# sys.stderr.write('\nFIXME: parse rest of TeX pre-header \'%s\'' % tex_defs)
 
-		while len (numbers) < number_count:
+		while len(numbers) < number_count:
 			opening = ls[0]
 			ls = ls[1:]
 
-			opening = re.sub ('[ \t\n]+', ' ', opening)
-			opening = re.sub ('^ ', '', opening)
-			opening = re.sub (' $', '', opening)
+			opening = re.sub('[ \t\n]+', ' ', opening)
+			opening = re.sub('^ ', '', opening)
+			opening = re.sub(' $', '', opening)
 			if opening == '':
 				continue
-			opening = string.split (opening, ' ')
+			opening = string.split(opening, ' ')
 
-			numbers = numbers + map (atonum, opening)
+			numbers = numbers + map(atonum, opening)
 
 		off = 0
 		(no_staffs, no_instruments) = tuple(numbers[off:2])
@@ -2331,8 +2342,8 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			for i in range(no_instruments):
 				staves[i] = 1
 
-		(timesig_num, timesig_den, ptimesig_num, ptimesig_den, pickup_beats, keysig_number) = tuple (numbers[off:off + 6])
-		(no_pages,no_systems, musicsize, fracindent) = tuple (numbers[off + 6:])
+		(timesig_num, timesig_den, ptimesig_num, ptimesig_den, pickup_beats, keysig_number) = tuple(numbers[off:off + 6])
+		(no_pages, no_systems, musicsize, fracindent) = tuple(numbers[off + 6:])
 
 		self.meter = Meter(timesig_num, timesig_den)
 		self.pickup = (pickup_beats, timesig_den)
@@ -2344,7 +2355,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		# ignore this.
 		# opening = map (string.atoi, re.split ('[\t ]+', opening))
 
-		self.set_staffs (no_staffs)
+		self.set_staffs(no_staffs)
 
 		staff = 0
 		for s in staves:
@@ -2369,9 +2380,9 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		# dump more ?
 		return ls
 
-	def parse_ornament (self, left):
+	def parse_ornament(self, left):
 		left = left[1:]
-		e = self.current_voice ().last_chord ()
+		e = self.current_voice().last_chord()
 
 		id = left[0]
 		left = left[1:]
@@ -2393,7 +2404,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			try:
 				orn = ornament_table[id]
 			except KeyError:
-				warn ("\nFIXME: unknown ornament `%s'\n" % id)
+				warn("\nFIXME: unknown ornament `%s'\n" % id)
 
 			if id == 'T':
 				if left[0] == 't':
@@ -2418,8 +2429,8 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		return left
 
 
-	def parse_barcheck (self, left):
-		self.current_voice ().add_nonchord (Barcheck ())
+	def parse_barcheck(self, left):
+		self.current_voice().add_nonchord(Barcheck())
 
 		return left [1:]
 
@@ -2427,7 +2438,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 	def parse_id(self, left):
 		id = None
 
-		if re.match ('\A[A-Z0-9]', left[0]):
+		if re.match('\A[A-Z0-9]', left[0]):
 			id = left[0]
 			left = left[1:]
 		while left[0] in 'uld0123456789+-.':
@@ -2436,7 +2447,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		return (id, left)
 
 
-	def parse_slur (self, left):
+	def parse_slur(self, left):
 		c = left[0]
 		left = left[1:]
 
@@ -2525,7 +2536,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		return left
 
 
-	def parse_mumbo_jumbo (self,left):
+	def parse_mumbo_jumbo(self, left):
 		left = left[1:]
 		while left and  left[0] <> '\\':
 			left = left[1:]
@@ -2534,7 +2545,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		return left
 
 
-	def parsex (self,left):
+	def parsex(self, left):
 		warn("\nFIXME: handle 'x' command")
 		left = left[1:]
 		while left[0] in DIGITS:
@@ -2551,7 +2562,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				pass
 			elif c == 'a':
 				# ignore, eat the number (float?)
-				while left[0] in '.0123456789':
+				while left[0] in '-.0123456789':
 					left = left[1:]
 			elif c in 'bs':
 				# ignore accidental size
@@ -2573,7 +2584,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				pass
 			elif c in 'Ii':
 				# ignore, eat the number (float?)
-				while left[0] in '.0123456789':
+				while left[0] in '-.0123456789':
 					left = left[1:]
 			elif c == 'K':
 				# ignore multi-voice rest placement directive
@@ -2612,11 +2623,11 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 	def parse_meter(self, left):
 		left = left[1:]
 		patt = re.compile(r'([o0-9]/[o0-9]/[o0-9]/[o0-9])')
-		m = re.match (patt, left)
+		m = re.match(patt, left)
 		if m:
 			comps = re.split('/', m.group())
 			left = left[len(m.group()):]
-			comps = map (string.atoi , comps)
+			comps = map(string.atoi , comps)
 		else:
 			ix = 0
 			comps = [0] * 4
@@ -2685,12 +2696,12 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			warn("\nFIXME: volta close outside repeat")
 
 
-	def parse_body (self, left):
+	def parse_body(self, left):
 		while left:
 			c = left[0]
 			# Here, don't remove the first char; keep it for some arguments
 			if c == '%':
-				f = string.find (left, '\n')
+				f = string.find(left, '\n')
 				if f < 0:
 					left = ''
 				left = left[f+1:]
@@ -2702,13 +2713,13 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 						direction = -1
 					else:
 						direction = 1
-					f = string.find (left, '\n')
+					f = string.find(left, '\n')
 					if f <0 :
 						left = ''
 					else:
 						left = left[f+1:]
 
-					f = string.find (left, '\n')
+					f = string.find(left, '\n')
 					self.timeline.add_mark(direction, left[:f])
 					left = left[f+1:]
 				elif c in 'wh':
@@ -2734,7 +2745,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				self.current_staff().set_clef(str(left[1]))
 				left = left[2:]
 			elif c == 'K':
-				left = self.parse_key (left)
+				left = self.parse_key(left)
 			elif c == 'P':
 				# ignore page numbering directive
 				left = left[1:]
@@ -2744,7 +2755,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				left = left[1:]
 				left = re.sub(r'\A\S*', '', left)
 			elif c in '[]':
-				left = self.parse_beams (left)
+				left = self.parse_beams(left)
 			elif left[:2] == "//":
 				self.current_staff().next_voice()
 				left = left[2:]
@@ -2764,7 +2775,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				left = left[1:]
 			elif c == 'T':
 				if not left[1] in 'ict':
-					warn ("""
+					warn("""
 Huh? Unknown T parameter `%s', before `%s'""" % (left[1], left[:20] ))
 					left = left[1:]
 					continue
@@ -2856,7 +2867,7 @@ Huh? Unknown T parameter `%s', before `%s'""" % (left[1], left[:20] ))
 				if post != '':
 					warn("\nFIXME: parse_body has post '%s'" % post)
 			else:
-				warn ("""
+				warn("""
 Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))
 				left = left[1:]
 
@@ -2869,7 +2880,7 @@ Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))
 			return '"' + string + '"'
 
 		
-	def dump (self):
+	def dump(self):
 		out = "\\header {\n"
 		if self.title:
 			out = out + "    title = " + self.quote_string(self.title) + "\n"
@@ -2935,24 +2946,27 @@ Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))
 		self.timeline.entries = compacted
 
 
-	def parse (self,fn):
-		ls = open (fn).readlines ()
+	def parse(self, fn):
+		ls = open(fn).readlines()
 		def subst(s):
-			return re.sub ('%.*$', '', s)
+			return re.sub('%.*$', '', s)
 
-		ls = map (subst, ls)
+		ls = map(subst, ls)
 
 		def newline(s):
 			return re.sub('\r\n', '\n', s)
 		ls = map(newline, ls)
-		# ls = filter (lambda x: x != '\r', ls)
-		ls = self.parse_preamble (ls)
-		left = string.join (ls, ' ')
+		# ls = filter(lambda x: x != '\r', ls)
+		ls = self.parse_preamble(ls)
+		left = string.join(ls, ' ')
 
 #		print left
-		self.parse_body (left)
+		self.parse_body(left)
 		for c in self.staffs:
-			c.calculate ()
+			c.calculate()
+			for v in c.voices:
+				if v.lyrics_label:
+					v.lyrics = self.lyrics[v.lyrics_label]
 		self.compact_timeline()
 		self.timeline.calculate()
 
@@ -2960,8 +2974,8 @@ Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))
 
 
 
-def help ():
-	sys.stdout.write (
+def help():
+	sys.stdout.write(
 """Usage: pmx2ly [OPTIONS]... PMX-FILE
 
 Convert PMX to LilyPond.
@@ -2984,8 +2998,8 @@ Updated by Rutger Hofman <lily@rutgerhofman.nl>.
 """)
 
 
-def print_version ():
-	sys.stdout.write ("""pmx2ly (GNU LilyPond) %s
+def print_version():
+	sys.stdout.write("""pmx2ly (GNU LilyPond) %s
 
 This is free software.  It is covered by the GNU General Public License,
 and you are welcome to change it and/or distribute copies of it under
@@ -2997,11 +3011,11 @@ Copyright (c) 2013 by Rutger Hofman <lily@rutgerhofman.nl>
 
 
 def identify():
-	sys.stderr.write ("%s from LilyPond %s\n" % (program_name, version))
+	sys.stderr.write("%s from LilyPond %s\n" % (program_name, version))
 
 
 
-(options, files) = getopt.getopt (sys.argv[1:], 'hvo:lp', ['help','version', 'output=', 'line-breaks', 'page-breaks'])
+(options, files) = getopt.getopt(sys.argv[1:], 'hvo:lp', ['help', 'version', 'output=', 'line-breaks', 'page-breaks'])
 out_filename = None
 option_line_breaks = False
 option_page_breaks = False
@@ -3010,11 +3024,11 @@ for opt in options:
 	o = opt[0]
 	a = opt[1]
 	if o== '--help' or o == '-h':
-		help ()
-		sys.exit (0)
+		help()
+		sys.exit(0)
 
 	elif o == '--version' or o == '-v':
-		print_version ()
+		print_version()
 		sys.exit(0)
 
 	elif o == '--output' or o == '-o':
@@ -3037,24 +3051,24 @@ for f in files:
 	if f == '-':
 		f = ''
 
-	sys.stderr.write ('Processing `%s\'' % f)
+	sys.stderr.write('Processing `%s\'' % f)
 	e = Parser(f)
 	if not out_filename:
-		out_filename = os.path.basename (re.sub ('(?i).pmx$', '.ly', f))
+		out_filename = os.path.basename(re.sub('(?i).pmx$', '.ly', f))
 
 	if out_filename == f:
-		out_filename = os.path.basename (f + '.ly')
+		out_filename = os.path.basename(f + '.ly')
 
-	sys.stderr.write ('\nWriting `%s\'' % out_filename)
+	sys.stderr.write('\nWriting `%s\'' % out_filename)
 	ly = e.dump() + '\n'
 
 
 
-	fo = open (out_filename, 'w')
-	fo.write ('%% lily was here -- automatically converted by pmx2ly from %s\n' % f)
+	fo = open(out_filename, 'w')
+	fo.write('%% lily was here -- automatically converted by pmx2ly from %s\n' % f)
 	fo.write('\\version "2.16.0"\n\n')
 	fo.write(ly)
-	fo.close ()
+	fo.close()
 	sys.stderr.write(" -- done\n");
 
 
