@@ -3,7 +3,9 @@
  TODO:
 ------
 
-- merge voices when one of them is silent, so it can be a \oneVoice
+- add command-line option to define TeX functions: -Dhello 2 '\\write{#1 #2}' or -Ihello 2 for ignore
+- add command-line option to prefix generated names?
+- merge voices when one of them is silent, so it can be a \oneVoice; only for full bars?
 - tuplets upper number must be uprounded by multiplying by power of 2: 4/6 iso 2/6 etc
 - accidentals must work through grace time. This requires some refactoring: add grace time...
 - afterGrace

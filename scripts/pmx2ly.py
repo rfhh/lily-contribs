@@ -585,6 +585,42 @@ class Voice:
 				break
 
 
+	def compact_multibar(self):
+		compacted = []
+		multi = 0
+		last_bar = None
+		last_chord = None
+		def new_multi():
+			if multi > 0:
+				ch = Chord()
+				ch.multibar = multi
+				ch.skip = last_chord.skip
+				ch.basic_duration = last_chord.basic_duration
+				ch.count = last_chord.count
+				ch.bar = last_chord.bar
+				ch.time = last_chord.time
+				compacted.append(ch)
+				if last_bar:
+					compacted.append(last_bar)
+
+		for b in self.entries:
+			if isinstance(b, Chord) and b.count > 0 and last_chord != None and b.count == last_chord.count and b.skip == last_chord.skip:
+				multi = multi + 1
+				last_chord = b
+			elif isinstance(b, Barnumber):
+				last_bar = b
+			# elif isinstance(b, Meter):
+			else:
+				new_multi()
+				multi = 0
+				compacted.append(b)
+
+		new_multi()
+
+		# sys.stderr.write("\nReplace timeline.entries with compacted[%d]" % len(compacted))
+		self.entries = compacted
+
+
 class Clef:
 	def __init__(self, cl):
 		self.type = cl
@@ -2910,42 +2946,6 @@ Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))
 		return out
 
 
-	def compact_timeline(self):
-		compacted = []
-		multi = 0
-		last_bar = None
-		last_chord = None
-		def new_multi():
-			if multi > 0:
-				ch = Chord()
-				ch.multibar = multi
-				ch.skip = True
-				ch.basic_duration = last_chord.basic_duration
-				ch.count = last_chord.count
-				ch.bar = last_chord.bar
-				ch.time = last_chord.time
-				compacted.append(ch)
-				if last_bar:
-					compacted.append(last_bar)
-
-		for b in self.timeline.entries:
-			if isinstance(b, Chord) and b.count > 0 and last_chord != None and b.count == last_chord.count:
-				multi = multi + 1
-				last_chord = b
-			elif isinstance(b, Barnumber):
-				last_bar = b
-			# elif isinstance(b, Meter):
-			else:
-				new_multi()
-				multi = 0
-				compacted.append(b)
-
-		new_multi()
-
-		# sys.stderr.write("\nReplace timeline.entries with compacted[%d]" % len(compacted))
-		self.timeline.entries = compacted
-
-
 	def parse(self, fn):
 		ls = open(fn).readlines()
 		def subst(s):
@@ -2967,7 +2967,7 @@ Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))
 			for v in c.voices:
 				if v.lyrics_label:
 					v.lyrics = self.lyrics[v.lyrics_label]
-		self.compact_timeline()
+		self.timeline.compact_multibar()
 		self.timeline.calculate()
 
 
