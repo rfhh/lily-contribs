@@ -1205,7 +1205,7 @@ dump_score(void)
             fprintf(stderr, "Skip staff %d, do only staff %d\n", p, ONLY);
         }
         for (f = 0; f < part[p].n_staff; f++) {
-            fprintf(lily_out, "\\context Staff = staff%c <", 'A' + staff);
+            fprintf(lily_out, " \\context Staff = staff%c <", 'A' + staff);
             staff++;
             indup();
             if (part[p].staff[f].n_voice == 1) {
@@ -1213,7 +1213,7 @@ dump_score(void)
             } else {
                 for (v = 0; v < part[p].staff[f].n_voice; v++) {
                     char *count = i2count(v);
-                    fprintf(lily_out, "\\context Voice=%s {", count);
+                    fprintf(lily_out, " \\context Voice=%s {", count);
                     indup();
                     fprintf(lily_out, "\\voice%s \\%s", count, part_name(p, f, v));
                     indown();
@@ -1222,7 +1222,7 @@ dump_score(void)
                 }
             }
             indown();
-            fprintf(lily_out, ">");
+            fprintf(lily_out, " >");
             newline();
         }
     }
