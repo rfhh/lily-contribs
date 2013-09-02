@@ -3,6 +3,7 @@
  TODO:
 ------
 
+- use Lyrics and lyricsto for lyrics, not addlyrics
 - add command-line option to define TeX functions: -Dhello 2 '\\write{#1 #2}' or -Ihello 2 for ignore
 - add command-line option to prefix generated names?
 - merge voices when one of them is silent, so it can be a \oneVoice; only for full bars?

@@ -1542,7 +1542,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 					v.bar += 1
 				if v == self.current_staff().voices[0]:
 					self.current_staff().reset_alterations()
-				barnumber = Barnumber(v.bar, self.meter)
+				barnumber = Barnumber(v.bar - 1, self.meter)
 				v.add_nonchord(barnumber)
 				# sys.stderr.write("\n%s: increase bar count to %d" % (v.idstring(), v.bar))
 				if v == self.staffs[0].voices[0]:
@@ -2466,7 +2466,8 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 
 
 	def parse_barcheck(self, left):
-		self.current_voice().add_nonchord(Barcheck())
+		if not isinstance(self.current_voice().entries[-1], Barnumber):
+			self.current_voice().add_nonchord(Barcheck())
 
 		return left [1:]
 
@@ -2931,7 +2932,8 @@ Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))
     \\compressFullBarRests\n\
     \\accidentalStyle modern-cautionary\n\
 '
-		self.timeline.add_nonchord(Bar('|.'))
+		if not isinstance(self.timeline.entries[-1], Bar):
+			self.timeline.add_nonchord(Bar('|.'))
 
 		out = out + self.timeline.dump()
 		refs = ''
