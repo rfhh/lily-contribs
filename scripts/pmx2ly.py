@@ -2744,14 +2744,22 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				left = left[f+1:]
 			elif c == 'm':
 				left = self.parse_meter(left)
-			elif left[0] in 'lhw':
-				if left[0] in '+-' + SPACE:
-					if left[0] == 'l':
+			elif c in 'lhw':
+				left = left[1:]
+				m = re.match(r'\A[.0123456789]+', left)
+				if m:
+					if not c in 'hw':
+						raise Exception("mark text must be followed by blank or [+-]", left[0])
+					# page size directive, ignore
+					while len(left) > 0 and left[0] in '0123456789.imp':
+						left = left[1:]
+				elif left[0] in '+-' + SPACE:
+					if c == 'l':
 						direction = -1
 					else:
 						direction = 1
 					f = string.find(left, '\n')
-					if f <0 :
+					if f < 0:
 						left = ''
 					else:
 						left = left[f+1:]
@@ -2759,11 +2767,8 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 					f = string.find(left, '\n')
 					self.timeline.add_mark(direction, left[:f])
 					left = left[f+1:]
-				elif c in 'wh':
-					# ignore page size directives
-					left = left[1:]
-					while len(left) > 0 and left[0] in '0123456789.imp':
-						left = left[1:]
+				else:
+					raise Exception("page width must be followed by number", left[0])
 			elif c in 'Gzabcdefgr.,':
 				left = self.parse_note(left)
 			elif c in DIGITS + 'n#-':
