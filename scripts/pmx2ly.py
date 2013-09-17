@@ -12,6 +12,7 @@ import string
 import sys
 import re
 import getopt
+import argparse
 from functools import partial
 
 program_name = 'pmx2ly'
@@ -660,7 +661,7 @@ class Key:
 
 
 class Alteration:
-	def __init__(self, note, octave, alteration, flags, bar, time):
+	def __init__(self, note, octave, alteration, flags, bar, time, mode):
 		# if alteration == 'ff' or alteration == 'ss':
 		#	sys.stderr.write("\nSee alteration %s" % alteration)
 		if note == None:
@@ -673,6 +674,7 @@ class Alteration:
 		self.flags = flags
 		self.bar = bar
 		self.time = time
+		self.accidental_mode = mode
 
 	def dump(self):
 		(n, d) = self.time
@@ -744,7 +746,8 @@ class Staff:
 
 	def set_alteration(self, note, octave, alteration, flags, time):
 		self.alterations.append(Alteration(note, octave, alteration, flags,
-						   self.current_voice().bar, time))
+						   self.current_voice().bar, time,
+						   self.accidental_mode))
 
 	def reset_alterations(self):
 		self.alterations.append(AlterationReset(self.current_voice().bar,
@@ -810,7 +813,7 @@ class Staff:
 							alt = 2
 					else:
 						raise Exception('unknown accidental', c)
-					if self.accidental_mode == ACCIDENTAL_RELATIVE:
+					if a.accidental_mode == ACCIDENTAL_RELATIVE:
 						if self.alteration_spans_octaves:
 							for o in range(MAX_OCTAVE):
 								alteration[a.note][o] = default_alteration[a.note][o] + alt
@@ -1064,7 +1067,7 @@ class M_TX:
 
 
 class Parser:
-	def __init__(self, filename):
+	def __init__(self):
 		self.staffs = []
 		self.timeline = Voice()
 		self.timeline.set_preset_id('timeLine')
@@ -1093,8 +1096,6 @@ class Parser:
 		self.musicsize = 20
 
 		self.tex_dispatch_table()
-
-		self.parse(filename)
 
 
 	def set_staffs(self, number):
@@ -2433,7 +2434,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				alteration = left[0]
 				self.current_staff().alterations.insert(len(self.current_staff().alterations) - 1,
 									Alteration(name, octave, alteration, 0,
-										   e.bar, e.time))
+										   e.bar, e.time, ACCIDENTAL_ABSOLUTE))
 				e.chord_prefix = e.chord_prefix + '\\once \\set suggestAccidentals = ##t '
 				left = left[1:]
 		else:
@@ -2960,40 +2961,38 @@ Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))
 
 		ls = map(subst, ls)
 
-		def newline(s):
-			return re.sub('\r\n', '\n', s)
-		ls = map(newline, ls)
-		# ls = filter(lambda x: x != '\r', ls)
-		ls = self.parse_preamble(ls)
-		left = string.join(ls, ' ')
-
 #		print left
-		self.parse_body(left)
-		for c in self.staffs:
-			c.calculate()
-			for v in c.voices:
-				if v.lyrics_label:
-					v.lyrics = self.lyrics[v.lyrics_label]
-		self.timeline.compact_multibar()
-		self.timeline.calculate()
+		if fn.endswith('.tex'):
+			left = string.join(ls, ' ')
+			left = self.parse_tex(left)
+		else:
+			def newline(s):
+				return re.sub('\r\n', '\n', s)
+			ls = map(newline, ls)
+			# ls = filter(lambda x: x != '\r', ls)
+			ls = self.parse_preamble(ls)
+
+			left = string.join(ls, ' ')
+
+			if not option_strip_header:
+				self.parse_body(left)
+				for c in self.staffs:
+					c.calculate()
+					for v in c.voices:
+						if v.lyrics_label:
+							v.lyrics = self.lyrics[v.lyrics_label]
+				self.timeline.compact_multibar()
+				self.timeline.calculate()
+
+		return left
 
 
 
 
 
-def help():
-	sys.stdout.write(
-"""Usage: pmx2ly [OPTIONS]... PMX-FILE
-
-Convert PMX to LilyPond.
-
-Options:
-  -h, --help          print this help
-  -o, --output=FILE   set output filename to FILE
-  -b, --line-breaks   keep line breaks in
-  -p, --page-breaks   keep page breaks in
-  -v, --version       shown version information
-
+argDescription = """Convert PMX to LilyPond.
+"""
+argEpilog = """
 PMX is a Musixtex preprocessor written by Don Simons, see
 http://www.gmd.de/Misc/Music/musixtex/software/pmx/.
 
@@ -3001,12 +3000,10 @@ Report bugs to bug-lilypond@gnu.org.
 
 Written by Han-Wen Nienhuys <hanwen@cs.uu.nl>.
 Updated by Rutger Hofman <lily@rutgerhofman.nl>.
+"""
 
-""")
 
-
-def print_version():
-	sys.stdout.write("""pmx2ly (GNU LilyPond) %s
+versionText = """%s (GNU LilyPond) %s
 
 This is free software.  It is covered by the GNU General Public License,
 and you are welcome to change it and/or distribute copies of it under
@@ -3014,43 +3011,35 @@ certain conditions.  Invoke as `midi2ly --warranty' for more information.
 
 Copyright (c) 2000--2004 by Han-Wen Nienhuys <hanwen@cs.uu.nl>
 Copyright (c) 2013 by Rutger Hofman <lily@rutgerhofman.nl>
-""" % version)
+""" % (program_name, version)
 
 
 def identify():
 	sys.stderr.write("%s from LilyPond %s\n" % (program_name, version))
 
 
+argParser = argparse.ArgumentParser(description=argDescription, epilog=argEpilog);
+# argParser.add_argument('--help', '-h', action="help")
+argParser.add_argument('--version', '-v', action="version", version='%(prog) ' + versionText)
+argParser.add_argument('--output', '-o', nargs=1)
+argParser.add_argument('--line-breaks', '-l', action='store_true', help='retain pmx line breaks')
+argParser.add_argument('--page-breaks', '-p', action='store_true', help='retain pmx page breaks')
+argParser.add_argument('--strip-header', '-H', action='store_true', help='strip header of pmx file, dump rest')
+argParser.add_argument('--tex-define', '-D', nargs=3, help='define tex function: <#arguments> <expansion>')
+argParser.add_argument('--tex-ignore', '-U', nargs=2, help='ignore tex function: <#arguments>')
+argParser.add_argument('input-file', nargs='*', help='pmx input file(s)')
 
-(options, files) = getopt.getopt(sys.argv[1:], 'hvo:lp', ['help', 'version', 'output=', 'line-breaks', 'page-breaks'])
-out_filename = None
-option_line_breaks = False
-option_page_breaks = False
+argsNS = argParser.parse_args(sys.argv[1:])
+args = vars(argsNS)
 
-for opt in options:
-	o = opt[0]
-	a = opt[1]
-	if o== '--help' or o == '-h':
-		help()
-		sys.exit(0)
+out_filename = args['output']
+option_line_breaks = args['line_breaks']
+option_page_breaks = args['page_breaks']
+option_strip_header = args['strip_header']
+files = args['input-file']
 
-	elif o == '--version' or o == '-v':
-		print_version()
-		sys.exit(0)
-
-	elif o == '--output' or o == '-o':
-		out_filename = a
-
-	elif o == '--line-breaks' or o == '-l':
-		option_line_breaks = True
-
-	elif o == '--page-breaks' or o == '-p':
-		option_page_breaks = True
-
-	# FIXME: Handle -b -v
-	else:
-		print o
-		raise getopt.error
+texDefines = args['tex_define']
+texIgnores = args['tex_ignore']
 
 identify()
 
@@ -3059,23 +3048,32 @@ for f in files:
 		f = ''
 
 	sys.stderr.write('Processing `%s\'' % f)
-	e = Parser(f)
 	if not out_filename:
 		out_filename = os.path.basename(re.sub('(?i).pmx$', '.ly', f))
 
 	if out_filename == f:
 		out_filename = os.path.basename(f + '.ly')
 
+	e = Parser()
+
+	left = e.parse(f)
+
 	sys.stderr.write('\nWriting `%s\'' % out_filename)
-	ly = e.dump() + '\n'
+	if option_strip_header or f.endswith('.tex'):
+		ly = left
+	else:
+		ly = e.dump() + '\n'
 
-
-
-	fo = open(out_filename, 'w')
-	fo.write('%% lily was here -- automatically converted by pmx2ly from %s\n' % f)
-	fo.write('\\version "2.16.0"\n\n')
+	if out_filename[0] == '-':
+		fo = sys.stdout
+	else:
+		fo = open(out_filename, 'w')
+	if not option_strip_header:
+		fo.write('%% lily was here -- automatically converted by pmx2ly from %s\n' % f)
+		fo.write('\\version "2.16.0"\n\n')
 	fo.write(ly)
-	fo.close()
+	if fo != sys.stdout:
+		fo.close()
 	sys.stderr.write(" -- done\n");
 
 
