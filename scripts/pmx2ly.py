@@ -630,19 +630,19 @@ class Clef:
 		return ' \\clef ' + self.type + '\n   '
 
 key_table = {
-	'+0':'c \major',
-	'+1':'g \major',
-	'+2':'d \major',
-	'+3':'a \major',
-	'+4':'e \major',
-	'+5':'b \major',
-	'+6':'fis \major',
-	'-1':'f \major',
-	'-2':'bes \major',
-	'-3':'ees \major',
-	'-4':'aes \major',
-	'-5':'des \major',
-	'-6':'ges \major'
+	'+0':'c \\major',
+	'+1':'g \\major',
+	'+2':'d \\major',
+	'+3':'a \\major',
+	'+4':'e \\major',
+	'+5':'b \\major',
+	'+6':'fis \\major',
+	'-1':'f \\major',
+	'-2':'bes \\major',
+	'-3':'ees \\major',
+	'-4':'aes \\major',
+	'-5':'des \\major',
+	'-6':'ges \\major'
 	}
 
 
@@ -869,8 +869,8 @@ class Staff:
 					refs = voice + refs
 
 		instr = ''
-		if self.instrument_name:
-			instr = '\n    \set Staff.instrumentName = \markup{' + self.instrument_name + '}'
+		if self.num_instruments == 1 and self.instrument_name:
+			instr = '\n    \\set Staff.instrumentName = \\markup{' + self.instrument_name + '}'
 		out = out + '\n\n%s = \\new Staff = %s <<%s%s\n>>\n\n' % (self.idstring(), self.idstring(), instr, refs)
 		return out
 
@@ -1915,7 +1915,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 
 	def tex_centerline(self, name, params):
 		# out = '\\center-align { ' + ''.join(params) + ' }'
-		sys.stderr.write("\nDon't know how to center within a \column thingy")
+		sys.stderr.write("\nDon't know how to center within a \\column thingy")
 		out = ''.join(params)
 
 		sys.stderr.write("\ncenterline returns '%s'" % out)
@@ -2402,6 +2402,8 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			ls = ls[1:]
 			for i in range(s):
 				self.staffs[staff].instrument_name = line
+				self.staffs[staff].instrument = i
+				self.staffs[staff].num_instruments = s
 				staff = staff + 1
 
 		line = ls[0]
@@ -2898,7 +2900,7 @@ Huh? Unknown T parameter `%s', before `%s'""" % (left[1], left[:20] ))
 				elif option_line_breaks:
 					self.timeline.add_nonchord(Break('\\break'))
 			elif c == 'P':
-				warn('\FIXME: set page number')
+				warn('FIXME: set page number')
 				left = left[1:]
 			elif c == 'X':
 				left = left[1:]
@@ -2946,8 +2948,15 @@ Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))
 		i = 0
 		for s in self.staffs:
 			out = out + s.dump()
-			instr = ''
-			refs = '{\n        \\' + s.idstring() + '\n    }\n    ' + refs
+			grandstaff = ''
+			if s.num_instruments > 1:
+				if s.instrument == 0:
+					refs = '>>\n' + refs
+				elif s.instrument == s.num_instruments - 1:
+					grandstaff = '\n    \\new GrandStaff <<\n    '
+					if s.instrument_name:
+						grandstaff = grandstaff + '\\set GrandStaff.instrumentName = \\markup{' + s.instrument_name + '}\n    '
+			refs = grandstaff + '{\n        \\' + s.idstring() + '\n    }\n    ' + refs
 			i = i + 1
 
 		out = out + "\n\n\\score { <<\n    %s%s\n >> }" % (refs , defaults)
@@ -2964,25 +2973,28 @@ Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))
 #		print left
 		if fn.endswith('.tex'):
 			left = string.join(ls, ' ')
-			left = self.parse_tex(left)
-		else:
-			def newline(s):
-				return re.sub('\r\n', '\n', s)
-			ls = map(newline, ls)
-			# ls = filter(lambda x: x != '\r', ls)
-			ls = self.parse_preamble(ls)
+			return self.parse_tex(left)
 
-			left = string.join(ls, ' ')
+		def newline(s):
+			return re.sub('\r\n', '\n', s)
+		ls = map(newline, ls)
+		# ls = filter(lambda x: x != '\r', ls)
+		ls = self.parse_preamble(ls)
 
-			if not option_strip_header:
-				self.parse_body(left)
-				for c in self.staffs:
-					c.calculate()
-					for v in c.voices:
-						if v.lyrics_label:
-							v.lyrics = self.lyrics[v.lyrics_label]
-				self.timeline.compact_multibar()
-				self.timeline.calculate()
+		left = string.join(ls, ' ')
+
+		if option_strip_header:
+			return left
+
+		# Regular pmx parse
+		self.parse_body(left)
+		for c in self.staffs:
+			c.calculate()
+			for v in c.voices:
+				if v.lyrics_label:
+					v.lyrics = self.lyrics[v.lyrics_label]
+		self.timeline.compact_multibar()
+		self.timeline.calculate()
 
 		return left
 
