@@ -61,7 +61,10 @@ def pitch_to_lily_string(tup):
 		return n
 
 	nm = chr((n + 2) % OCTAVE + ord('a'))
-	nm = nm + actab[a]
+	if (nm == 'e' or nm == 'a') and (actab[a] == 'es' or actab[a] == 'eses'):
+		nm = nm + actab[a][1:]
+	else:
+		nm = nm + actab[a]
 	if o > 0:
 		nm = nm + "'" * o
 	elif o < 0:
@@ -426,6 +429,14 @@ class Voice:
 			if s.id == id:
 				self.current_slurs.remove(s)
 				s.end_chord = self.chords[-1]
+				if s.start_chord == self.chords[-2] and s.start_chord.equals(s.end_chord):
+					warn("\nWarning: Replace slur with tie");
+					self.slurs.remove(s)
+					t = Tie(s.id)
+					t.start_chord = s.start_chord
+					t.end_chord = s.end_chord
+					self.ties.append(t)
+
 				return True
 		return False
 
@@ -999,6 +1010,18 @@ class Chord:
 		v = ' ' + self.chord_prefix + v + self.chord_suffix
 
 		return v
+
+	def equals(self, other):
+		if len(self.pitches) != len(other.pitches):
+			return False
+		ps = sorted(self.pitches)
+		po = sorted(other.pitches)
+		for i in range(len(ps)):
+			(so, sn, sa, sf) = ps[i]
+			(oo, on, oa, of) = po[i]
+			if so != oo or sn != on:
+				return False
+		return True
 
 
 SPACE=' \t\n'
@@ -1891,7 +1914,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			direction = '^'
 		else:
 			direction = '-'
-		text = re.sub('~', '\char ##x00A0 ', text)
+		text = re.sub('~', '\\char ##x00A0 ', text)
 		ch.chord_suffix = ch.chord_suffix + direction + "\\markup{\"" + text + "\"}"
 
 		return ('', '')
