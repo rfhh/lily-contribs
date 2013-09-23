@@ -3,6 +3,7 @@
  TODO:
 ------
 
+- grace octavation
 - use Lyrics and lyricsto for lyrics, not addlyrics
 - add command-line option to define TeX functions: -Dhello 2 '\\write{#1 #2}' or -Uhello 2 for ignore
 - add command-line option to prefix generated names?

@@ -429,7 +429,7 @@ class Voice:
 			if s.id == id:
 				self.current_slurs.remove(s)
 				s.end_chord = self.chords[-1]
-				if s.start_chord == self.chords[-2] and s.start_chord.equals(s.end_chord):
+				if option_tie_for_slur and s.start_chord == self.chords[-2] and s.start_chord.equals(s.end_chord):
 					warn("\nWarning: Replace slur with tie");
 					self.slurs.remove(s)
 					t = Tie(s.id)
@@ -3062,6 +3062,7 @@ argParser.add_argument('--page-breaks', '-p', action='store_true', help='retain 
 argParser.add_argument('--strip-header', '-H', action='store_true', help='strip header of pmx file, dump rest')
 argParser.add_argument('--tex-define', '-D', nargs=3, help='define tex function: <#arguments> <expansion>')
 argParser.add_argument('--tex-ignore', '-U', nargs=2, help='ignore tex function: <#arguments>')
+argParser.add_argument('--tie-for-slur', '-t', action='store_true', help='replace slur between two identical notes with a tie')
 argParser.add_argument('input-file', nargs='*', help='pmx input file(s)')
 
 argsNS = argParser.parse_args(sys.argv[1:])
@@ -3075,6 +3076,8 @@ files = args['input-file']
 
 texDefines = args['tex_define']
 texIgnores = args['tex_ignore']
+
+option_tie_for_slur = args['tie_for_slur']
 
 identify()
 
