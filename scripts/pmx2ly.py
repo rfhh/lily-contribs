@@ -1399,6 +1399,7 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 		durdigit = None
 		count = 1
 		dots = 0
+		shortcut_dots = 0
 		octave = None
 		alteration = None
 		alteration_flags = 0
@@ -1416,6 +1417,7 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 			if left[0] in '.,':
 				if left[0] == '.':
 					self.current_voice().chords[-2].dots = self.current_voice().chords[-2].dots + 1
+					shortcut_dots = shortcut_dots + 1
 				left = left[1:]
 				try:
 					durdigit = halftime_table[self.last_basic_duration]
@@ -1558,6 +1560,8 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 					t = (count, int(basic_duration))
 				for d in range(dots):
 					t = rat_multiply(t, (3, 2))
+				for d in range(shortcut_dots):
+					t = rat_multiply(t, (2, 1))
 				if self.tuplets_expected > 0:
 					t = rat_multiply(t, (self.tuplets[-1].replaces, self.tuplets[-1].number))
 				v.time = rat_add(v.time, t)
@@ -1787,6 +1791,8 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			'\\zcccl':		('', self.tex_require),
 			'\\zccccu':		('', self.tex_require),
 			'\\zccccl':		('', self.tex_require),
+			'\\uptext':		('p', self.tex_add_upmarkup),
+			'\\Uptext':		('p', self.tex_add_upmarkup),
 
 			'\\smalltype':		('', self.tex_text_size),
 			'\\Smalltype':		('', self.tex_text_size),
@@ -1907,8 +1913,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		return ('', '')
 
 
-	def tex_add_markup(self, name, params):
-		(elevation, text) = params
+	def tex_add_dir_markup(self, name, elevation, text):
 		ch = Chord()
 		self.current_voice().add_chord(ch)
 		ch.basic_duration = self.meter.denom
@@ -1924,6 +1929,15 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		ch.chord_suffix = ch.chord_suffix + direction + "\\markup{\"" + text + "\"}"
 
 		return ('', '')
+
+
+	def tex_add_markup(self, name, params):
+		(elevation, text) = params
+		return self.tex_add_dir_markup(name, elevation, text)
+
+
+	def tex_add_upmarkup(self, name, params):
+		return self.tex_add_dir_markup(name, 1, params[0])
 
 
 	def tex_set_barno(self, name, params):
@@ -2357,6 +2371,15 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			else:
 				return string.atoi(a)
 
+		def parse_numbers(opening):
+			opening = re.sub('[ \t\n]+', ' ', opening)
+			opening = re.sub('^ ', '', opening)
+			opening = re.sub(' $', '', opening)
+			if opening != '':
+				opening = string.split(opening, ' ')
+				return map(atonum, opening)
+			return []
+
 		number_count = 12
 		numbers = []
 
@@ -2380,23 +2403,21 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		while len(numbers) < number_count:
 			opening = ls[0]
 			ls = ls[1:]
-
-			opening = re.sub('[ \t\n]+', ' ', opening)
-			opening = re.sub('^ ', '', opening)
-			opening = re.sub(' $', '', opening)
-			if opening == '':
-				continue
-			opening = string.split(opening, ' ')
-
-			numbers = numbers + map(atonum, opening)
+			numbers = numbers + parse_numbers(opening)
 
 		off = 0
 		(no_staffs, no_instruments) = tuple(numbers[off:2])
 		off = off + 2
 
-		staves = [0] * no_instruments
+		staves = [0] * abs(no_instruments)
 		if no_instruments < 0:
 			no_instruments = -no_instruments
+			sys.stderr.write("\nFIXME: read an additional #instr = %d numbers into preamble numbers" % no_instruments)
+			number_count = number_count + no_instruments
+			while len(numbers) < number_count:
+				opening = ls[0]
+				ls = ls[1:]
+				numbers = numbers + parse_numbers(opening)
 			for i in range(no_instruments):
 				staves[i] = numbers[off]
 				off = off + 1
@@ -2412,7 +2433,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		(no_pages, no_systems, musicsize, fracindent) = tuple(numbers[off + 6:])
 
 		self.meter = Meter(timesig_num, timesig_den)
-		self.pickup = (pickup_beats, timesig_den)
+		self.pickup = map(int, rat_simplify((pickup_beats, timesig_den)))
 		self.timeline.add_nonchord(self.meter)
 		self.timeline.set_meter(self.meter, self.pickup)
 		self.keysig = keysig_number
@@ -2574,8 +2595,9 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			elif p in 'fnhH':
 				warn("\nIgnore: alter slur curvature by %s" % p)
 			elif p == 'p':
-				m = re.match(r'\A([+-])([st])')
+				m = re.match(r'\A([+-])([st])', left)
 				warn("\nIgnore: alter slur height %s" % m.group())
+				left = left[len(m.group()):]
 			elif p == 's':
 				m = re.match(r'\A(-?[0-9])(-?[0-9])', left)
 				warn("\nIgnore: alter broken slur by %s" % m.group())
