@@ -1398,11 +1398,11 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 
 		durdigit = None
 		count = 1
-		forced_duration  = 0
 		dots = 0
 		octave = None
 		alteration = None
 		alteration_flags = 0
+		forced_duration = 0
 		extra_oct = 0
 		flats = 0
 		sharps = 0
@@ -1414,6 +1414,8 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 		else:
 			multibar = 0
 			if left[0] in '.,':
+				if left[0] == '.':
+					self.current_voice().chords[-2].dots = self.current_voice().chords[-2].dots + 1
 				left = left[1:]
 				try:
 					durdigit = halftime_table[self.last_basic_duration]
@@ -1465,11 +1467,11 @@ Huh? expected duration; last_basic_duration is `%d'""" % self.last_basic_duratio
 				extra_oct = extra_oct - 1
 			elif c == '.':
 				dots = dots + 1
-				left = c + left
-				forced_duration = 3
+				# left = c + left
+				forced_duration = 2
 				break
 			elif c == ',':
-				left = c + left
+				# left = c + left
 				forced_duration = 2
 				break
 			elif c == 'S':
@@ -1529,14 +1531,15 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				raise Exception("Cannot have an alteration without a note name", str(alteration))
 			self.current_staff().set_alteration(name, octave, alteration, alteration_flags, ch.time)
 
+		if multibar == 0:
+			ch.dots = dots
+			if self.forced_duration:
+				basic_duration = basic_duration * self.forced_duration
+			self.forced_duration = forced_duration
+
 		ch.multibar = multibar
 		ch.count = count
 		ch.basic_duration = basic_duration
-
-		if multibar == 0:
-			ch.dots = dots
-			if forced_duration:
-				self.forced_duration = ch.basic_duration / forced_duration
 
 		if not pending_grace and not chord_continuation:
 			# if tup != None
