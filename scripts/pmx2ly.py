@@ -367,6 +367,9 @@ class Voice:
 		self.pending_grace = None
 		self.graces = []
 
+		self.pending_cres = False
+		self.pending_decr = False
+
 		self.volta = []
 		self.pending_volta = None
 
@@ -1352,7 +1355,7 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 								subs = atoi(m.group())
 								left = left[len(m.group()):]
 							else:
-								m = re.match(r'\A([+-][.0-9]+)(([+-][.0-9]+))', left)
+								m = re.match(r'\A([+-][.0-9]+)([+-][.0-9]+)?', left)
 								if m:
 									warn("\nIgnore: no tuplet shape shifts")
 									left = left[len(m.group()):]
@@ -2934,6 +2937,35 @@ Huh? Unknown T parameter `%s', before `%s'""" % (left[1], left[:20] ))
 				(left, result, post) = self.parse_tex_function(left)
 				if post != '':
 					warn("\nFIXME: parse_body has post '%s'" % post)
+			elif c == 'D':
+				left = left[1:]
+				if left[0] == '"':
+					left = left[1:]
+					dyn = '_\\markup{'
+					while left[0] != '"':
+						dyn = dyn + left[0]
+						left = left[1:]
+					dyn = dyn + '}'
+					self.current_voice().last_chord().scripts.append(scr)
+				elif left[0] == '>':
+					if self.current_voice().pending_decr:
+						self.current_voice().last_chord().scripts.append('\\!')
+					else:
+						self.current_voice().last_chord().scripts.append('\\>')
+					self.current_voice().pending_decr = not self.current_voice().pending_decr
+				elif left[0] == '<':
+					if self.current_voice().pending_cres:
+						self.current_voice().last_chord().scripts.append('\\!')
+					else:
+						self.current_voice().last_chord().scripts.append('\\<')
+					self.current_voice().pending_cres = not self.current_voice().pending_cres
+				else:
+					# must be pppp ... ffff
+					dyn = '\\'
+					while left[0] in 'pmfz':
+						dyn = dyn + left[0]
+						left = left[1:]
+					self.current_voice().last_chord().scripts.append(dyn)
 			else:
 				warn("""
 Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))
@@ -3011,6 +3043,7 @@ Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))
 
 		# Regular pmx parse
 		self.parse_body(left)
+
 		for c in self.staffs:
 			c.calculate()
 			for v in c.voices:
