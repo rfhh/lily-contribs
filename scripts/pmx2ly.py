@@ -1624,7 +1624,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		c = left[0]
 		if left[0] == '[':
 			left = left[1:]
-			while left[0] in 'ulfhm+-0123456789':
+			while left[0] in 'ulfhm+-.0123456789':
 				left=left[1:]
 			self.current_voice().pending_beam = True
 		else:
@@ -1877,7 +1877,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 
 	def tex_assign_lyrics(self, name, params):
 		(staff, label) = params
-		warn("\nAssign lyrics{%s} to staff[%s]" % (staff, label))
+		warn("\nAssign lyrics{%s} to staff[%s]" % (label, staff))
 		s = self.staffs[int(staff) - 1]
 		s.voices[s.lyrics_voice].lyrics_label = label
 		return ('', '')
