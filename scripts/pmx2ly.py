@@ -3118,8 +3118,8 @@ argParser.add_argument('--output', '-o', nargs=1)
 argParser.add_argument('--line-breaks', '-l', action='store_true', help='retain pmx line breaks')
 argParser.add_argument('--page-breaks', '-p', action='store_true', help='retain pmx page breaks')
 argParser.add_argument('--strip-header', '-H', action='store_true', help='strip header of pmx file, dump rest')
-argParser.add_argument('--tex-define', '-D', nargs=3, help='define tex function: <#arguments> <expansion>')
-argParser.add_argument('--tex-ignore', '-U', nargs=2, help='ignore tex function: <#arguments>')
+argParser.add_argument('--tex-define', '-D', nargs=3, action='append', help='define tex function: <function> <#arguments> <expansion>')
+argParser.add_argument('--tex-ignore', '-U', nargs=2, action='append', help='ignore tex function: <function> <#arguments>')
 argParser.add_argument('--tie-for-slur', '-t', action='store_true', help='replace slur between two identical notes with a tie')
 argParser.add_argument('input-file', nargs='*', help='pmx input file(s)')
 
@@ -3151,6 +3151,11 @@ for f in files:
 		out_filename = os.path.basename(f + '.ly')
 
 	e = Parser()
+
+	if texIgnores:
+		for d in texIgnores:
+			sys.stderr.write("\nOverride: texIgnore %s[%d]" % (d[0], int(d[1])))
+			e.tex_functions['\\' + d[0]] = ('p' * int(d[1]), e.tex_ignore)
 
 	left = e.parse(f)
 
