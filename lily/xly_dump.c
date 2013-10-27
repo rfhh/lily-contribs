@@ -24,6 +24,7 @@ static symbol_p time_line;
 /* Want to remove redundant bar checks. Remember whether our last symbol
  * was a bar check or something else: a note/rest/skip. */
 static symbol_p last_dumped_symbol;
+static symbol_p last_dumped_note;
 static symbol_t sym_any_skip;
 
 static time_signature_p time_sig_current;
@@ -485,7 +486,12 @@ dumpNote(mpq_t *t, symbol_p scan, voice_p voice)
 
     if (note->flags & FLAG_REST) {
         if (mpq_equal(time_sig_current->duration, note->duration)) {
-            fprintf(lily_out, "R");
+            if (note->multibar == 0) {
+                last_dumped_note = scan;
+                return;
+            } else {
+                fprintf(lily_out, "R");
+            }
         } else {
             fprintf(lily_out, "r");
         }
@@ -586,9 +592,19 @@ dumpNote(mpq_t *t, symbol_p scan, voice_p voice)
     for (u = note->tuplet; u != NO_ID; u = global_tuplet[u].next) {
         mpq_mul(dt, dt, global_tuplet[u].ratio);
     }
+    if ((note->flags & FLAG_REST) &&
+			mpq_equal(time_sig_current->duration, note->duration) &&
+			note->multibar > 1) {
+		fprintf(lily_out, "*%d ", note->multibar);
+		mpq_t mb;
+		mpq_init(mb);
+		mpq_set_si(mb, note->multibar, 1);
+		mpq_mul(dt, dt, mb);
+	}
     mpq_add(*t, *t, dt);
 
     last_dumped_symbol = scan;
+    last_dumped_note = scan;
 }
 
 
@@ -909,6 +925,24 @@ dumpOrnament(mpq_t *t, symbol_p s)
 }
 
 
+static int
+isEmptyMultibar(symbol_p s) {
+    if (s->type != SYM_NOTE) {
+        return 0;
+    }
+
+    note_p note = &s->symbol.note;
+    if ((note->flags & FLAG_REST) &&
+            mpq_equal(time_sig_current->duration, note->duration) &&
+            note->multibar == 0) {
+        return 1;
+    }
+
+    return 0;
+}
+
+
+
 static void
 dumpBarStart(mpq_t *t, symbol_p s)
 {
@@ -935,7 +969,8 @@ dumpBarStart(mpq_t *t, symbol_p s)
         dumpSkip(t, s);
 
         num = bar_number(t, remain);
-        if (mpq_zero(remain) || last_dumped_symbol->type != SYM_REPEAT) {
+        if ((mpq_zero(remain) || last_dumped_symbol->type != SYM_REPEAT) &&
+                ! isEmptyMultibar(last_dumped_note)) {
             fprintf(lily_out, " |");
             fprintf(lily_out, " %% bar %d", num);
             last_dumped_symbol = s;
@@ -1023,7 +1058,7 @@ dumpVoice(voice_p voice)
 
         case SYM_NOTE:
             dumpNote(&t, scan, voice);
-			debugMeAt(t);
+            debugMeAt(t);
             break;
 
         case SYM_OTTAVA:

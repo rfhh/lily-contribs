@@ -177,6 +177,70 @@ do_staff_slur_pending(staff_p f)
 }
 
 
+static void
+do_staff_multibar_aggregate(staff_p f)
+{
+    note_p      multibar_open = NULL;   // defy gcc warnings
+    mpq_t       time_sig;
+    int         multibar = 0;
+
+    mpq_init(time_sig);
+
+    for (symbol_p scan = f->unvoiced.front; scan != NULL; scan = scan->next) {
+        int must_close = 1;
+        note_p note;
+
+        switch (scan->type) {
+        case SYM_TIME_SIGNATURE:
+            mpq_set(time_sig, scan->symbol.time_signature.duration);
+            break;
+
+        case SYM_TUPLET:
+        case SYM_REPEAT:
+            break;
+
+        case SYM_NOTE:
+            note = &scan->symbol.note;
+
+            if (! (note->flags & FLAG_REST)) {
+                break;
+            }
+            if (! mpq_equal(time_sig, note->duration)) {
+                break;
+            }
+
+            if (1) {
+                // Ah, there it is: a multibar rest
+                must_close = 0;
+                if (multibar == 0) {
+                    multibar_open = note;
+                } else {
+                    note->multibar = 0;     // suppress
+                }
+                multibar++;
+            } else {
+                note->multibar = 1;
+            }
+            break;
+
+        case SYM_CHORD:
+            fprintf(stderr, "Ooopppsssss... a CHORD here?\n");
+            break;
+
+        default:
+            must_close = 0;
+            break;
+        }
+
+
+        if (must_close && multibar > 0) {
+            multibar_open->multibar = multibar;
+            multibar = 0;
+        }
+    }
+}
+
+
 void
 xly_chord(int do_chording)
 {
@@ -216,6 +280,14 @@ xly_chord(int do_chording)
         for (f = 0; f < part[p].n_staff; f++) {
             fprintf(stderr, "      ........ part %d, staff %d\n", p, f);
             do_staff_slur_pending(&part[p].staff[f]);
+        }
+    }
+
+    fprintf(stderr, "Multibar aggregation...\n");
+    for (p = 0; p < n_part; p++) {
+        for (f = 0; f < part[p].n_staff; f++) {
+            fprintf(stderr, "      ........ part %d, staff %d\n", p, f);
+            do_staff_multibar_aggregate(&part[p].staff[f]);
         }
     }
 

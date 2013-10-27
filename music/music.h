@@ -178,6 +178,7 @@ struct note {
     int                 tie_start;
     int                 tie_end;
     int                 tuplet;
+	int                 multibar;
 };
 
 
