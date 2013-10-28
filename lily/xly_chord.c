@@ -283,7 +283,7 @@ xly_chord(int do_chording)
         }
     }
 
-    fprintf(stderr, "Multibar aggregation...\n");
+    fprintf(stderr, "Multibar rest aggregation...\n");
     for (p = 0; p < n_part; p++) {
         for (f = 0; f < part[p].n_staff; f++) {
             fprintf(stderr, "      ........ part %d, staff %d\n", p, f);

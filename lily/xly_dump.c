@@ -134,6 +134,9 @@ key_set(symbol_p s, int code, voice_p voice)
     }
 
     if (voice->key_current != voice->key_previous_current) {
+        if (voice->key_previous_current == KEY_RESET) {
+            voice->key_previous_current = voice->key_current;
+        }
         last_dumped_symbol = s;
         fprintf(lily_out, " \\key %s \\major",
                 key_sign_name(voice->key_current));
@@ -166,14 +169,14 @@ defaultKey(int s, voice_p voice)
                         { -1, -1, -1, -1, -1, -1, -1 }};        /* 7b Ces */
 
     if (voice->key_current == KEY_RESET) {      /* Missed a C major? */
-		if (1) {
-			fprintf(stderr, "Warning: key reset not followed by key, ignore\n");
-			key_set(NULL, voice->key_previous_current, voice);
-		} else {
+        if (1) {
+            fprintf(stderr, "Warning: key reset not followed by key, ignore\n");
+            key_set(NULL, voice->key_previous_current, voice);
+        } else {
 
-			fprintf(stderr, "Warning: key reset not followed by key, assume C major\n");
-			key_set(NULL, 0, voice);
-		}
+            fprintf(stderr, "Warning: key reset not followed by key, assume C major\n");
+            key_set(NULL, 0, voice);
+        }
     }
 
     return step[voice->key_current][s];
@@ -267,7 +270,7 @@ dump_noteval(note_p note, voice_p voice)
     VPRINTF(" dump note, keyed value = %d, accidental %d, measure accidental %d, key ofdset %d\n",
             val, note->accidental, measure_accidental[note->value],
             defaultKey(val, voice));
-    fprintf(lily_out, "%s", keyName(val));
+    fprintf(lily_out, " %s", keyName(val));
     if (note->accidental != 0) {
         dumpAccidental(note->accidental);
         measure_accidental[note->value] = note->accidental;
@@ -428,6 +431,7 @@ dumpNote(mpq_t *t, symbol_p scan, voice_p voice)
     note_p              chord = NULL;
     int                 u;
     symbol_p            a;
+    int                 skip_dump = 0;
 
     if (! initialized) {
         mpq_init(dt);
@@ -445,14 +449,12 @@ dumpNote(mpq_t *t, symbol_p scan, voice_p voice)
     VPRINTF(" slur> = %d slur< = %d\n",
             note->stem->slur_start, note->stem->slur_end);
 
-    fprintf(lily_out, " ");
-
     if (0) {
         if (note->stem->tuplet != dump_tuplet_current) {
             /* Tuplet on or off or both? */
             if (global_tuplet[note->stem->tuplet].next != dump_tuplet_current) {
                 /* stop */
-                fprintf(lily_out, "} ");
+                fprintf(lily_out, " } ");
                 tuplet_pop(&dump_tuplet_current);
             }
             if (global_tuplet[note->stem->tuplet].next == dump_tuplet_current) {
@@ -469,7 +471,7 @@ dumpNote(mpq_t *t, symbol_p scan, voice_p voice)
         /* Tuplet on or off or both? */
         if (global_tuplet[note->tuplet].next != dump_tuplet_current) {
             /* stop */
-            fprintf(lily_out, "} ");
+            fprintf(lily_out, " } ");
             tuplet_pop(&dump_tuplet_current);
         }
         if (global_tuplet[note->tuplet].next == dump_tuplet_current) {
@@ -488,17 +490,17 @@ dumpNote(mpq_t *t, symbol_p scan, voice_p voice)
         if (mpq_equal(time_sig_current->duration, note->duration)) {
             if (note->multibar == 0) {
                 last_dumped_note = scan;
-                return;
+                skip_dump = 1;
             } else {
-                fprintf(lily_out, "R");
+                fprintf(lily_out, " R");
             }
         } else {
-            fprintf(lily_out, "r");
+            fprintf(lily_out, " r");
         }
     } else {
         chord = note->chord;
         if (chord != NULL) {
-            fprintf(lily_out, "<");
+            fprintf(lily_out, " <");
         }
 
         if (note->stem->slur_end != NO_ID) {
@@ -508,79 +510,80 @@ dumpNote(mpq_t *t, symbol_p scan, voice_p voice)
         dump_noteval(note, voice);
     }
 
-    if (! is_two_pow(de)) {
-        fprintf(stderr, "Uh oh -- now already a tuplet??\n");
-    } else {
-        int i;
-        int dots = 0;
-
-        if (nu >= 2 * de) {
-            int len;
-            if (is_two_pow(nu)) {
-                len = nu / de;
-            } else {
-                assert(is_two_pow(nu + 1));
-                len = (nu + 1) / (2 * de);
-                while (de > 0) {
-                    dots++;
-                    de /= 2;
-                }
-            }
-            switch (len) {
-            case 2:
-                fprintf(lily_out, "\\breve");
-                break;
-            case 4:
-                fprintf(lily_out, "\\longa");
-                break;
-            default:
-                fprintf(stderr, "Have no symbol for note of length %d\n", len);
-                break;
-            }
+    if (! skip_dump) {
+        if (! is_two_pow(de)) {
+            fprintf(stderr, "Uh oh -- now already a tuplet??\n");
         } else {
-            if (is_two_pow(nu + 1)) {
-                while (nu > 1) {
-                    dots++;
-                    de /= 2;
-                    nu /= 2;
-                }
-                fprintf(lily_out, "%d", de);
-            } else {
-                int     ts_de;
-                int     ts_nu;
-                mpq2rat(time_sig_current->duration, &ts_nu, &ts_de);
+            int i;
+            int dots = 0;
 
-                assert(mpq_equal(time_sig_current->duration, note->duration));
-                // special type of whole-bar-rest
-                fprintf(lily_out, "%d*%d", de, nu);
+            if (nu >= 2 * de) {
+                int len;
+                if (is_two_pow(nu)) {
+                    len = nu / de;
+                } else {
+                    assert(is_two_pow(nu + 1));
+                    len = (nu + 1) / (2 * de);
+                    while (de > 0) {
+                        dots++;
+                        de /= 2;
+                    }
+                }
+                switch (len) {
+                case 2:
+                    fprintf(lily_out, "\\breve");
+                    break;
+                case 4:
+                    fprintf(lily_out, "\\longa");
+                    break;
+                default:
+                    fprintf(stderr, "Have no symbol for note of length %d\n", len);
+                    break;
+                }
+            } else {
+                if (is_two_pow(nu + 1)) {
+                    while (nu > 1) {
+                        dots++;
+                        de /= 2;
+                        nu /= 2;
+                    }
+                    fprintf(lily_out, "%d", de);
+                } else {
+                    int     ts_de;
+                    int     ts_nu;
+                    mpq2rat(time_sig_current->duration, &ts_nu, &ts_de);
+
+                    assert(mpq_equal(time_sig_current->duration, note->duration));
+                    // special type of whole-bar-rest
+                    fprintf(lily_out, "%d*%d", de, nu);
+                }
+            }
+            for (i = 0; i < dots; i++) {
+                fprintf(lily_out, ".");
             }
         }
-        for (i = 0; i < dots; i++) {
-            fprintf(lily_out, ".");
+
+        while (chord != NULL) {
+            dump_noteval(chord, voice);
+
+            chord = chord->chord;
         }
-    }
 
-    while (chord != NULL) {
-        fprintf(lily_out, " ");
-        dump_noteval(chord, voice);
+        for (a = note->stem->articulations; a != NULL; a = a->next) {
+            dumpArticulation(a);
+        }
 
-        chord = chord->chord;
-    }
+        if (note->stem->slur_start != NO_ID) {
+            fprintf(lily_out, "(");
+        }
 
-    for (a = note->stem->articulations; a != NULL; a = a->next) {
-        dumpArticulation(a);
-    }
+        if (note->chord != NULL && ! (note->flags & FLAG_REST)) {
+            fprintf(lily_out, "> ");
+        }
 
-    if (note->stem->slur_start != NO_ID) {
-        fprintf(lily_out, "(");
-    }
-
-    if (note->chord != NULL && ! (note->flags & FLAG_REST)) {
-        fprintf(lily_out, "> ");
-    }
-
-    if (note->tie_start != NO_ID) {
-        fprintf(lily_out, "~ ");
+        if (note->tie_start != NO_ID) {
+            fprintf(lily_out, "~");
+        }
     }
 
     mpq_set(dt, note->duration);
@@ -593,14 +596,10 @@ dumpNote(mpq_t *t, symbol_p scan, voice_p voice)
         mpq_mul(dt, dt, global_tuplet[u].ratio);
     }
     if ((note->flags & FLAG_REST) &&
-			mpq_equal(time_sig_current->duration, note->duration) &&
-			note->multibar > 1) {
-		fprintf(lily_out, "*%d ", note->multibar);
-		mpq_t mb;
-		mpq_init(mb);
-		mpq_set_si(mb, note->multibar, 1);
-		mpq_mul(dt, dt, mb);
-	}
+            mpq_equal(time_sig_current->duration, note->duration) &&
+            note->multibar > 1) {
+        fprintf(lily_out, "*%d", note->multibar);
+    }
     mpq_add(*t, *t, dt);
 
     last_dumped_symbol = scan;

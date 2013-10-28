@@ -31,7 +31,7 @@ void debugMeAt(mpq_t t)
     if (! initialized) {
         mpq_init(t_debug);
         mpq_set_ui(t_debug, 145, 4);
-		initialized = 1;
+        initialized = 1;
     }
 
     if (mpq_equal(t_debug, t)) {
@@ -52,19 +52,20 @@ voice_increase(staff_p f)
     memset(v, 0, sizeof(*f->voice));
     mpq_init(v->t_finish);
     mpq_set_ui(v->t_finish, 0, 1);
+    v->key_current = 0;
     v->key_previous_current = KEY_RESET;        /* previous key */
 
     for (scan = f->replicated.front; scan != NULL; scan = scan->next) {
-		report_symbol(scan, 1);
-	}
+        report_symbol(scan, 1);
+    }
 
     for (scan = f->replicated.front; scan != NULL; scan = scan->next) {
         symbol_p c = symbol_clone(scan);
         q_insert(&v->q, c);
     }
-	for (scan = v->q.front; scan != NULL; scan = scan->next) {
-		debugMeAt(scan->start);
-	}
+    for (scan = v->q.front; scan != NULL; scan = scan->next) {
+        debugMeAt(scan->start);
+    }
 }
 
 
