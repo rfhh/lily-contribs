@@ -209,18 +209,14 @@ do_staff_multibar_aggregate(staff_p f)
                 break;
             }
 
-            if (1) {
-                // Ah, there it is: a multibar rest
-                must_close = 0;
-                if (multibar == 0) {
-                    multibar_open = note;
-                } else {
-                    note->multibar = 0;     // suppress
-                }
-                multibar++;
+            // Ah, there it is: a multibar rest
+            must_close = 0;
+            if (multibar == 0) {
+                multibar_open = note;
             } else {
-                note->multibar = 1;
+                note->multibar = 0;     // suppress
             }
+            multibar++;
             break;
 
         case SYM_CHORD:
@@ -231,7 +227,6 @@ do_staff_multibar_aggregate(staff_p f)
             must_close = 0;
             break;
         }
-
 
         if (must_close && multibar > 0) {
             multibar_open->multibar = multibar;

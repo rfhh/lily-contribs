@@ -332,7 +332,7 @@ dumpSkip(mpq_t *t, const symbol_t *scan)
         mpq_out_str(stderr, 10, scan->start);
         fprintf(stderr, " is too low, should be ");
         mpq_out_str(stderr, 10, *t);
-        fprintf(stderr, " -- is your voice analysis correct?\n");
+        fprintf(stderr, " -- is my voice analysis correct?\n");
         return;
     }
     mpq_sub(dt, scan->start, *t);

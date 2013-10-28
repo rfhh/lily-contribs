@@ -11,7 +11,7 @@
 #include "xly_repeat.h"
 
 
-static symbol_p start_repeat;
+static int pending_repeats = 0;
 
 
 static symbol_p
@@ -41,14 +41,11 @@ handle_repeat(symbol_p s, staff_p f)
     case 0:
         break;
     case 1:
-        if (start_repeat != NULL) {
-            fprintf(stderr, "Seem to encounter nested repeats. Ignore\n");
-            break;
-        }
-        start_repeat = s;
+        pending_repeats++;
         break;
     case 2:
-        if (start_repeat == NULL) {
+        if (pending_repeats == 0) {
+            fprintf(stderr, "Warning: insert a repeat start at t = 0\n");
             /* Insert a start_repeat at the beginning */
             symbol_p    repeat;
             mpq_t       nul;
@@ -67,9 +64,9 @@ handle_repeat(symbol_p s, staff_p f)
                 f->unvoiced.tail = repeat;
             }
             f->unvoiced.front = repeat;
-            fprintf(stderr, "Warning: insert a repeat start at t = 0\n");
+        } else {
+            pending_repeats--;
         }
-        start_repeat = NULL;
         break;
     case 3:
     case 4:
@@ -87,8 +84,6 @@ do_staff_repeat(staff_p f)
 {
     symbol_p    scan;
     symbol_p    last = NULL;
-
-    start_repeat = NULL;
 
     /* The queue may be changed under our hands, but we don't care:
      * what we may insert is a start-repeat, and we do NOT want to see
@@ -137,16 +132,19 @@ do_staff_repeat(staff_p f)
         last = scan;
     }
 
-    if (last != NULL && start_repeat != NULL) {
-        /* Insert an omitted end-repeat */
-        symbol_p repeat = create_repeat(2, last->start);
+    if (last != NULL) {
+        while (pending_repeats > 0) {
+            /* Insert an omitted end-repeat */
+            symbol_p repeat = create_repeat(2, last->start);
 
-        fprintf(stderr, "Warning: insert a missing end-repeat at t = ");
-        mpq_out_str(stderr, 10, repeat->start);
-        last->next = repeat;
-        repeat->prev = last;
-        repeat->next = NULL;
-        f->unvoiced.tail = repeat;
+            fprintf(stderr, "Warning: insert a missing end-repeat at t = ");
+            mpq_out_str(stderr, 10, repeat->start);
+            last->next = repeat;
+            repeat->prev = last;
+            repeat->next = NULL;
+            f->unvoiced.tail = repeat;
+            pending_repeats--;
+        }
     }
 }
 
