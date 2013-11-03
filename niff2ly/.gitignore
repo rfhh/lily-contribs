@@ -1,0 +1,7 @@
+common.mk
+common.mk.orig
+configuration
+lily/liblily.a
+music/libmusic.a
+niff/libniffparser.a
+niff2ly

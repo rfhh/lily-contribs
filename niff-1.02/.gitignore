@@ -1,0 +1,9 @@
+Makefile
+config.cache
+config.log
+config.status
+niffsdk1.02/niffio/local.mk
+mkdep
+top.mk
+lib
+bin
