@@ -1,0 +1,58 @@
+I. Intro
+
+This is a beta release of niff2ly, a tiny program to convert
+NIFF into lilypond. I appreciate all comments and bug reports.
+Send them to rutger@cs.vu.nl.
+
+This is a beta release, not a "production" release. The first
+notable missing feature is a full-fledged and fool-proof
+voicing analysis in the case where there are multiple voices
+in a staff. niff2ly has some voice analysis but it is far from
+smart. Besides, there is no support at all yet for lyrics, although
+both NIFF and lilypond provide lyrics support. Ma~nana...
+
+II. Build
+
+Before building niff2ly, you need two other packages:
+
+1. The NIFF sdk from
+   http://www.musique.umontreal.ca/personnel/Belkin/NIFF.doc.html
+   or cached at http://www.cs.vu.nl/~rutger/software/niff-1.02.tbz2
+2. The GNU abritrary precision package gmp from a GNU mirror.
+   Start from www.gnu.org.
+
+Install both these packages.
+
+Then, create a directory where you want to install niff2ly.
+I call it NIFF2LY from here on. cd into NIFF2LY. Unpack the tar
+file with
+
+  tar zxf niff2ly-x-y.tgz
+
+(x = major release number, y = minor release number); it arrives
+automatically in NIFF2LY/niff2ly-x.y/. cd into NIFF2LY/niff2ly-x.y/.
+Read this file (README).
+
+You must configure niff2ly:
+
+  ./configure --niff-root=<top level dir of your niff sdk install>
+
+Then build niff2ly:
+
+  make
+
+optionally followed by
+
+  make install
+
+Default target directory for make install is /usr/local/bin.
+You can specify otherwise at configure time: do configure --help
+and follow instructions.
+
+III. Run
+
+Do
+
+  NIFF2LY/niff2ly-x.y/niff2ly bla.nif -o bla.ly
+
+to convert your niff file bla.nif into bla.ly.
