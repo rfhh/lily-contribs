@@ -1,0 +1,9 @@
+Projects for lilypond -- not *in* lilypond.
+Converters, patches, whatnot.
+
+Currently:
+ - niff2ly
+ - niff-1.02
+ - musedata2ly
+ - pmx2ly
+ - patch for dodecaphonic-first (2.16, 2.17)
