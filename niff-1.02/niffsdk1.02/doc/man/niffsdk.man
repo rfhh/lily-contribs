@@ -1,0 +1,708 @@
+.rn '' }`
+''' $RCSfile$$Revision$$Date$
+'''
+''' $Log$
+'''
+.de Sh
+.br
+.if t .Sp
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.de Sp
+.if t .sp .5v
+.if n .sp
+..
+.de Ip
+.br
+.ie \\n(.$>=3 .ne \\$3
+.el .ne 3
+.IP "\\$1" \\$2
+..
+.de Vb
+.ft CW
+.nf
+.ne \\$1
+..
+.de Ve
+.ft R
+
+.fi
+..
+'''
+'''
+'''     Set up \*(-- to give an unbreakable dash;
+'''     string Tr holds user defined translation string.
+'''     Bell System Logo is used as a dummy character.
+'''
+.tr \(*W-|\(bv\*(Tr
+.ie n \{\
+.ds -- \(*W-
+.ds PI pi
+.if (\n(.H=4u)&(1m=24u) .ds -- \(*W\h'-12u'\(*W\h'-12u'-\" diablo 10 pitch
+.if (\n(.H=4u)&(1m=20u) .ds -- \(*W\h'-12u'\(*W\h'-8u'-\" diablo 12 pitch
+.ds L" ""
+.ds R" ""
+.ds L' '
+.ds R' '
+'br\}
+.el\{\
+.ds -- \(em\|
+.tr \*(Tr
+.ds L" ``
+.ds R" ''
+.ds L' `
+.ds R' '
+.ds PI \(*p
+'br\}
+.\"	If the F register is turned on, we'll generate
+.\"	index entries out stderr for the following things:
+.\"		TH	Title 
+.\"		SH	Header
+.\"		Sh	Subsection 
+.\"		Ip	Item
+.\"		X<>	Xref  (embedded
+.\"	Of course, you have to process the output yourself
+.\"	in some meaninful fashion.
+.if \nF \{
+.de IX
+.tm Index:\\$1\t\\n%\t"\\$2"
+..
+.nr % 0
+.rr F
+.\}
+.TH niffsdk 3 "riffio" "14/Jun/96" "RIFFIO Documentation"
+.IX Title "niffsdk 3"
+.UC
+.IX Name "niffsdk - faq for the NIFFSDK"
+.if n .hy 0
+.if n .na
+.ds C+ C\v'-.1v'\h'-1p'\s-2+\h'-1p'+\s0\v'.1v'\h'-1p'
+.de CQ          \" put $1 in typewriter font
+.ft CW
+'if n "\c
+'if t \\&\\$1\c
+'if n \\&\\$1\c
+'if n \&"
+\\&\\$2 \\$3 \\$4 \\$5 \\$6 \\$7
+'.ft R
+..
+.\" @(#)ms.acc 1.5 88/02/08 SMI; from UCB 4.2
+.	\" AM - accent mark definitions
+.bd B 3
+.	\" fudge factors for nroff and troff
+.if n \{\
+.	ds #H 0
+.	ds #V .8m
+.	ds #F .3m
+.	ds #[ \f1
+.	ds #] \fP
+.\}
+.if t \{\
+.	ds #H ((1u-(\\\\n(.fu%2u))*.13m)
+.	ds #V .6m
+.	ds #F 0
+.	ds #[ \&
+.	ds #] \&
+.\}
+.	\" simple accents for nroff and troff
+.if n \{\
+.	ds ' \&
+.	ds ` \&
+.	ds ^ \&
+.	ds , \&
+.	ds ~ ~
+.	ds ? ?
+.	ds ! !
+.	ds /
+.	ds q
+.\}
+.if t \{\
+.	ds ' \\k:\h'-(\\n(.wu*8/10-\*(#H)'\'\h"|\\n:u"
+.	ds ` \\k:\h'-(\\n(.wu*8/10-\*(#H)'\`\h'|\\n:u'
+.	ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'^\h'|\\n:u'
+.	ds , \\k:\h'-(\\n(.wu*8/10)',\h'|\\n:u'
+.	ds ~ \\k:\h'-(\\n(.wu-\*(#H-.1m)'~\h'|\\n:u'
+.	ds ? \s-2c\h'-\w'c'u*7/10'\u\h'\*(#H'\zi\d\s+2\h'\w'c'u*8/10'
+.	ds ! \s-2\(or\s+2\h'-\w'\(or'u'\v'-.8m'.\v'.8m'
+.	ds / \\k:\h'-(\\n(.wu*8/10-\*(#H)'\z\(sl\h'|\\n:u'
+.	ds q o\h'-\w'o'u*8/10'\s-4\v'.4m'\z\(*i\v'-.4m'\s+4\h'\w'o'u*8/10'
+.\}
+.	\" troff and (daisy-wheel) nroff accents
+.ds : \\k:\h'-(\\n(.wu*8/10-\*(#H+.1m+\*(#F)'\v'-\*(#V'\z.\h'.2m+\*(#F'.\h'|\\n:u'\v'\*(#V'
+.ds 8 \h'\*(#H'\(*b\h'-\*(#H'
+.ds v \\k:\h'-(\\n(.wu*9/10-\*(#H)'\v'-\*(#V'\*(#[\s-4v\s0\v'\*(#V'\h'|\\n:u'\*(#]
+.ds _ \\k:\h'-(\\n(.wu*9/10-\*(#H+(\*(#F*2/3))'\v'-.4m'\z\(hy\v'.4m'\h'|\\n:u'
+.ds . \\k:\h'-(\\n(.wu*8/10)'\v'\*(#V*4/10'\z.\v'-\*(#V*4/10'\h'|\\n:u'
+.ds 3 \*(#[\v'.2m'\s-2\&3\s0\v'-.2m'\*(#]
+.ds o \\k:\h'-(\\n(.wu+\w'\(de'u-\*(#H)/2u'\v'-.3n'\*(#[\z\(de\v'.3n'\h'|\\n:u'\*(#]
+.ds d- \h'\*(#H'\(pd\h'-\w'~'u'\v'-.25m'\f2\(hy\fP\v'.25m'\h'-\*(#H'
+.ds D- D\\k:\h'-\w'D'u'\v'-.11m'\z\(hy\v'.11m'\h'|\\n:u'
+.ds th \*(#[\v'.3m'\s+1I\s-1\v'-.3m'\h'-(\w'I'u*2/3)'\s-1o\s+1\*(#]
+.ds Th \*(#[\s+2I\s-2\h'-\w'I'u*3/5'\v'-.3m'o\v'.3m'\*(#]
+.ds ae a\h'-(\w'a'u*4/10)'e
+.ds Ae A\h'-(\w'A'u*4/10)'E
+.ds oe o\h'-(\w'o'u*4/10)'e
+.ds Oe O\h'-(\w'O'u*4/10)'E
+.	\" corrections for vroff
+.if v .ds ~ \\k:\h'-(\\n(.wu*9/10-\*(#H)'\s-2\u~\d\s+2\h'|\\n:u'
+.if v .ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'\v'-.4m'^\v'.4m'\h'|\\n:u'
+.	\" for low resolution devices (crt and lpr)
+.if \n(.H>23 .if \n(.V>19 \
+\{\
+.	ds : e
+.	ds 8 ss
+.	ds v \h'-1'\o'\(aa\(ga'
+.	ds _ \h'-1'^
+.	ds . \h'-1'.
+.	ds 3 3
+.	ds o a
+.	ds d- d\h'-1'\(ga
+.	ds D- D\h'-1'\(hy
+.	ds th \o'bp'
+.	ds Th \o'LP'
+.	ds ae ae
+.	ds Ae AE
+.	ds oe oe
+.	ds Oe OE
+.\}
+.rm #[ #] #H #V #F C
+.SH "NAME"
+.IX Header "NAME"
+niffsdk \- faq for the NIFFSDK
+.SH "SYNOPSIS"
+.IX Header "SYNOPSIS"
+User Guide prepared by Tim Butler and Cindy Grande <72723.1272@compuserve.com>
+.Sh "General"
+.IX Subsection "General"
+.Ip "\(bu" 4
+.IX Item "\(bu"
+What is the Niff \s-1SDK\s0?
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Who is to blame?
+.Ip "\(bu" 4
+.IX Item "\(bu"
+What is in the \s-1NIFF\s0 \s-1SDK\s0?
+.Ip "\(bu" 4
+.IX Item "\(bu"
+What platforms does the \s-1NIFF\s0 \s-1SDK\s0 support?
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Where can I get the \s-1NIFF\s0 \s-1SDK\s0?
+.Ip "\(bu" 4
+.IX Item "\(bu"
+What is the latest version of the \s-1NIFF\s0 \s-1SDK\s0?
+.Ip "\(bu" 4
+.IX Item "\(bu"
+What features are provided by \s-1NIFFSDK\s0?
+.Ip "\(bu" 4
+.IX Item "\(bu"
+How do I find my way around the \s-1NIFF\s0 \s-1SDK\s0?
+.Ip "\(bu" 4
+.IX Item "\(bu"
+How do I install the \s-1NIFF\s0 \s-1SDK\s0?
+.Sh "Using the \s-1NIFFSDK\s0"
+.IX Subsection "Using the \s-1NIFFSDK\s0"
+.Ip "\(bu" 4
+.IX Item "\(bu"
+How can I learn about the \s-1NIFF\s0 \s-1SDK\s0?
+.Ip "\(bu" 4
+.IX Item "\(bu"
+How do I write a \s-1NIFF\s0 file?
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Is there an easy way to write the Chunk Length Table?
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Is there an easy way to write the String Table?
+.Ip "\(bu" 4
+.IX Item "\(bu"
+How do I read a \s-1NIFF\s0 file?
+.Ip "\(bu" 4
+.IX Item "\(bu"
+How do I parse a \s-1NIFF\s0 file?
+.Ip "\(bu" 4
+.IX Item "\(bu"
+What information does the parser provide to the user callback functions?
+.Ip "\(bu" 4
+.IX Item "\(bu"
+What is the difference between Atomic and Taggable Chunks?
+.Ip "\(bu" 4
+.IX Item "\(bu"
+What is the difference between a Raw and Cooked Chunk?
+.Sh "Hacking"
+.IX Subsection "Hacking"
+.Ip "\(bu" 4
+.IX Item "\(bu"
+What are the coding conventions?
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Why are there so many types of registration routines and callback functions?
+.SH "General"
+.IX Header "General"
+.Sh "What is the Niff \s-1SDK\s0?"
+.IX Subsection "What is the Niff \s-1SDK\s0?"
+The \s-1NIFF\s0 \s-1SDK\s0 is a free, public domain, platform independent Software
+Developer's Kit (\s-1SDK\s0) for software developers implementing the
+Notation Interchange File Format (\s-1NIFF\s0).  It is a collection of
+software libraries and tools to support reading, writing, and
+navigating \s-1NIFF\s0 files. \s-1NIFF\s0 documentation, sample code, and sample
+\s-1NIFF\s0 files are included. The \s-1NIFF\s0 \s-1SDK\s0 makes it possible for a software
+developer to add \s-1NIFF\s0 reading and writing capabilities to an existing
+program without writing the housekeeping functions that would
+otherwise be required.
+.PP
+The first release of this software has been through an initial testing
+phase, but further improvements are expected.  Your bug reports,
+comments and suggestions are welcome \- please direct them to Tim
+Butler (tim@netbox.com).
+.PP
+The software is supplied in source code format in the C programming
+language.
+.PP
+This guide assumes the reader is familiar with \s-1NIFF\s0, \s-1RIFF\s0 and the C
+programming language.  For detailed information on the \s-1NIFF\s0 format,
+and a summary of \s-1RIFF\s0, please refer to the current \s-1NIFF\s0 specification,
+at blackbox.cartah.washington.edu, in the /pub/\s-1NIFF\s0 directory.
+.Sh "Who is to blame?"
+.IX Subsection "Who is to blame?"
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Tim Butler
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Cindy Grande
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Mark Walsen
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Steven Mounce
+.Sh "Who do I complain to?"
+.IX Subsection "Who do I complain to?"
+Tim Butler (tim@netbox.com)
+.Sh "What is in the \s-1NIFF\s0 \s-1SDK\s0?"
+.IX Subsection "What is in the \s-1NIFF\s0 \s-1SDK\s0?"
+The \s-1NIFFSDK\s0 is comprised of three major parts:
+.Ip "*\s-1RIFFIO\s0" 4
+.IX Item "*\s-1RIFFIO\s0"
+Libraries and tools for \s-1RIFF\s0 files.
+.Ip "*\s-1NIFFIO\s0" 4
+.IX Item "*\s-1NIFFIO\s0"
+Libraries and tools for \s-1NIFF\s0 files (a special case of \s-1RIFF\s0)
+Uses \s-1RIFFIO\s0 and \s-1NIFF\s0.
+.Ip "*\s-1NIFF\s0" 4
+.IX Item "*\s-1NIFF\s0"
+\*(L"Official\*(R" files from the \s-1NIFF\s0 Project (really only niff.h for now).
+.Sh "What platforms does the \s-1NIFF\s0 \s-1SDK\s0 support?"
+.IX Subsection "What platforms does the \s-1NIFF\s0 \s-1SDK\s0 support?"
+The \s-1NIFF\s0 \s-1SDK\s0 is written in \s-1ANSI\s0 C and uses \s-1ANSI\s0\-specific features not
+provided in K+R C such as function prototypes, preprocessor
+stringizing and token concatenation, and assumes minimum sizes for
+data types.  \s-1ANSI\s0 I/O operations and the console user interface are
+used as the defaults, although the user may override these.  (Future
+versions may include Windows and Macintosh code for this purpose.)
+.PP
+The \s-1NIFF\s0 \s-1SDK\s0 has been compiled and (partially) tested under:
+\s-1HP/UX\s0 C compiler
+Borland C 4.5 (\s-1MS\s0\-\s-1DOS\s0)
+Think C (Mac)
+.Sh "Where can I get the \s-1NIFF\s0 \s-1SDK\s0?"
+.IX Subsection "Where can I get the \s-1NIFF\s0 \s-1SDK\s0?"
+The \s-1NIFF\s0 \s-1SDK\s0 is available for anonymous \s-1FTP\s0 from
+\s-1URL\s0 ftp://blackbox.cartah.washington.edu
+.PP
+in the /pub/\s-1NIFF\s0 directory.
+.PP
+Compressed zip and cpt formats are provided (\s-1NIFFSDK\s0.\s-1ZIP\s0 and \s-1NIFFSDK\s0.\s-1CPT\s0).
+.Sh "What is the latest version of the \s-1NIFF\s0 \s-1SDK\s0?"
+.IX Subsection "What is the latest version of the \s-1NIFF\s0 \s-1SDK\s0?"
+Version 1.02
+.PP
+Your comments, bug reports and suggestions are welcome, and will be
+incorporated in future versions.  Report them to Tim Butler, at the
+email address above.
+.PP
+This version's documentation only covers the highest level user
+interface, for \s-1NIFF\s0 files only.  Other kinds of \s-1RIFF\s0 files are also
+supported by the \s-1NIFF\s0 \s-1SDK\s0, but are not yet documented in this User
+Guide. After some practice, programmers might want to try out some of
+the user-customizable features such as custom error handling and
+non-\s-1ANSI\s0 I/O operations.  Documentation for these features is still in
+progress.
+.Sh "What features are provided by \s-1NIFFSDK\s0?"
+.IX Subsection "What features are provided by \s-1NIFFSDK\s0?"
+\s-1RIFFIO\s0:
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Customizable error handling and reporting.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Supports read, write, seek, and tell operations on \s-1RIFF\s0 files
+through user-supplied callbacks.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Reads and writes integers to \s-1RIFF\s0 files regardless of
+machine byte order.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Read, write, and navigate chunks in a \s-1RIFF\s0 file
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Operations to construct and disassemble four-character codes.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Provides a table data structure keyed on four-character codes.
+.PP
+\s-1STDCRIFF\s0 (in \s-1RIFFIO\s0):
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Provides file I/O callbacks to \s-1RIFFIO\s0 using the Standard C library.
+.PP
+\s-1NIFFIO\s0:
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Extends \s-1RIFFIO\s0 to handle \s-1NIFF\s0 files
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Provides a chunk length table data struture and operations.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Extends \s-1RIFFIO\s0 files to support chunk length tables.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Supports writing strings to \s-1NIFF\s0 string tables.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Read, write, and navigate tags in a \s-1NIFF\s0 file.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Reads and writes \s-1NIFF\s0 primitive types, regardless of machine representation.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Reads and writes \s-1NIFF\s0 chunk and tag structures.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Provides a \s-1NIFF\s0 parser that scans a \s-1NIFF\s0 file and makes callbacks
+to user-supplied functions based on list, chunk, and tag types.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Keeps track of pending lists and chunks while writing a \s-1NIFF\s0 file.
+.Sh "How do I find my way around the \s-1NIFF\s0 \s-1SDK\s0?"
+.IX Subsection "How do I find my way around the \s-1NIFF\s0 \s-1SDK\s0?"
+Each component may contain the following subdirectories:
+.Ip "*include" 4
+.IX Item "*include"
+source include files
+.Ip "*doc/txt" 4
+.IX Item "*doc/txt"
+documentation in text format
+.Ip "*doc/{htm,man,pod}" 4
+.IX Item "*doc/{htm,man,pod}"
+documentation in other formats (derived from text)
+.Ip "*mk" 4
+.IX Item "*mk"
+Makefile includes
+.Ip "*src/lib" 4
+.IX Item "*src/lib"
+source code for libraries
+.Ip "*src/cmd" 4
+.IX Item "*src/cmd"
+source code for tools
+.Ip "*src/example" 4
+.IX Item "*src/example"
+example source code
+.Ip "*src/test" 4
+.IX Item "*src/test"
+source code for testing
+.Ip "*test" 4
+.IX Item "*test"
+test suite
+.SH "How do I install the NIFF SDK?"
+.IX Header "How do I install the NIFF SDK?"
+The exact procedure depends on your programming environment.
+.PP
+Under Unix use the GNU configuration script and make:
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Change directories to top of the distribution.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Run configure.
+.Sp
+If you need to customize the configuration then run \*(L"configure --help\*(R"
+for help.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+make all
+.Ip "\(bu" 4
+.IX Item "\(bu"
+make check (optional)
+.Ip "\(bu" 4
+.IX Item "\(bu"
+make install
+.PP
+If you aren't running Unix then you are on your own (for now).
+You will have to track down all the sources tucked away in the nooks
+and crannies of the distribution.
+.PP
+You might want to start by building the \*(L"hello world\*(R" application in
+riffio/src/example/hello, or write a simple file using
+niffio/src/example/nif001.  For nif001, link in all of the libraries in the
+{riffio,niffio}/src/lib directories.
+.Sh "What are those extraneous T's at the beginning of some sentences?"
+.IX Subsection "What are those extraneous T's at the beginning of some sentences?"
+I used a single (silent) T to start some sentences that don't begin with a
+capital letter. It's a kludge.
+.SH "USING THE NIFFSDK"
+.IX Header "USING THE NIFFSDK"
+.Sh "How can I learn about the \s-1NIFF\s0 \s-1SDK\s0?"
+.IX Subsection "How can I learn about the \s-1NIFF\s0 \s-1SDK\s0?"
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Read the online documentation
+.Sp
+The documentation is in pretty bad shape right now but is a top
+priority.
+.Sp
+Each part of the \s-1NIFFSDK\s0 has a doc directory that contains documentation
+in various formats including text, unix man pages, perl \s-1POD\s0, and \s-1HTML\s0.
+(Some of the \s-1HTML\s0 links even work!)
+.Sp
+Most of the documentation that exists is for reference, rather than learning.
+It is extracted directly from the source.
+.Sp
+There is no index to the documentation yet.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Look at example source code.
+.Sp
+There are a few examples under {riffio,niffio}/src/example
+.Sh "How do I write a \s-1NIFF\s0 file?"
+.IX Subsection "How do I write a \s-1NIFF\s0 file?"
+Look at the example program niffio/src/example/nif001.
+.PP
+The easiest way to write a \s-1NIFF\s0 file is to use the NIFFIOStorage
+functions.  They provide a layer on top of the NIFFIOFile routines to
+keep track of lists and chunks that have not been finalized.
+.PP
+First, open a file using \fIfopen()\fR, and save the file pointer.  Then
+call \fINIFFIOStorageNewSTDC()\fR to allocate and set up the storage areas
+needed to keep track of the status of this file.  NIFFIOStorage operations
+will assume that all following I/O operations are intended for this
+file (the \*(L"current\*(R" file), unless otherwise specified.
+.PP
+If more than one \s-1NIFF\s0 file is to be active at once, you must perform
+the open and \fINIFFIOStorageNewSTDC()\fR steps for each file.  You must
+change the current file by calling \fINIFFIOStorageSetCurrent\fR\|(pstore),
+where <pstore> is the NIFFIOStorage pointer returned by the
+\fINIFFIOStorageNewSTDC()\fR call for the desired file.
+.PP
+After all I/O to a file is complete, call \fINIFFIOStorageDelete\fR\|(pstore),
+using the pointer returned by \fINIFFIOStorageNewSTDC()\fR.  This
+releases the storage used by the \s-1NIFF\s0 \s-1SDK\s0 for this file.
+.PP
+To write the \s-1NIFF\s0 form chunk, use \fINIFFIOStartNiff()\fR.  This must be
+balanced with a call to \fINIFFIOEndNiff()\fR when you are finished writing
+to the file.
+.PP
+To write a \s-1NIFF\s0 list chunk, call NIFFIOStartXXX, where \s-1XXX\s0 is the name
+of the list, as defined in the niff.h header file.  After all chunks
+have been written for this list, complete the list with a call to
+NIFFIOEndXXX.  For example, for a Setup Section list, use
+\fINIFFIOStartSetupSection()\fR and \fINIFFIOEndSetupSection()\fR.
+.PP
+To write an ordinary chunk, call NIFFIOchunkYYY(arg list), where \s-1YYY\s0
+is the name of the chunk, as defined in the niff.h header file, and
+arg list is an argument list composed of the fields in the chunk's
+structure.  For example, to write a Part chunk,
+.PP
+.Vb 1
+\&        NIFFIOchunkPart(0,0,1,2,-1,-1,-1);
+.Ve
+supplies constant values for the fields in the following structure:
+.PP
+.Vb 10
+\&        typedef struct  niffPart
+\&        {               
+\&            SHORT           partID;
+\&            STROFFSET       name;
+\&            STROFFSET       abbreviation;
+\&            BYTE            numberOfStaves;
+\&            SIGNEDBYTE      midiChannel;
+\&            SIGNEDBYTE      midiCable;      
+\&            SIGNEDBYTE      transpose;      
+\&        }  niffPart;
+.Ve
+To add a tag to a chunk, call NIFFIOtagZZZ(arg list), where \s-1ZZZ\s0 is the
+name of the tag, as defined in the niff.h header file, and arg list is
+an argument list composed of the fields in the tag's structure.  For
+example, to write a Logical Placement tag,
+.PP
+.Vb 1
+\&        NIFFIOtagLogicalPlacement(0, 2, 0);
+.Ve
+supplies constant values for the fields in the following structure:
+.PP
+.Vb 6
+\&        typedef struct niffLogicalPlacement
+\&         {
+\&             BYTE    horizontal;
+\&             BYTE    vertical;
+\&             BYTE    proximity;      
+\&         } niffLogicalPlacement;
+.Ve
+.Sh "Is there an easy way to write the Chunk Length Table?"
+.IX Subsection "Is there an easy way to write the Chunk Length Table?"
+Yes. Call \fINIFFIOStoreDefaultCLT()\fR.  The \fINIFFIOStoreDefaultCLT()\fR function
+uses a standard chunk length table that includes all valid \s-1NIFF\s0 chunks
+and their lengths in the current \s-1NIFF\s0 version.  If you want a custom
+chunk length table, some lower level functions can be used for this
+purpose (but the procedure is not yet documented).
+.SH "Is there an easy way to write the String Table?"
+.IX Header "Is there an easy way to write the String Table?"
+Yes. Call \fINIFFIOchunkStringTable()\fR to begin a string table chunk.
+Then call NIFFIOStoreStbl(myStbl, n), where myStbl is an array of type
+NIFFIOStbl, and <n> is the number of strings.  You must first fill
+<myStbl> with pointers to all the strings you will refer to later in
+the NIFF file.  \fINIFFIOStoreStbl()\fR will store the string data,
+calculating the correct offset for each string and storing it in the
+<myStbl> offset element that corresponds to the pointer to the string.
+See \fIMyWriteStringTable()\fR in niffio/src/example/nif001/nif001.c for an
+example.
+.Sh "How do I read a \s-1NIFF\s0 file?"
+.IX Subsection "How do I read a \s-1NIFF\s0 file?"
+Create a new NIFFIOFile from you own Standard C Library \s-1FILE\s0 pointer
+using \fINIFFIOFileNewSTDC()\fR.
+.PP
+See the niffio/src/cmd/niffdump/niffdump.c for an example of
+the next steps.
+.PP
+Allocate space needed by the \s-1NIFF\s0 \s-1SDK\s0's parsing routines with the
+following statement:
+.PP
+.Vb 1
+\&            pparserNew = NIFFIOParserNew();
+.Ve
+Then \*(L"register\*(R" each distinct type of list, chunk and tag that your
+program recognizes.  Registering an item means specifying a pointer to
+the names of user \*(L"callback\*(R" functions that are to be called when the
+parser encounters an item of this type.  These functions are where you
+would put your own program logic for interpreting the values in each
+list, chunk or tag.
+.PP
+For lists and standard chunks, you can specify two functions \- one to
+be called when the list or chunk is first encountered (function1), and
+one to be called after all components of the list or chunk have been
+read (function2).  For \*(L"atomic\*(R" chunks (those which are not allowed
+tags) and for tags, you can specify only one function \- to be called
+after the chunk or tag has been read.  The function names and contents
+are entirely up to you \- those supplied in callback.c are examples.
+.PP
+To register a list, use the following statement, where \s-1XXX\s0 is the name
+of the list (from niff.h):
+.PP
+.Vb 1
+\&            NIFFIORegisterListXXX(pparserNew, function1, function2);
+.Ve
+To register a chunk, use the following statement, where \s-1YYY\s0 is the
+name of the chunk (from niff.h):
+.PP
+.Vb 1
+\&            NIFFIORegisterChunkYYY(pparserNew, function1, function2);
+.Ve
+To register a tag, use the following statement, where \s-1ZZZ\s0 is the name
+of the tag (from niff.h), and \s-1YYY\s0 is the name of the parent chunk:
+.PP
+.Vb 1
+\&            NIFFIORegisterTagZZZ(pparserNew, niffckidYYY, function1);
+.Ve
+You may specify \s-1NIFFIO_FOURCC_WILDCARD\s0 in place of <niffckidYYY>, if
+you want to use the same function to process a tag no matter which
+chunk is its parent.
+.PP
+You may also register default functions for a list, taggable chunk,
+atomic chunk, or tag.  These functions will be called when any
+unregistered item of the appropriate type is encountered.
+.Sh "How do I parse a \s-1NIFF\s0 file?"
+.IX Subsection "How do I parse a \s-1NIFF\s0 file?"
+After initializing the parser, use the following statement to set the tracing
+feature either off or on:
+.PP
+.Vb 1
+\&        NIFFIOParserSetTracing(pparser, 1); /* 1 = trace on, 0 = trace off */
+.Ve
+The tracer sends output to the console as it encounters each item in the file.
+.PP
+Next, start the parser with the following statement:
+.PP
+.Vb 1
+\&        NIFFIOParseFile(pparser, pnf,  0, 0 );
+.Ve
+This specifies the file to be parsed, and the parser storage area (the one
+containing the pointers to the registered functions, initialized above).
+The parser will proceed through the file, passing control to the user callback
+functions when it encounters the corresponding items.
+.Sh "What information does the parser provide to the user callback functions?"
+.IX Subsection "What information does the parser provide to the user callback functions?"
+Each callback function is supplied with a \*(L"context\*(R" storage area that contains
+information about the current state of the parser and the file.  See the
+documentation for the following structures in niffio.h:
+.Ip "*NIFFIOChunkContext" 4
+.IX Item "*NIFFIOChunkContext"
+Parser state information provided to chunk callbacks.
+.Ip "*NIFFIOUserContext" 4
+.IX Item "*NIFFIOUserContext"
+User-defined parser state information provided by parent chunk callbacks.
+.Ip "*NIFFIOTagContext" 4
+.IX Item "*NIFFIOTagContext"
+Parser state information provided to tag callbacks.
+.Sh "What is the difference between Atomic and Taggable Chunks?"
+.IX Subsection "What is the difference between Atomic and Taggable Chunks?"
+The \s-1NIFF\s0 \s-1SDK\s0 parser uses the term \*(L"atomic\*(R" to refer to a chunk type
+which will not have any tags. (That is, the Chunk Length Table entry
+for this chunk type is \-1).  A \*(L"taggable\*(R" chunk is any other type of
+chunk. These terms distinguish the different chunk types according to
+how they are used by the parser.
+.Sh "What is the difference between a Raw and Cooked Chunk?"
+.IX Subsection "What is the difference between a Raw and Cooked Chunk?"
+The \s-1NIFF\s0 \s-1SDK\s0 parser calls a chunk \*(L"raw\*(R" when it has an empty fixed
+portion.  (The Chunk Length Table entry for this chunk type is zero.)
+A \*(L"cooked\*(R" chunk is one which has a defined structure, and thus a
+positive value in its Chunk Length Table entry.
+.SH "HACKING"
+.IX Header "HACKING"
+.Sh "What are the coding conventions?"
+.IX Subsection "What are the coding conventions?"
+Here are some Hungarian notation prefixes that are used throughout the
+source.
+.PP
+.Vb 12
+\&     str      NUL-terminated string
+\&     rf       RIFFIOFile
+\&     nf       NIFFIOFile
+\&     offset   RIFFIOOffset
+\&     fcc      Four-character code
+\&     chunk    RIFFIOChunk
+\&     size     RIFFIOSize
+\&     tag      NIFFIOTag
+\&     userctx  NIFFIOUserContext
+\&     chunkctx NIFFIOChunkContext
+\&     tagctx   NIFFIOTagContext
+\&     clt      NIFFIOChunkLengthTable
+.Ve
+.Sh "Why are there so many types of registration routines and callback functions?"
+.IX Subsection "Why are there so many types of registration routines and callback functions?"
+The idea was to use C's argument and type checking as much as
+possible.  Each registration function takes callbacks that are
+specific to chunk and tag types.
+.PP
+(To be continued...
+...really...)
+.PP
+$Id: niffsdk.txt,v 1.2 1996/06/15 03:11:16 tim Exp $
+
+.rn }` ''

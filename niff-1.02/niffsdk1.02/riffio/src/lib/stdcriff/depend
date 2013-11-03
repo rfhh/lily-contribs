@@ -1,0 +1,3 @@
+
+stdcriff.o: ../../../include/riffio.h
+stdcriff.o: ../../../include/stdcriff.h

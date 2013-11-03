@@ -1,0 +1,17 @@
+
+=head1 NAME
+
+t_fcc - test RIFFIOFOURCC operations
+
+=head1 SYNOPSIS
+
+t_fcc
+
+=head1 DESCRIPTION
+
+Runs various tests on RIFFIOFOURCC operations. Core dumps on failure.
+
+=head1 RETURN VALUE
+
+Returns 0 if all tests pass.
+Non-zero otherwise.

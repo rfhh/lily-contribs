@@ -1,0 +1,16 @@
+# $Header: /usr/local/cvsroot/niffsdk/configure.in,v 1.1 1996/06/12 06:39:36 tim Exp $
+
+AC_INIT(NIFFSDK)
+AC_CONFIG_AUX_DIR(mk)
+
+dnl #AC_PROG_CC
+dnl AC_PROG_INSTALL
+dnl AC_PROG_RANLIB
+
+dnl AC_PATH_PROGS(MAKEDEPEND, makedepend, :)
+
+VERSION=VERSION
+AC_SUBST_FILE(VERSION)
+
+AC_CONFIG_SUBDIRS(niff riffio niffio)
+AC_OUTPUT(Makefile mk/top.mk:mk/top.in mk/mkdep)

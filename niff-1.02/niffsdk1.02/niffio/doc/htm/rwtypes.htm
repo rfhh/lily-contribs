@@ -1,0 +1,275 @@
+<!-- $Id$ -->
+<HTML><HEAD>
+<CENTER><TITLE>rwtypes</TITLE>
+</HEAD>
+<BODY></CENTER><p><hr>
+
+<H1> 
+<A NAME="rwtypes_name_0">
+NAME</A>
+</H1>
+rwtypes - Read and Write basic types defined in ``niff.h''
+<p>
+<UL>
+<LI>
+<A HREF="rwtypes.htm#rwtypes_niffioreadbyte_0">NIFFIOReadBYTE()</A>
+
+<p>
+<LI>
+<A HREF="rwtypes.htm#rwtypes_niffioreadchar_0">NIFFIOReadCHAR()</A>
+
+<p>
+<LI>
+<A HREF="rwtypes.htm#rwtypes_niffioreadsignedbyte_0">NIFFIOReadSIGNEDBYTE()</A>
+
+<p>
+<LI>
+<A HREF="rwtypes.htm#rwtypes_niffioreadshort_0">NIFFIOReadSHORT()</A>
+
+<p>
+<LI>
+<A HREF="rwtypes.htm#rwtypes_niffioreadlong_0">NIFFIOReadLONG()</A>
+
+<p>
+<LI>
+<A HREF="rwtypes.htm#rwtypes_niffioreadrational_0">NIFFIOReadRATIONAL()</A>
+
+<p>
+<LI>
+<A HREF="rwtypes.htm#rwtypes_niffioreadstroffset_0">NIFFIOReadSTROFFSET()</A>
+
+<p>
+<LI>
+<A HREF="rwtypes.htm#rwtypes_niffioreadfontidx_0">NIFFIOReadFONTIDX()</A>
+
+<p>
+<LI>
+<A HREF="rwtypes.htm#rwtypes_niffiowritebyte_0">NIFFIOWriteBYTE()</A>
+
+<p>
+<LI><EM>NIFFIOWriteCHAR()</EM>
+<p>
+<LI>
+<A HREF="rwtypes.htm#rwtypes_niffiowritesignedbyte_0">NIFFIOWriteSIGNEDBYTE()</A>
+
+<p>
+<LI>
+<A HREF="rwtypes.htm#rwtypes_niffiowriteshort_0">NIFFIOWriteSHORT()</A>
+
+<p>
+<LI>
+<A HREF="rwtypes.htm#rwtypes_niffiowritelong_0">NIFFIOWriteLONG()</A>
+
+<p>
+<LI>
+<A HREF="rwtypes.htm#rwtypes_niffiowriterational_0">NIFFIOWriteRATIONAL()</A>
+
+<p>
+<LI>
+<A HREF="rwtypes.htm#rwtypes_niffiowritestroffset_0">NIFFIOWriteSTROFFSET()</A>
+
+<p>
+<LI>
+<A HREF="rwtypes.htm#rwtypes_niffiowritefontidx_0">NIFFIOWriteFONTIDX()</A>
+
+<p>
+</UL>
+.
+<p><p><hr>
+
+<H1> 
+<A NAME="rwtypes_niffioreadbyte_0">
+NIFFIOReadBYTE</A>
+</H1>
+Read an NIFF BYTE from a NIFFIOFile.
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOReadBYTE(NIFFIOFile *pnf, BYTE *pbyte)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="rwtypes_niffioreadchar_0">
+NIFFIOReadCHAR</A>
+</H1>
+Read a NIFF CHAR from a NIFFIOFile.
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOReadCHAR(NIFFIOFile *pnf, CHAR *pchar)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="rwtypes_niffioreadsignedbyte_0">
+NIFFIOReadSIGNEDBYTE</A>
+</H1>
+Read a NIFF SIGNEDBYTE from a NIFFIOFile.
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOReadSIGNEDBYTE(NIFFIOFile *pnf, SIGNEDBYTE *sbp)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="rwtypes_niffioreadshort_0">
+NIFFIOReadSHORT</A>
+</H1>
+Read a NIFF SHORT from a NIFFIOFile.
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOReadSHORT(NIFFIOFile *pnf, SHORT *ssp)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="rwtypes_niffioreadlong_0">
+NIFFIOReadLONG</A>
+</H1>
+Read a NIFF LONG from a NIFFIOFile.
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOReadLONG(NIFFIOFile *pnf, LONG *slp)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="rwtypes_niffioreadrational_0">
+NIFFIOReadRATIONAL</A>
+</H1>
+Read a NIFF RATIONAL from a NIFFIOFile.
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOReadRATIONAL(NIFFIOFile *pnf, RATIONAL *prat)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="rwtypes_niffioreadstroffset_0">
+NIFFIOReadSTROFFSET</A>
+</H1>
+Read a NIFF STROFFSET from a NIFFIOFile.
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOReadSTROFFSET(NIFFIOFile *pnf, STROFFSET *pstroff)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="rwtypes_niffioreadfontidx_0">
+NIFFIOReadFONTIDX</A>
+</H1>
+Read a NIFF FONTIDX from a NIFFIOFile.
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOReadFONTIDX(NIFFIOFile *pnf, FONTIDX *pfidx)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="rwtypes_niffiowritebyte_0">
+NIFFIOWriteBYTE</A>
+</H1>
+Write a NIFF BYTE to a NIFFIOFile.
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOWriteBYTE(NIFFIOFile *pnf, BYTE b)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="rwtypes_niffiowritesignedbyte_0">
+NIFFIOWriteSIGNEDBYTE</A>
+</H1>
+Write a NIFF SIGNEDBYTE to a NIFFIOFile.
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOWriteSIGNEDBYTE(NIFFIOFile *pnf, SIGNEDBYTE sb)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="rwtypes_niffiowriteshort_0">
+NIFFIOWriteSHORT</A>
+</H1>
+Write a NIFF SHORT to a NIFFIOfile.
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOWriteSHORT(NIFFIOFile *pnf, SHORT ss)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="rwtypes_niffiowritelong_0">
+NIFFIOWriteLONG</A>
+</H1>
+Write a NIFF LONG to a NIFFIOFile.
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOWriteLONG(NIFFIOFile *pnf, LONG sl)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="rwtypes_niffiowriterational_0">
+NIFFIOWriteRATIONAL</A>
+</H1>
+Write a NIFF RATIONAL to a NIFFIOFile.
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOWriteRATIONAL(NIFFIOFile *pnf, RATIONAL rat)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="rwtypes_niffiowritestroffset_0">
+NIFFIOWriteSTROFFSET</A>
+</H1>
+Write a NIFF STROFFSET to a NIFFIOFile.
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOWriteSTROFFSET(NIFFIOFile *pnf, STROFFSET stroff)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="rwtypes_niffiowritefontidx_0">
+NIFFIOWriteFONTIDX</A>
+</H1>
+Write a NIFF FONTIDX to a NIFFIOFile.
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOWriteFONTIDX(NIFFIOFile *pnf, FONTIDX f)
+
+</XMP>
+<p>
+</BODY>
+</HTML>

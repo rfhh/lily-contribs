@@ -1,0 +1,170 @@
+////////////////////////////////////////////////////////////////////////////////
+// NIFF Form
+'RIFX' ( 'NIFF' // sizeData=800
+
+////////////////////////////////////////////////////////////////////////////////
+// Setup Section
+'LIST' ( 'setp' // sizeData = 788l
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Chunk Length Table
+    'clt ' ( // sizeData=672
+
+        'IARL'    -1L
+        'IART'    -1L
+        'ICMS'    -1L
+        'ICMT'    -1L
+        'ICOP'    -1L
+        'ICRD'    -1L
+        'ICRP'    -1L
+        'IDIM'    -1L
+        'IDPI'    -1L
+        'IENG'    -1L
+        'IGNR'    -1L
+        'IKEY'    -1L
+        'ILGT'    -1L
+        'IMED'    -1L
+        'INAM'    -1L
+        'IPLT'    -1L
+        'IPRD'    -1L
+        'ISBJ'    -1L
+        'ISFT'    -1L
+        'ISHP'    -1L
+        'ISRC'    -1L
+        'ISRF'    -1L
+        'acdl'     1L
+        'altg'     5L
+        'arpg'     1L
+        'artc'     2L
+        'augd'     0L
+        'barl'     4L
+        'beam'     2L
+        'chrd'     4L
+        'clef'     3L
+        'clt '    -1L
+        'cstg'     2L
+        'dflt'    14L
+        'dynm'     1L
+        'epsg'    -1L
+        'figb'     4L
+        'fing'     1L
+        'fntd'    11L
+        'font'     7L
+        'glis'     0L
+        'gtgr'     6L
+        'gttb'     2L
+        'harp'     4L
+        'hrpn'     1L
+        'keyn'     1L
+        'keys'     1L
+        'line'     1L
+        'lyrc'     5L
+        'meas'     9L
+        'midi'    -1L
+        'nnfo'    14L
+        'note'     6L
+        'octv'     7L
+        'ornm'     2L
+        'part'    14L
+        'pdlo'     1L
+        'pdlp'     1L
+        'pghd'     0L
+        'port'     0L
+        'pren'     1L
+        'pst1'    -1L
+        'pst3'    -1L
+        'rept'     3L
+        'rest'     6L
+        'rhrs'     5L
+        'slur'     0L
+        'ssep'     1L
+        'stbl'    -1L
+        'stem'     0L
+        'stfg'     5L
+        'sthd'     0L
+        'syhd'     0L
+        'taga'     0L
+        'tagi'     0L
+        'text'     4L
+        'tie '     0L
+        'time'     2L
+        'timn'     1L
+        'tmlo'     2L
+        'tmpn'     1L
+        'tmpo'    10L
+        'tmsl'     5L
+        'tupl'     0L
+    ')'
+
+    ////////////////////////////////////////////////////////////////////////////
+    // NIFF Information
+    'nnfo' ( // sizeData=14
+
+        "6b" // NIF Version
+                 0C // Program Type
+               255C // Standard Units
+                -1  // Absolute Units
+                -1  // Midi clocks per quarter
+    )
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Parts
+    'LIST' ( 'prts' // sizeData = 48l
+
+        ////////////////////////////////////////////////////////////////////////
+        // Part Description
+        'part' ( // sizeData=14
+
+                     0  // Part ID
+                     0L // name
+                     1L // abbreviation
+                     2C // number of staves
+                    -1C // MIDI channel
+                    -1C // MIDI cable
+                    -1C // transpose
+
+        )
+
+        ////////////////////////////////////////////////////////////////////////
+        // Part Description
+        'part' ( // sizeData=14
+
+                     0  // Part ID
+                     2L // name
+                     3L // abbreviation
+                     1C // number of staves
+                    -1C // MIDI channel
+                    -1C // MIDI cable
+                    -1C // transpose
+
+        )
+
+    )
+    // Parts
+    ////////////////////////////////////////////////////////////////////////////
+
+    ////////////////////////////////////////////////////////////////////////////
+    // String Table
+    'stbl' ( // sizeData=18
+
+        // offset == 0
+        "piano"Z
+
+        // offset == 6
+        "p"Z
+
+        // offset == 8
+        "violin"Z
+
+        // offset == 15
+        "vl"Z
+
+    )
+
+)
+// Setup Section
+////////////////////////////////////////////////////////////////////////////////
+
+)
+// NIFF Form End
+////////////////////////////////////////////////////////////////////////////////

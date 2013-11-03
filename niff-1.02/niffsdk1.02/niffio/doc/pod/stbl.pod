@@ -1,0 +1,53 @@
+
+=head1 NAME
+
+stbl - string table functions
+
+=head1 SYNOPSIS
+
+=over 4
+
+=item *
+
+NIFFIOStblWrite()
+
+=back
+
+=head1 SEE ALSO
+
+=over 4
+
+=item *
+
+NIFFIOStoreStbl()
+
+=back
+
+=head1 NIFFIOStblWrite
+
+Write a single string table entry to a RIFFIOFile.
+
+     RIFFIOSuccess
+     NIFFIOStblWrite(NIFFIOFile *pnf, 
+                     RIFFIOChunk *pchunkSTBL, 
+                     NIFFIOStbl *pstbl)
+
+
+=head2 ENTRY
+
+T <*pchunkSTBL> must be newly created by RIFFIOChunkCreate() and not
+yet finalized by RIFFIOChunkFinalize().
+
+=head2 EXIT
+
+Writes < pstbl->str > (including its terminating NUL character) to
+a string table chunk <*pchunkSTBL> in the NIFFIOFile <*pnf>.
+
+Writing takes place at the current file position.
+
+Calculates the string offset from pchunkSTBL's data offset and
+returns it in <pstbl->offset>.
+
+=head2 RETURN
+
+RIFFIO_RESULT_OK on success.

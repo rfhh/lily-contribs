@@ -1,0 +1,212 @@
+<!-- $Id$ -->
+<HTML><HEAD>
+<CENTER><TITLE>tags</TITLE>
+</HEAD>
+<BODY></CENTER><p><hr>
+
+<H1> 
+<A NAME="tags_name_0">
+NAME</A>
+</H1>
+tags - tag creation and navigation routines
+<p><p><hr>
+
+<H1> 
+<A NAME="tags_synopsis_0">
+SYNOPSIS</A>
+</H1>
+<p>
+<H2> 
+<A NAME="tags_tag_0">
+Tag Creation</A>
+</H2>
+<p>
+<UL>
+<LI>
+<A HREF="tags.htm#tags_niffiotagcreate_0">NIFFIOTagCreate()</A>
+
+<p>
+<LI>
+<A HREF="tags.htm#tags_niffiotagfinalize_0">NIFFIOTagFinalize()</A>
+
+<p>
+</UL>
+.
+<p>
+<H2> 
+<A NAME="tags_tag_1">
+Tag Navigation</A>
+</H2>
+<p>
+<UL>
+<LI>
+<A HREF="tags.htm#tags_niffiotagdescend_0">NIFFIOTagDescend()</A>
+
+<p>
+<LI>
+<A HREF="tags.htm#tags_niffiotagascend_0">NIFFIOTagAscend()</A>
+
+<p>
+</UL>
+.
+<p><p><hr>
+
+<H1> 
+<A NAME="tags_niffiotagcreate_0">
+NIFFIOTagCreate</A>
+</H1>
+Start a new tag in a NIFF file.
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOTagCreate(NIFFIOFile *pnf, NIFFIOTag *ptag)
+
+</XMP>
+<p>
+<H2> 
+<A NAME="tags_entry_0">
+ENTRY</A>
+</H2>
+<p>
+<UL>
+<LI>T &lt;ptag-&gt;tagid&gt; must contain the tag ID of the new tag.
+<p>
+<LI>T &lt;ptag-&gt;tagsizeData&gt; will be written to the file but
+does not need to have a correct value.
+<p>
+</UL>
+.
+<p>
+<H2> 
+<A NAME="tags_exit_0">
+EXIT</A>
+</H2>
+<p>
+<UL>
+<LI>Writes a new tag header to &lt;*pnf&gt;.
+<p>
+<LI>Marks the tag as ``dirty'' (means the data size may need updating).
+<p>
+</UL>
+.
+<p>
+<H2> 
+<A NAME="tags_obligations_0">
+OBLIGATIONS</A>
+</H2>
+
+<A HREF="tags.htm#tags_niffiotagfinalize_0">NIFFIOTagFinalize()</A>
+ must eventually be called with &lt;*ptag&gt;
+to finish writing the tag.
+If 
+<A HREF="tags.htm#tags_niffiotagfinalize_0">NIFFIOTagFinalize()</A>
+ determines that &lt;ptag-&gt;tagsizeData&gt; is correct
+then it will not seek back in the file to correct it.
+<p><p><hr>
+
+<H1> 
+<A NAME="tags_niffiotagfinalize_0">
+NIFFIOTagFinalize</A>
+</H1>
+Finish writing a tag to a NIFFIOFile.
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOTagFinalize(NIFFIOFile *pnf, NIFFIOTag *ptag)
+
+</XMP>
+<p>
+<H2> 
+<A NAME="tags_entry_0">
+ENTRY</A>
+</H2>
+T &lt;*ptag&gt; must be the result of a call to NIFFIOTagCreate.
+<p>
+<H2> 
+<A NAME="tags_exit_0">
+EXIT</A>
+</H2>
+<p>
+<UL>
+<LI>Updates the tag data size on the file and in &lt;*ptag&gt; (if necessary).
+<p>
+<LI>Writes a NUL pad byte (if necessary).
+<p>
+<LI>Leaves the file positioned at the end of the new tag.
+<p>
+</UL>
+.
+<p>
+<H2> 
+<A NAME="tags_errors_0">
+ERRORS</A>
+</H2>
+On failure, the file position is undefined.
+<p><p><hr>
+
+<H1> 
+<A NAME="tags_niffiotagdescend_0">
+NIFFIOTagDescend</A>
+</H1>
+Read a tag header from a RIFF file.
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOTagDescend(NIFFIOFile *pnf, NIFFIOTag *ptag)
+
+</XMP>
+<p>
+<H2> 
+<A NAME="tags_entry_0">
+ENTRY</A>
+</H2>
+The file must be positioned at the start of a tag.
+<p>
+<H2> 
+<A NAME="tags_exit_0">
+EXIT</A>
+</H2>
+<p>
+<UL>
+<LI>Leaves the file positioned after the tag's size field.
+<p>
+<LI><ptag-&gt;tagid&gt; and
+<ptag-&gt;tagsizeData&gt; are updated from the
+tag's header.
+<p>
+</UL>
+.
+<p><p><hr>
+
+<H1> 
+<A NAME="tags_niffiotagascend_0">
+NIFFIOTagAscend</A>
+</H1>
+Position a NIFFIOFile after a specified tag.
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOTagAscend(NIFFIOFile *pnf, NIFFIOTag *ptag)
+
+</XMP>
+<p>
+<H2> 
+<A NAME="tags_entry_0">
+ENTRY</A>
+</H2>
+T &lt;*ptag&gt; was returned by NIFFIOTagDescend.
+<p>
+<H2> 
+<A NAME="tags_exit_0">
+EXIT</A>
+</H2>
+T &lt;*pnf&gt; is postioned at the end of &lt;*ptag&gt;
+<p>
+<H2> 
+<A NAME="tags_errors_0">
+ERRORS</A>
+</H2>
+On failure, the file position is undefined.
+<p>
+</BODY>
+</HTML>

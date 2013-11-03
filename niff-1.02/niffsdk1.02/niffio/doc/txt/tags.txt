@@ -1,0 +1,105 @@
+
+ NAME
+ ====
+ tags - tag creation and navigation routines
+ 
+ SYNOPSIS
+ ========
+
+ Tag Creation
+ ------------
+ - NIFFIOTagCreate()
+ - NIFFIOTagFinalize()
+ 
+ Tag Navigation
+ --------------
+ - NIFFIOTagDescend()
+ - NIFFIOTagAscend()
+
+
+ NIFFIOTagCreate
+ ===============
+ Start a new tag in a NIFF file.
+
+| RIFFIOSuccess
+| NIFFIOTagCreate(NIFFIOFile *pnf, NIFFIOTag *ptag)
+
+ ENTRY
+ -----
+ - T <ptag->tagid> must contain the tag ID of the new tag.
+ - T <ptag->tagsizeData> will be written to the file but 
+   does not need to have a correct value.
+ 
+ EXIT
+ ----
+ - Writes a new tag header to <*pnf>.
+ - Marks the tag as "dirty" (means the data size may need updating).
+
+ OBLIGATIONS
+ -----------
+ NIFFIOTagFinalize() must eventually be called with <*ptag> 
+ to finish writing the tag.
+ If NIFFIOTagFinalize() determines that <ptag->tagsizeData> is correct 
+ then it will not seek back in the file to correct it.
+
+
+ NIFFIOTagFinalize
+ =================
+ Finish writing a tag to a NIFFIOFile.
+
+| RIFFIOSuccess
+| NIFFIOTagFinalize(NIFFIOFile *pnf, NIFFIOTag *ptag)
+
+ ENTRY
+ -----
+ T <*ptag> must be the result of a call to NIFFIOTagCreate.
+ 
+ EXIT
+ ----
+    - Updates the tag data size on the file and in <*ptag> (if necessary).
+    - Writes a NUL pad byte (if necessary).
+    - Leaves the file positioned at the end of the new tag.
+
+ ERRORS
+ ------
+ On failure, the file position is undefined.
+
+
+ NIFFIOTagDescend
+ ================
+ Read a tag header from a RIFF file.
+
+| RIFFIOSuccess
+| NIFFIOTagDescend(NIFFIOFile *pnf, NIFFIOTag *ptag)
+
+ ENTRY
+ -----
+ The file must be positioned at the start of a tag.
+ 
+ EXIT
+ ----
+  - Leaves the file positioned after the tag's size field.
+  - <ptag->tagid> and 
+    <ptag->tagsizeData> are updated from the
+    tag's header.
+ 
+
+ NIFFIOTagAscend
+ ===============
+ Position a NIFFIOFile after a specified tag.
+
+| RIFFIOSuccess
+| NIFFIOTagAscend(NIFFIOFile *pnf, NIFFIOTag *ptag)
+
+ ENTRY
+ -----
+ T <*ptag> was returned by NIFFIOTagDescend.
+ 
+ EXIT
+ ----
+ T <*pnf> is postioned at the end of <*ptag>
+ 
+ ERRORS
+ ------
+ On failure, the file position is undefined. 
+

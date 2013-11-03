@@ -1,0 +1,8 @@
+#!/bin/sh -e
+
+rm -f abcde.rif
+
+../bin/abcde
+
+../bin/riffdump abcde.rif
+

@@ -1,0 +1,11 @@
+# $Header: /usr/local/cvsroot/niff/configure.in,v 1.1 1996/06/12 06:43:00 tim Exp $
+
+AC_INIT(NIFF)
+AC_CONFIG_AUX_DIR(mk)
+
+AC_PROG_INSTALL
+
+VERSION=VERSION
+AC_SUBST_FILE(VERSION)
+
+AC_OUTPUT(Makefile mk/top.mk:mk/top.in mk/mkdep)

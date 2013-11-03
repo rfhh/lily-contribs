@@ -1,0 +1,6 @@
+
+niffdump.o: ../../../../riffio/include/stdcriff.h
+niffdump.o: ../../../../riffio/include/riffio.h
+niffdump.o: ../../../include/niffio.h ../../../../niff/include/niff.h
+callback.o: ../../../include/niffio.h ../../../../riffio/include/riffio.h
+callback.o: ../../../../niff/include/niff.h

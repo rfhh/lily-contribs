@@ -1,0 +1,117 @@
+
+ NAME
+ ====
+ names - Convert from niff values to strings.
+
+ SYNOPSIS
+ ========
+
+ - NIFFIONameListType()
+ - NIFFIONameChunkId()
+ - NIFFIONameTagId()
+
+ - NIFFIOSymbolTS()
+ - NIFFIOSymbolBAREXT()
+ - NIFFIOSymbolBARTYPE()
+ - NIFFIOSymbolCLEFSHAPE()
+ - NIFFIOSymbolCLEFOCT()
+ - NIFFIOSymbolNOTESHAPE()
+ - NIFFIOSymbolREST()
+ - NIFFIOSymbolLOGPLACEV()
+ - NIFFIOSymbolLOGPLACEPROX()
+
+ DESCRIPTION
+ ===========
+ Treat chunks and lists (including forms) separately because
+ they are separate namespaces
+
+
+ NIFFIONameListType
+ ==================
+ Return a string description of a NIFF list type */
+| const char *
+| NIFFIONameListType(RIFFIOFOURCC fccType)
+
+ NIFFIONameChunkId
+ =================
+ Return a string description of a NIFF chunk id
+
+| const char *
+| NIFFIONameChunkId(RIFFIOFOURCC fccId)
+
+ NIFFIONameTagId
+ ===============
+ Return a string description of a kind of NIFF tag
+
+| const char *
+| NIFFIONameTagId(BYTE tagid)
+
+ NIFFIOSymbolTS
+ ==============
+ Return a symbolic name for a time-slice type, NULL on failure
+
+| const char *
+| NIFFIOSymbolTS(BYTE ts)
+
+ NIFFIOSymbolBAREXT
+ ==================
+ Return a symbolic name for a Barline extent, NULL on failure
+
+| const char *
+| NIFFIOSymbolBAREXT(BYTE be)
+
+ NIFFIOSymbolBARTYPE
+ ===================
+ Return a symbolic name for a Barline type, NULL on failure
+
+| const char *
+| NIFFIOSymbolBARTYPE(BYTE bt)
+
+ NIFFIOSymbolCLEFSHAPE
+ =====================
+ Return a symbolic name for a clef shape, NULL on failure
+
+| const char *
+| NIFFIOSymbolCLEFSHAPE(BYTE cs)
+
+ NIFFIOSymbolCLEFOCT
+ ===================
+ Return a symbolic name for a clef octave number, NULL on failure
+
+| const char *
+| NIFFIOSymbolCLEFOCT(BYTE co)
+
+ NIFFIOSymbolNOTESHAPE
+ =====================
+ Return a symbolic name for a note shape, NULL on failure
+
+| const char *
+| NIFFIOSymbolNOTESHAPE(BYTE ns)
+
+ NIFFIOSymbolREST
+ ================
+ Return a symbolic name for a rest shape, NULL on failure
+
+| const char *
+| NIFFIOSymbolREST(BYTE rs)
+
+ NIFFIOSymbolLOGPLACEH
+ =====================
+ Return a symbolic name for a logical placement horizonal, NULL on failure
+
+| const char *
+| NIFFIOSymbolLOGPLACEH(BYTE lh)
+
+ NIFFIOSymbolLOGPLACEV
+ =====================
+ Return a symbolic name for a logical placement vertical, NULL on failure
+
+| const char *
+| NIFFIOSymbolLOGPLACEV(BYTE lv)
+
+ NIFFIOSymbolLOGPLACEPROX
+ ========================
+ Return a symbolic name for a logical placement proximity, NULL on failure
+
+| const char *
+| NIFFIOSymbolLOGPLACEPROX(BYTE lp)

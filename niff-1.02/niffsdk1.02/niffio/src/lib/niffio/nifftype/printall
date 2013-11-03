@@ -1,0 +1,43 @@
+#!/usr/bin/perl
+
+require "loadobs.pl";
+
+&loadobs;
+
+	 foreach $ObjectName (sort keys(%ObjectTypes))
+	 {
+	    print $ObjectName, ":", $ObjectTypes{$ObjectName}, ":";
+		print $ObjectCooked{$ObjectName} ? 'cooked' : 'raw';
+		if ($ObjectMembers{$ObjectName})
+		{
+		    local(@members);
+	        @members = &splitmembers($ObjectMembers{$ObjectName});
+			print "\n{\n";
+			foreach $member (@members)
+            {
+				print $member, "\n";
+			}			
+			print "}\n";
+
+			#print ":", $ObjectMembers{$ObjectName};
+		}
+
+		if ($ObjectPrimitive{$ObjectName})
+        {   
+		    print "\n";
+			print "PRIMITIVE ", $ObjectPrimitive{$ObjectName}, "\n";
+		}		
+		print "\n";
+	}
+
+    print "Chunk Lengths\n";
+
+	foreach $ObjectName (sort keys(%ObjectTypes))
+    {	 
+	    if ($ObjectLength{$ObjectName})
+        {
+			print $ObjectName, ":", $ObjectLength{$ObjectName}, "\n"; 
+		}
+	}						
+
+

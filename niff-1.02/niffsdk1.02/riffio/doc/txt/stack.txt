@@ -1,0 +1,79 @@
+ 
+ NAME
+ ====
+ stack - maintain a stack of chunks.
+
+ SYNOPSIS
+ ========
+
+ - RIFFIOChunkStackNew()
+ - RIFFIOChunkStackDelete()
+ - RIFFIOChunkStackPush()
+ - RIFFIOChunkStackPop()
+ - RIFFIOChunkStackTop()
+ - RIFFIOChunkStackIsEmpty()
+
+
+ RIFFIOChunkStackNew
+ ===================
+ Return an empty RIFFIOChunkStack.
+
+| RIFFIOChunkStack *
+| RIFFIOChunkStackNew(void)
+
+ RETURN
+ ------
+ NULL on failure
+ 
+ OBLIGATIONS
+ -----------
+ The newly created RIFFIOChunkStack must be freed with
+ RIFFIOChunkStackDelete().
+
+
+ RIFFIOChunkStackDelete
+ ======================
+ Free memory allocated to a RIFFIOChunkStack.
+
+| void
+| RIFFIOChunkStackDelete(RIFFIOChunkStack *pstack)
+
+ RIFFIOChunkStackIsEmpty
+ =======================
+ Return true if a RIFFIOChunkStack is empty.
+
+| int
+| RIFFIOChunkStackIsEmpty(RIFFIOChunkStack *pstack)
+
+ RIFFIOChunkStackTop
+ ===================
+ Peek at top of the stack without popping.
+
+| RIFFIOChunk *
+| RIFFIOChunkStackTop(RIFFIOChunkStack *pstack)
+
+ RIFFIOChunkStackPop
+ ===================
+ Pop the top item of the RIFFIOChunkStack.
+
+| void
+| RIFFIOChunkStackPop(RIFFIOChunkStack *pstack)
+
+ ENTRY
+ -----
+ T <*pstack> must not be empty.
+
+
+ RIFFIOChunkStackPush
+ ====================
+ Push a chunk on the top of the stack
+
+| RIFFIOSuccess
+| RIFFIOChunkStackPush(RIFFIOChunkStack *pstack,
+|                      RIFFIOChunk *pchunk)
+
+ OBLIGATIONS
+ -----------
+ You must still keep track of the memory occupied by <*pchunk>.
+ The RIFFIOChunkStack will make its own copy of <*pchunk>.
+

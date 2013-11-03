@@ -1,0 +1,357 @@
+<!-- $Id$ -->
+<HTML><HEAD>
+<CENTER><TITLE>inherit</TITLE>
+</HEAD>
+<BODY></CENTER><p><hr>
+
+<H1> 
+<A NAME="inherit_name_0">
+NAME</A>
+</H1>
+inherit - RIFFIO-style file operations on NIFFIOFiles
+<p><p><hr>
+
+<H1> 
+<A NAME="inherit_synopsis_0">
+SYNOPSIS</A>
+</H1>
+All of these routines behave just like their RIFFIO counterparts.
+<p>
+<UL>
+<LI>
+<A HREF="inherit.htm#inherit_niffiofilegetformtype_0">NIFFIOFileGetFormType()</A>
+
+<p>
+<LI>
+<A HREF="inherit.htm#inherit_niffioread_0">NIFFIORead()</A>
+
+<p>
+<LI>
+<A HREF="inherit.htm#inherit_niffiowrite_0">NIFFIOWrite()</A>
+
+<p>
+<LI>
+<A HREF="inherit.htm#inherit_niffioseek_0">NIFFIOSeek()</A>
+
+<p>
+<LI>
+<A HREF="inherit.htm#inherit_niffiotell_0">NIFFIOTell()</A>
+
+<p>
+<LI>
+<A HREF="inherit.htm#inherit_niffiochunkcreate_0">NIFFIOChunkCreate()</A>
+
+<p>
+<LI>
+<A HREF="inherit.htm#inherit_niffiochunkfinalize_0">NIFFIOChunkFinalize()</A>
+
+<p>
+<LI>
+<A HREF="inherit.htm#inherit_niffiochunkdescend_0">NIFFIOChunkDescend()</A>
+
+<p>
+<LI>
+<A HREF="inherit.htm#inherit_niffiochunkascend_0">NIFFIOChunkAscend()</A>
+
+<p>
+<LI>
+<A HREF="inherit.htm#inherit_niffiochunkdataseek_0">NIFFIOChunkDataSeek()</A>
+
+<p>
+<LI>
+<A HREF="inherit.htm#inherit_niffiochunkdataend_0">NIFFIOChunkDataEnd()</A>
+
+<p>
+<LI>
+<A HREF="inherit.htm#inherit_niffiochunkend_0">NIFFIOChunkEnd()</A>
+
+<p>
+<LI>
+<A HREF="inherit.htm#inherit_niffiowrite_1">NIFFIOWrite8()</A>
+
+<p>
+<LI>
+<A HREF="inherit.htm#inherit_niffiowrite_2">NIFFIOWrite16()</A>
+
+<p>
+<LI>
+<A HREF="inherit.htm#inherit_niffiowrite_3">NIFFIOWrite32()</A>
+
+<p>
+<LI>
+<A HREF="inherit.htm#inherit_niffiowritefourcc_0">NIFFIOWriteFOURCC()</A>
+
+<p>
+<LI>
+<A HREF="inherit.htm#inherit_niffioread_1">NIFFIORead8()</A>
+
+<p>
+<LI>
+<A HREF="inherit.htm#inherit_niffioread_2">NIFFIORead16()</A>
+
+<p>
+<LI>
+<A HREF="inherit.htm#inherit_niffioread_3">NIFFIORead32()</A>
+
+<p>
+<LI>
+<A HREF="inherit.htm#inherit_niffioreadfourcc_0">NIFFIOReadFOURCC()</A>
+
+<p>
+</UL>
+.
+<p><p><hr>
+
+<H1> 
+<A NAME="inherit_niffiofilegetformtype_0">
+NIFFIOFileGetFormType</A>
+</H1>
+See <EM>RIFFIOFileGetFormType()</EM>
+<p>
+<XMP>
+     RIFFIOFormType
+     NIFFIOFileGetFormType(NIFFIOFile *pnf)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="inherit_niffioread_0">
+NIFFIORead</A>
+</H1>
+See <EM>RIFFIORead()</EM>
+<p>
+<XMP>
+     long
+     NIFFIORead(NIFFIOFile *pnf, void *bufferp, long n)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="inherit_niffiowrite_0">
+NIFFIOWrite</A>
+</H1>
+See <EM>RIFFIOWrite()</EM>
+<p>
+<XMP>
+     long
+     NIFFIOWrite(NIFFIOFile *pnf, void *bufferp, long n)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="inherit_niffioseek_0">
+NIFFIOSeek</A>
+</H1>
+See <EM>RIFFIOSeek()</EM>
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOSeek(NIFFIOFile *pnf, RIFFIOOffset offset, RIFFIOSeekOrigin origin)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="inherit_niffiotell_0">
+NIFFIOTell</A>
+</H1>
+See <EM>RIFFIOTell()</EM>
+<p>
+<XMP>
+     long
+     NIFFIOTell(NIFFIOFile *pnf)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="inherit_niffiochunkcreate_0">
+NIFFIOChunkCreate</A>
+</H1>
+See <EM>RIFFIOChunkCreate()</EM>
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOChunkCreate(NIFFIOFile *pnf, RIFFIOChunk *pchunk)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="inherit_niffiochunkfinalize_0">
+NIFFIOChunkFinalize</A>
+</H1>
+See <EM>RIFFIOChunkFinalize()</EM>
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOChunkFinalize(NIFFIOFile *pnf, RIFFIOChunk *pchunk)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="inherit_niffiochunkascend_0">
+NIFFIOChunkAscend</A>
+</H1>
+See <EM>RIFFIOChunkAscend()</EM>
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOChunkAscend(NIFFIOFile *pnf, RIFFIOChunk *pchunk)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="inherit_niffiochunkdescend_0">
+NIFFIOChunkDescend</A>
+</H1>
+See <EM>RIFFIOChunkDescend()</EM>
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOChunkDescend(NIFFIOFile *pnf, RIFFIOChunk *pchunk)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="inherit_niffiochunkdataseek_0">
+NIFFIOChunkDataSeek</A>
+</H1>
+See <EM>RIFFIOChunkDataSeek()</EM>
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOChunkSeekData(NIFFIOFile *pnf, const RIFFIOChunk *pchunk)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="inherit_niffiochunkdataend_0">
+NIFFIOChunkDataEnd</A>
+</H1>
+See <EM>RIFFIOChunkDataEnd()</EM>
+<p>
+<XMP>
+     int
+     NIFFIOChunkDataEnd(NIFFIOFile *pnf, RIFFIOChunk *pchunk)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="inherit_niffiochunkend_0">
+NIFFIOChunkEnd</A>
+</H1>
+See <EM>RIFFIOChunkEnd()</EM>
+<p>
+<XMP>
+     int
+     NIFFIOChunkEnd(NIFFIOFile *pnf, RIFFIOChunk *pchunk)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="inherit_niffiowrite_1">
+NIFFIOWrite8</A>
+</H1>
+See <EM>RIFFIOWrite8()</EM>
+<p>
+<XMP>
+     RIFFIOSuccess NIFFIOWrite8(NIFFIOFile *pnf, unsigned char uc)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="inherit_niffiowrite_2">
+NIFFIOWrite16</A>
+</H1>
+See <EM>RIFFIOWrite16()</EM>
+<p>
+<XMP>
+     RIFFIOSuccess NIFFIOWrite16(NIFFIOFile *pnf, unsigned short us)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="inherit_niffiowrite_3">
+NIFFIOWrite32</A>
+</H1>
+See <EM>RIFFIOWrite32()</EM>
+<p>
+<XMP>
+     RIFFIOSuccess NIFFIOWrite32(NIFFIOFile *pnf, unsigned long ul)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="inherit_niffiowritefourcc_0">
+NIFFIOWriteFOURCC</A>
+</H1>
+See <EM>RIFFIOWriteFOURCC()</EM>
+<p>
+<XMP>
+     RIFFIOSuccess NIFFIOWriteFOURCC(NIFFIOFile *pnf, FOURCC fcc)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="inherit_niffioread_1">
+NIFFIORead8</A>
+</H1>
+See <EM>RIFFIORead8()</EM>
+<p>
+<XMP>
+     RIFFIOSuccess NIFFIORead8(NIFFIOFile *pnf, unsigned char *puc)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="inherit_niffioread_2">
+NIFFIORead16</A>
+</H1>
+See <EM>RIFFIORead16()</EM>
+<p>
+<XMP>
+     RIFFIOSuccess NIFFIORead16(NIFFIOFile *pnf, unsigned short *pus)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="inherit_niffioread_3">
+NIFFIORead32</A>
+</H1>
+See <EM>RIFFIORead32()</EM>
+<p>
+<XMP>
+     RIFFIOSuccess NIFFIORead32(NIFFIOFile *pnf, unsigned long *pul)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="inherit_niffioreadfourcc_0">
+NIFFIOReadFOURCC</A>
+</H1>
+See <EM>RIFFIOReadFOURCC()</EM>
+<p>
+<XMP>
+     RIFFIOSuccess NIFFIOReadFOURCC(NIFFIOFile *pnf, FOURCC *pfcc)
+
+</XMP>
+<p>
+</BODY>
+</HTML>

@@ -1,0 +1,45 @@
+
+ NAME
+ ====
+ error - handle RIFFIO errors
+ 
+ SYNOPSIS
+ ========
+ 
+ - RIFFIOError()
+ - RIFFIOInstallErrorHandler()
+
+ If RIFFIO_NO_ERROR is defined then disable the default error processing
+ Otherwise use DefaultErrorHandler.
+
+
+ RIFFIOInstallErrorHandler
+ =========================
+ Override RIFFIO error handling.
+
+| RIFFIOErrorHandler 
+| RIFFIOInstallErrorHandler(RIFFIOErrorHandler ehNew)
+ 
+ <ehNew> is a function to handle errors.  Null to disable error
+ handling.
+ 
+ RETURNS
+ -------
+   the current error handling function.
+
+
+ RIFFIOError
+ ===========
+ Post an error message 
+
+| void 
+| RIFFIOError(const char *strModule, const char *strFormat, ...)
+ PARAMETERS
+ ----------
+ 
+   strModule :
+     string nameing the module reporting the error
+
+   strFormat :
+    printf compatible string corresponding to the remaining arguments
+

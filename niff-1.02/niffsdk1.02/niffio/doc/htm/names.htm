@@ -1,0 +1,245 @@
+<!-- $Id$ -->
+<HTML><HEAD>
+<CENTER><TITLE>names</TITLE>
+</HEAD>
+<BODY></CENTER><p><hr>
+
+<H1> 
+<A NAME="names_name_0">
+NAME</A>
+</H1>
+names - Convert from niff values to strings.
+<p><p><hr>
+
+<H1> 
+<A NAME="names_synopsis_0">
+SYNOPSIS</A>
+</H1>
+<p>
+<UL>
+<LI>
+<A HREF="names.htm#names_niffionamelisttype_0">NIFFIONameListType()</A>
+
+<p>
+<LI>
+<A HREF="names.htm#names_niffionamechunkid_0">NIFFIONameChunkId()</A>
+
+<p>
+<LI>
+<A HREF="names.htm#names_niffionametagid_0">NIFFIONameTagId()</A>
+
+<p>
+<LI>
+<A HREF="names.htm#names_niffiosymbolts_0">NIFFIOSymbolTS()</A>
+
+<p>
+<LI>
+<A HREF="names.htm#names_niffiosymbolbarext_0">NIFFIOSymbolBAREXT()</A>
+
+<p>
+<LI>
+<A HREF="names.htm#names_niffiosymbolbartype_0">NIFFIOSymbolBARTYPE()</A>
+
+<p>
+<LI>
+<A HREF="names.htm#names_niffiosymbolclefshape_0">NIFFIOSymbolCLEFSHAPE()</A>
+
+<p>
+<LI>
+<A HREF="names.htm#names_niffiosymbolclefoct_0">NIFFIOSymbolCLEFOCT()</A>
+
+<p>
+<LI>
+<A HREF="names.htm#names_niffiosymbolnoteshape_0">NIFFIOSymbolNOTESHAPE()</A>
+
+<p>
+<LI>
+<A HREF="names.htm#names_niffiosymbolrest_0">NIFFIOSymbolREST()</A>
+
+<p>
+<LI>
+<A HREF="names.htm#names_niffiosymbollogplacev_0">NIFFIOSymbolLOGPLACEV()</A>
+
+<p>
+<LI>
+<A HREF="names.htm#names_niffiosymbollogplaceprox_0">NIFFIOSymbolLOGPLACEPROX()</A>
+
+<p>
+</UL>
+.
+<p><p><hr>
+
+<H1> 
+<A NAME="names_description_0">
+DESCRIPTION</A>
+</H1>
+Treat chunks and lists (including forms) separately because
+they are separate namespaces
+<p><p><hr>
+
+<H1> 
+<A NAME="names_niffionamelisttype_0">
+NIFFIONameListType</A>
+</H1>
+Return a string description of a NIFF list type */
+| const char *
+| NIFFIONameListType(RIFFIOFOURCC fccType)
+<p><p><hr>
+
+<H1> 
+<A NAME="names_niffionamechunkid_0">
+NIFFIONameChunkId</A>
+</H1>
+Return a string description of a NIFF chunk id
+<p>
+<XMP>
+     const char *
+     NIFFIONameChunkId(RIFFIOFOURCC fccId)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="names_niffionametagid_0">
+NIFFIONameTagId</A>
+</H1>
+Return a string description of a kind of NIFF tag
+<p>
+<XMP>
+     const char *
+     NIFFIONameTagId(BYTE tagid)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="names_niffiosymbolts_0">
+NIFFIOSymbolTS</A>
+</H1>
+Return a symbolic name for a time-slice type, NULL on failure
+<p>
+<XMP>
+     const char *
+     NIFFIOSymbolTS(BYTE ts)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="names_niffiosymbolbarext_0">
+NIFFIOSymbolBAREXT</A>
+</H1>
+Return a symbolic name for a Barline extent, NULL on failure
+<p>
+<XMP>
+     const char *
+     NIFFIOSymbolBAREXT(BYTE be)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="names_niffiosymbolbartype_0">
+NIFFIOSymbolBARTYPE</A>
+</H1>
+Return a symbolic name for a Barline type, NULL on failure
+<p>
+<XMP>
+     const char *
+     NIFFIOSymbolBARTYPE(BYTE bt)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="names_niffiosymbolclefshape_0">
+NIFFIOSymbolCLEFSHAPE</A>
+</H1>
+Return a symbolic name for a clef shape, NULL on failure
+<p>
+<XMP>
+     const char *
+     NIFFIOSymbolCLEFSHAPE(BYTE cs)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="names_niffiosymbolclefoct_0">
+NIFFIOSymbolCLEFOCT</A>
+</H1>
+Return a symbolic name for a clef octave number, NULL on failure
+<p>
+<XMP>
+     const char *
+     NIFFIOSymbolCLEFOCT(BYTE co)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="names_niffiosymbolnoteshape_0">
+NIFFIOSymbolNOTESHAPE</A>
+</H1>
+Return a symbolic name for a note shape, NULL on failure
+<p>
+<XMP>
+     const char *
+     NIFFIOSymbolNOTESHAPE(BYTE ns)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="names_niffiosymbolrest_0">
+NIFFIOSymbolREST</A>
+</H1>
+Return a symbolic name for a rest shape, NULL on failure
+<p>
+<XMP>
+     const char *
+     NIFFIOSymbolREST(BYTE rs)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="names_niffiosymbollogplaceh_0">
+NIFFIOSymbolLOGPLACEH</A>
+</H1>
+Return a symbolic name for a logical placement horizonal, NULL on failure
+<p>
+<XMP>
+     const char *
+     NIFFIOSymbolLOGPLACEH(BYTE lh)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="names_niffiosymbollogplacev_0">
+NIFFIOSymbolLOGPLACEV</A>
+</H1>
+Return a symbolic name for a logical placement vertical, NULL on failure
+<p>
+<XMP>
+     const char *
+     NIFFIOSymbolLOGPLACEV(BYTE lv)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="names_niffiosymbollogplaceprox_0">
+NIFFIOSymbolLOGPLACEPROX</A>
+</H1>
+Return a symbolic name for a logical placement proximity, NULL on failure
+<p>
+<XMP>
+     const char *
+     NIFFIOSymbolLOGPLACEPROX(BYTE lp)
+
+</XMP>
+<p>
+</BODY>
+</HTML>

@@ -1,0 +1,6 @@
+Package: niffsdk
+Version: 1.02
+Date: 14 JUN 1996
+Contact: tim@netbox.com
+Items: niff riffio niffio
+Description: Files, programs, and libraries for developing NIFF applications.

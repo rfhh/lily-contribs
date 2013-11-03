@@ -1,0 +1,12 @@
+
+ NAME
+ ====
+ riffdump - dump chunk information about a riff file.
+
+ SYNOPSIS
+ ========
+ 
+ riffdump file.rif
+
+ 
+

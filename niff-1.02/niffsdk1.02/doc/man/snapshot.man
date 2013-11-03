@@ -1,0 +1,322 @@
+.rn '' }`
+''' $RCSfile$$Revision$$Date$
+'''
+''' $Log$
+'''
+.de Sh
+.br
+.if t .Sp
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.de Sp
+.if t .sp .5v
+.if n .sp
+..
+.de Ip
+.br
+.ie \\n(.$>=3 .ne \\$3
+.el .ne 3
+.IP "\\$1" \\$2
+..
+.de Vb
+.ft CW
+.nf
+.ne \\$1
+..
+.de Ve
+.ft R
+
+.fi
+..
+'''
+'''
+'''     Set up \*(-- to give an unbreakable dash;
+'''     string Tr holds user defined translation string.
+'''     Bell System Logo is used as a dummy character.
+'''
+.tr \(*W-|\(bv\*(Tr
+.ie n \{\
+.ds -- \(*W-
+.ds PI pi
+.if (\n(.H=4u)&(1m=24u) .ds -- \(*W\h'-12u'\(*W\h'-12u'-\" diablo 10 pitch
+.if (\n(.H=4u)&(1m=20u) .ds -- \(*W\h'-12u'\(*W\h'-8u'-\" diablo 12 pitch
+.ds L" ""
+.ds R" ""
+.ds L' '
+.ds R' '
+'br\}
+.el\{\
+.ds -- \(em\|
+.tr \*(Tr
+.ds L" ``
+.ds R" ''
+.ds L' `
+.ds R' '
+.ds PI \(*p
+'br\}
+.\"	If the F register is turned on, we'll generate
+.\"	index entries out stderr for the following things:
+.\"		TH	Title 
+.\"		SH	Header
+.\"		Sh	Subsection 
+.\"		Ip	Item
+.\"		X<>	Xref  (embedded
+.\"	Of course, you have to process the output yourself
+.\"	in some meaninful fashion.
+.if \nF \{
+.de IX
+.tm Index:\\$1\t\\n%\t"\\$2"
+..
+.nr % 0
+.rr F
+.\}
+.TH snapshot 3 "riffio" "14/Jun/96" "RIFFIO Documentation"
+.IX Title "snapshot 3"
+.UC
+.IX Name "snapshot - What is the state of the NIFF SDK?"
+.if n .hy 0
+.if n .na
+.ds C+ C\v'-.1v'\h'-1p'\s-2+\h'-1p'+\s0\v'.1v'\h'-1p'
+.de CQ          \" put $1 in typewriter font
+.ft CW
+'if n "\c
+'if t \\&\\$1\c
+'if n \\&\\$1\c
+'if n \&"
+\\&\\$2 \\$3 \\$4 \\$5 \\$6 \\$7
+'.ft R
+..
+.\" @(#)ms.acc 1.5 88/02/08 SMI; from UCB 4.2
+.	\" AM - accent mark definitions
+.bd B 3
+.	\" fudge factors for nroff and troff
+.if n \{\
+.	ds #H 0
+.	ds #V .8m
+.	ds #F .3m
+.	ds #[ \f1
+.	ds #] \fP
+.\}
+.if t \{\
+.	ds #H ((1u-(\\\\n(.fu%2u))*.13m)
+.	ds #V .6m
+.	ds #F 0
+.	ds #[ \&
+.	ds #] \&
+.\}
+.	\" simple accents for nroff and troff
+.if n \{\
+.	ds ' \&
+.	ds ` \&
+.	ds ^ \&
+.	ds , \&
+.	ds ~ ~
+.	ds ? ?
+.	ds ! !
+.	ds /
+.	ds q
+.\}
+.if t \{\
+.	ds ' \\k:\h'-(\\n(.wu*8/10-\*(#H)'\'\h"|\\n:u"
+.	ds ` \\k:\h'-(\\n(.wu*8/10-\*(#H)'\`\h'|\\n:u'
+.	ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'^\h'|\\n:u'
+.	ds , \\k:\h'-(\\n(.wu*8/10)',\h'|\\n:u'
+.	ds ~ \\k:\h'-(\\n(.wu-\*(#H-.1m)'~\h'|\\n:u'
+.	ds ? \s-2c\h'-\w'c'u*7/10'\u\h'\*(#H'\zi\d\s+2\h'\w'c'u*8/10'
+.	ds ! \s-2\(or\s+2\h'-\w'\(or'u'\v'-.8m'.\v'.8m'
+.	ds / \\k:\h'-(\\n(.wu*8/10-\*(#H)'\z\(sl\h'|\\n:u'
+.	ds q o\h'-\w'o'u*8/10'\s-4\v'.4m'\z\(*i\v'-.4m'\s+4\h'\w'o'u*8/10'
+.\}
+.	\" troff and (daisy-wheel) nroff accents
+.ds : \\k:\h'-(\\n(.wu*8/10-\*(#H+.1m+\*(#F)'\v'-\*(#V'\z.\h'.2m+\*(#F'.\h'|\\n:u'\v'\*(#V'
+.ds 8 \h'\*(#H'\(*b\h'-\*(#H'
+.ds v \\k:\h'-(\\n(.wu*9/10-\*(#H)'\v'-\*(#V'\*(#[\s-4v\s0\v'\*(#V'\h'|\\n:u'\*(#]
+.ds _ \\k:\h'-(\\n(.wu*9/10-\*(#H+(\*(#F*2/3))'\v'-.4m'\z\(hy\v'.4m'\h'|\\n:u'
+.ds . \\k:\h'-(\\n(.wu*8/10)'\v'\*(#V*4/10'\z.\v'-\*(#V*4/10'\h'|\\n:u'
+.ds 3 \*(#[\v'.2m'\s-2\&3\s0\v'-.2m'\*(#]
+.ds o \\k:\h'-(\\n(.wu+\w'\(de'u-\*(#H)/2u'\v'-.3n'\*(#[\z\(de\v'.3n'\h'|\\n:u'\*(#]
+.ds d- \h'\*(#H'\(pd\h'-\w'~'u'\v'-.25m'\f2\(hy\fP\v'.25m'\h'-\*(#H'
+.ds D- D\\k:\h'-\w'D'u'\v'-.11m'\z\(hy\v'.11m'\h'|\\n:u'
+.ds th \*(#[\v'.3m'\s+1I\s-1\v'-.3m'\h'-(\w'I'u*2/3)'\s-1o\s+1\*(#]
+.ds Th \*(#[\s+2I\s-2\h'-\w'I'u*3/5'\v'-.3m'o\v'.3m'\*(#]
+.ds ae a\h'-(\w'a'u*4/10)'e
+.ds Ae A\h'-(\w'A'u*4/10)'E
+.ds oe o\h'-(\w'o'u*4/10)'e
+.ds Oe O\h'-(\w'O'u*4/10)'E
+.	\" corrections for vroff
+.if v .ds ~ \\k:\h'-(\\n(.wu*9/10-\*(#H)'\s-2\u~\d\s+2\h'|\\n:u'
+.if v .ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'\v'-.4m'^\v'.4m'\h'|\\n:u'
+.	\" for low resolution devices (crt and lpr)
+.if \n(.H>23 .if \n(.V>19 \
+\{\
+.	ds : e
+.	ds 8 ss
+.	ds v \h'-1'\o'\(aa\(ga'
+.	ds _ \h'-1'^
+.	ds . \h'-1'.
+.	ds 3 3
+.	ds o a
+.	ds d- d\h'-1'\(ga
+.	ds D- D\h'-1'\(hy
+.	ds th \o'bp'
+.	ds Th \o'LP'
+.	ds ae ae
+.	ds Ae AE
+.	ds oe oe
+.	ds Oe OE
+.\}
+.rm #[ #] #H #V #F C
+.SH "NAME"
+.IX Header "NAME"
+snapshot \- What is the state of the NIFF SDK?
+.SH "SYNOPSIS"
+.IX Header "SYNOPSIS"
+.Ip "\(bu" 4
+.IX Item "\(bu"
+\s-1VERSION\s0
+.Ip "\(bu" 4
+.IX Item "\(bu"
+\s-1WHAT\s0'S \s-1NEW\s0
+.Ip "\(bu" 4
+.IX Item "\(bu"
+\s-1BUG\s0 \s-1FIXES\s0
+.Ip "\(bu" 4
+.IX Item "\(bu"
+\s-1TODO\s0
+.PP
+I made some significant progress before I got 1.01 out so here is 1.02
+instead. niffdump is _much_ improved.
+.SH "VERSION"
+.IX Header "VERSION"
+1.02
+.SH "WHAT'S NEW"
+.IX Header "WHAT'S NEW"
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Removed sample \s-1RIFF\s0 files
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Reorganized \s-1NIFFSDK\s0 into \s-1RIFFIO\s0, \s-1NIFFIO\s0, and \s-1NIFF\s0 components.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Changed build system.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Autoconfiguration under \s-1UNIX\s0
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Everything under \s-1CVS\s0
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Documentation in text, man, pod, and \s-1HTML\s0
+.Ip "\(bu" 4
+.IX Item "\(bu"
+A few simple regression tests.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Ran a few checks for memory leaks \- looks good.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Replaced some functions added in 1.0 by Cindy Grande with similar ones.
+\fINIFFIOFilePrepare()\fR and \fINIFFIOFileWriteCLT()\fR.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+\fINIFFIOStorageNewSTDC()\fR, \fINIFFIOFileNewSTDC()\fR for simple initialization.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+\fINIFFIOStoreStbl()\fR, \fINIFFIOStoreCLT()\fR, \fINIFFIOStoreDefaultCLT()\fR for
+NIFFIOStorage operations on special objects.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+NIFFIOStorage now \s-1OWNS\s0 its NIFFIOFile. Don't call \fINIFFIOFileDelete()\fR!
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Slightly modified niff.h
+.Ip "\(bu" 4
+.IX Item "\(bu"
+No more tabs in source
+.Ip "\(bu" 4
+.IX Item "\(bu"
+fcc.c: Created macro \s-1RIFFIO_FOURCC_MIN\s0 for string lengths that will
+hold a \s-1FOURCC\s0. Don't use the constant \*(L"5\*(R" anymore.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Added \s-1INFO\s0 chunks to \fINIFFIOCLTMakeDefaultEntries()\fR.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Improved niffdump considerably. Check it out! It decodes many more
+chunks and a few tags.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+niffio/names.c: functions to convert between \s-1NIFF\s0 Ids/enumerated types and
+strings. (Still need many more)
+.Ip "\(bu" 4
+.IX Item "\(bu"
+niffio/clt.c: don't store length of default \s-1CLT\s0 array anymore, used sentinel.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+niffio/clt.c: added \s-1RIFF\s0 \s-1INFO\s0 chunks to default chunk length table.
+.SH "BUG FIXES"
+.IX Header "BUG FIXES"
+.Ip "\(bu" 4
+.IX Item "\(bu"
+\fIRIFFIOChunkStackPush()\fR used wrong expression to check for a full stack.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+\fISTDCRIFFRead()\fR had if statements without parenthesis
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Made sure \s-1CPP\s0 line continuations had whitespace in front of them.
+.SH "TODO"
+.IX Header "TODO"
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Find out what developers _really_ need this thing to do.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Steve might want a function that reads a String Table into an array
+of strings. Sort of the inverse of \fINIFFIOStoreStbl()\fR.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Need code that writes standard, example  \s-1NIFF\s0 files for
+regression tests.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Keep adding chunks and tags to niffdump.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Write a real user's guide.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Write more example code.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Implement more regression tests.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Automate memory leak checks.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Be explicit about what happens during parsing errors.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+write functions to convert between \s-1NIFF\s0 enumerated types and strings.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+niffdump should handle all niff objects
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Add parser callback registration functions for \s-1RIFF\s0 \s-1INFO\s0 chunks.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+niffdump should generate output in a standard format for a future
+niff compiler (useful for more regression tests).
+.Ip "\(bu" 4
+.IX Item "\(bu"
+write a niff compiler (useful for regression tests). Syntax similar
+to \s-1RIFF\s0.
+
+.rn }` ''

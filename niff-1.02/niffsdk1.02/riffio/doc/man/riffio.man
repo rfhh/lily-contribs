@@ -1,0 +1,530 @@
+.rn '' }`
+''' $RCSfile$$Revision$$Date$
+'''
+''' $Log$
+'''
+.de Sh
+.br
+.if t .Sp
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.de Sp
+.if t .sp .5v
+.if n .sp
+..
+.de Ip
+.br
+.ie \\n(.$>=3 .ne \\$3
+.el .ne 3
+.IP "\\$1" \\$2
+..
+.de Vb
+.ft CW
+.nf
+.ne \\$1
+..
+.de Ve
+.ft R
+
+.fi
+..
+'''
+'''
+'''     Set up \*(-- to give an unbreakable dash;
+'''     string Tr holds user defined translation string.
+'''     Bell System Logo is used as a dummy character.
+'''
+.tr \(*W-|\(bv\*(Tr
+.ie n \{\
+.ds -- \(*W-
+.ds PI pi
+.if (\n(.H=4u)&(1m=24u) .ds -- \(*W\h'-12u'\(*W\h'-12u'-\" diablo 10 pitch
+.if (\n(.H=4u)&(1m=20u) .ds -- \(*W\h'-12u'\(*W\h'-8u'-\" diablo 12 pitch
+.ds L" ""
+.ds R" ""
+.ds L' '
+.ds R' '
+'br\}
+.el\{\
+.ds -- \(em\|
+.tr \*(Tr
+.ds L" ``
+.ds R" ''
+.ds L' `
+.ds R' '
+.ds PI \(*p
+'br\}
+.\"	If the F register is turned on, we'll generate
+.\"	index entries out stderr for the following things:
+.\"		TH	Title 
+.\"		SH	Header
+.\"		Sh	Subsection 
+.\"		Ip	Item
+.\"		X<>	Xref  (embedded
+.\"	Of course, you have to process the output yourself
+.\"	in some meaninful fashion.
+.if \nF \{
+.de IX
+.tm Index:\\$1\t\\n%\t"\\$2"
+..
+.nr % 0
+.rr F
+.\}
+.TH riffio 3 "riffio" "14/Jun/96" "RIFFIO Documentation"
+.IX Title "riffio 3"
+.UC
+.IX Name "RIFFIO API - RIFFIO data types and concepts"
+.if n .hy 0
+.if n .na
+.ds C+ C\v'-.1v'\h'-1p'\s-2+\h'-1p'+\s0\v'.1v'\h'-1p'
+.de CQ          \" put $1 in typewriter font
+.ft CW
+'if n "\c
+'if t \\&\\$1\c
+'if n \\&\\$1\c
+'if n \&"
+\\&\\$2 \\$3 \\$4 \\$5 \\$6 \\$7
+'.ft R
+..
+.\" @(#)ms.acc 1.5 88/02/08 SMI; from UCB 4.2
+.	\" AM - accent mark definitions
+.bd B 3
+.	\" fudge factors for nroff and troff
+.if n \{\
+.	ds #H 0
+.	ds #V .8m
+.	ds #F .3m
+.	ds #[ \f1
+.	ds #] \fP
+.\}
+.if t \{\
+.	ds #H ((1u-(\\\\n(.fu%2u))*.13m)
+.	ds #V .6m
+.	ds #F 0
+.	ds #[ \&
+.	ds #] \&
+.\}
+.	\" simple accents for nroff and troff
+.if n \{\
+.	ds ' \&
+.	ds ` \&
+.	ds ^ \&
+.	ds , \&
+.	ds ~ ~
+.	ds ? ?
+.	ds ! !
+.	ds /
+.	ds q
+.\}
+.if t \{\
+.	ds ' \\k:\h'-(\\n(.wu*8/10-\*(#H)'\'\h"|\\n:u"
+.	ds ` \\k:\h'-(\\n(.wu*8/10-\*(#H)'\`\h'|\\n:u'
+.	ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'^\h'|\\n:u'
+.	ds , \\k:\h'-(\\n(.wu*8/10)',\h'|\\n:u'
+.	ds ~ \\k:\h'-(\\n(.wu-\*(#H-.1m)'~\h'|\\n:u'
+.	ds ? \s-2c\h'-\w'c'u*7/10'\u\h'\*(#H'\zi\d\s+2\h'\w'c'u*8/10'
+.	ds ! \s-2\(or\s+2\h'-\w'\(or'u'\v'-.8m'.\v'.8m'
+.	ds / \\k:\h'-(\\n(.wu*8/10-\*(#H)'\z\(sl\h'|\\n:u'
+.	ds q o\h'-\w'o'u*8/10'\s-4\v'.4m'\z\(*i\v'-.4m'\s+4\h'\w'o'u*8/10'
+.\}
+.	\" troff and (daisy-wheel) nroff accents
+.ds : \\k:\h'-(\\n(.wu*8/10-\*(#H+.1m+\*(#F)'\v'-\*(#V'\z.\h'.2m+\*(#F'.\h'|\\n:u'\v'\*(#V'
+.ds 8 \h'\*(#H'\(*b\h'-\*(#H'
+.ds v \\k:\h'-(\\n(.wu*9/10-\*(#H)'\v'-\*(#V'\*(#[\s-4v\s0\v'\*(#V'\h'|\\n:u'\*(#]
+.ds _ \\k:\h'-(\\n(.wu*9/10-\*(#H+(\*(#F*2/3))'\v'-.4m'\z\(hy\v'.4m'\h'|\\n:u'
+.ds . \\k:\h'-(\\n(.wu*8/10)'\v'\*(#V*4/10'\z.\v'-\*(#V*4/10'\h'|\\n:u'
+.ds 3 \*(#[\v'.2m'\s-2\&3\s0\v'-.2m'\*(#]
+.ds o \\k:\h'-(\\n(.wu+\w'\(de'u-\*(#H)/2u'\v'-.3n'\*(#[\z\(de\v'.3n'\h'|\\n:u'\*(#]
+.ds d- \h'\*(#H'\(pd\h'-\w'~'u'\v'-.25m'\f2\(hy\fP\v'.25m'\h'-\*(#H'
+.ds D- D\\k:\h'-\w'D'u'\v'-.11m'\z\(hy\v'.11m'\h'|\\n:u'
+.ds th \*(#[\v'.3m'\s+1I\s-1\v'-.3m'\h'-(\w'I'u*2/3)'\s-1o\s+1\*(#]
+.ds Th \*(#[\s+2I\s-2\h'-\w'I'u*3/5'\v'-.3m'o\v'.3m'\*(#]
+.ds ae a\h'-(\w'a'u*4/10)'e
+.ds Ae A\h'-(\w'A'u*4/10)'E
+.ds oe o\h'-(\w'o'u*4/10)'e
+.ds Oe O\h'-(\w'O'u*4/10)'E
+.	\" corrections for vroff
+.if v .ds ~ \\k:\h'-(\\n(.wu*9/10-\*(#H)'\s-2\u~\d\s+2\h'|\\n:u'
+.if v .ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'\v'-.4m'^\v'.4m'\h'|\\n:u'
+.	\" for low resolution devices (crt and lpr)
+.if \n(.H>23 .if \n(.V>19 \
+\{\
+.	ds : e
+.	ds 8 ss
+.	ds v \h'-1'\o'\(aa\(ga'
+.	ds _ \h'-1'^
+.	ds . \h'-1'.
+.	ds 3 3
+.	ds o a
+.	ds d- d\h'-1'\(ga
+.	ds D- D\h'-1'\(hy
+.	ds th \o'bp'
+.	ds Th \o'LP'
+.	ds ae ae
+.	ds Ae AE
+.	ds oe oe
+.	ds Oe OE
+.\}
+.rm #[ #] #H #V #F C
+.SH "NAME"
+.IX Header "NAME"
+RIFFIO API \- RIFFIO data types and concepts
+.SH "SYNOPSIS"
+.IX Header "SYNOPSIS"
+The RIFFIO API provides data types and functions for reading, writing, and
+navigating RIFF files.  The RIFF file format is documented in
+.PP
+.Vb 4
+\&         Microsoft Press, "Microsoft Windows Multimedia Programmer's
+\&         Reference", Redmond WA, 1991. 
+\&    
+\&         Telephone: 1-800-MSPRESS, ISBN#1-55615389-9
+.Ve
+Although the RIFFIO API uses similar names and terminology as Microsoft's
+mmio API, the RIFFIO types and functions are _not_ the same as those
+described by Microsoft.
+.PP
+RIFFIO types, macros, and functions all begin with the string \*(L"RIFFIO\*(R".
+.SH "RIFFIOSuccess"
+.IX Header "RIFFIOSuccess"
+How do you know if a RIFFIO function succeeded?
+.PP
+Many RIFFIO functions return a zero status integer if they fail.
+This is equivalent to a false boolean value in C. In other words,
+a test for false is a test for failure.
+.PP
+To help readability the success values
+are encoded as an enumerated type, RIFFIOSuccess.
+.PP
+.Vb 7
+\&     
+\&     typedef enum
+\&     {
+\&       RIFFIO_FAIL = 0,      /* false, operation failed     */
+\&       RIFFIO_OK = 1         /* true, operation successful */
+\&     } RIFFIOSuccess;
+\&     
+.Ve
+.Sh "\s-1WARNING\s0"
+.IX Subsection "\s-1WARNING\s0"
+Never test for equality to these values. Use them only
+as output from a function.
+.SH "RIFFIO Errors"
+.IX Header "RIFFIO Errors"
+How does RIFFIO deal with errors?
+.PP
+No RIFFIO function will cause a correct program to exit.  There are
+however, many assertions in the debug version of the RIFFIO library
+that will terminate a program if they encounter a bug in the
+library or programmer's code.
+.PP
+Upon encountering an error beyond a programmer's control some
+RIFFIO functions will call an error handling function.  The default
+error handling function will print an error message to stderr
+(although it is possible for the library to be compiled with no
+default error handler).
+.PP
+A user may provide their own error handling function with
+\fIRIFFIOInstallErrorHandler()\fR.
+.PP
+Error handling functions take the form
+.Sh "RIFFIOErrorHandler"
+.IX Subsection "RIFFIOErrorHandler"
+.PP
+.Vb 4
+\&     typedef void (*RIFFIOErrorHandler)(const char *strModule, 
+\&                                        const char *strFormat, 
+\&                                        va_list args);
+\&     
+.Ve
+A RIFFIOErrorHandler is a function that handles an error, given the
+name of a module <strModule> where an error has occurred and a
+message about the error.  The message consists of a \fIprintf()\fR
+compatible format string, <strFormat>, followed by its corresponding
+variable argument list <args>.
+.PP
+.Vb 1
+\&     
+.Ve
+.SH "Byte Ordering"
+.IX Header "Byte Ordering"
+Byte ordering determines how integers are stored in a RIFF file.
+.PP
+There are two conventions:
+.Ip "*\s-1RIFF\s0 form (little-endian, Intel)" 4
+.IX Item "*\s-1RIFF\s0 form (little-endian, Intel)"
+Least significant byte first, most significant byte last.
+.Ip "*\s-1RIFX\s0 form (big-endian, Motorola)" 4
+.IX Item "*\s-1RIFX\s0 form (big-endian, Motorola)"
+Most significant byte first, least signifcant byte last.
+.PP
+Byte ordering affects integers only; \s-1FOURCC\s0's and strings are
+stored the same way in \s-1RIFF\s0 and \s-1RIFX\s0 forms.
+.PP
+\s-1TWB\s0 \- I don't know if byte order affects \s-1IEEE\s0 floating point numbers.
+.Sh "RIFFIOFormType"
+.IX Subsection "RIFFIOFormType"
+How is the byte order of a \s-1RIFF\s0 file represented by \s-1RIFFIO\s0?
+.PP
+Byte order information is conveyed by \s-1RIFFIO\s0 using an enumerated
+type, RIFFIOFormType.
+.PP
+The form type (byte order) of a \s-1RIFF\s0 file.
+.PP
+.Vb 8
+\&     
+\&     typedef enum
+\&     {
+\&             RIFFIO_FORM_UNKNOWN,   /* Unknown byte order */
+\&             RIFFIO_FORM_RIFF,      /* Intel byte order, little-endian */
+\&             RIFFIO_FORM_RIFX       /* Motorola byte order, big-endian */
+\&     } RIFFIOFormType;
+\&     
+.Ve
+It allows for the possiblity that the byte order has not yet
+been determined for a \s-1RIFF\s0 file.
+.Sh "\s-1NOTE\s0"
+.IX Subsection "\s-1NOTE\s0"
+This enumerated type is not the same as a four-character code
+and must not be used as a \s-1RIFFIOFOURCC\s0.
+.SH "RIFFIOFile"
+.IX Header "RIFFIOFile"
+How are RIFF files represented?
+.PP
+RIFF files are represented by a pointer to a RIFFIOFile structure.
+For example
+.PP
+.Vb 1
+\&     RIFFIOFile *rfNiff; 
+.Ve
+There are no public members of a RIFFIOFile.
+.Sh "RIFFIOOffset"
+.IX Subsection "RIFFIOOffset"
+An offset into a RIFFIOFile (in bytes).
+.PP
+.Vb 2
+\&     typedef unsigned long RIFFIOOffset; 
+\&     
+.Ve
+.SH "RIFFIOFile Callbacks"
+.IX Header "RIFFIOFile Callbacks"
+Upon creation, a RIFFIOFile is useless.  Before you can use a
+RIFFIOFile you must tell it what file it will operate on and
+also _how_ it will perform its I/O.
+.PP
+\fIRIFFIOFileInit()\fR accepts a void pointer to a user-defined object
+that represents a \*(L"file\*(R".  The user must also provide read, write,
+seek, and tell callbacks that are compatible with that \*(L"file\*(R".
+.PP
+Subsequent RIFFIOFile operations will supply the callbacks with the
+user-defined file pointer.
+.PP
+RIFFIOReader
+------------ */
+| typedef
+| long (*RIFFIOReader)(void *vpUserFile, void *vpBuffer, long nBytes);
+.PP
+A RIFFIOReader is a function that reads <nBytes> from a user-defined file
+<*vpUserFile> and places them at <vpBuffer>. <vpBuffer> must be large
+enough to hold the requested number of bytes.
+.PP
+RETURNS
+.Ip "\(bu" 4
+.IX Item "\(bu"
+the number of bytes actually read,
+.Ip "\(bu" 4
+.IX Item "\(bu"
+0 on end of file,
+.Ip "\(bu" 4
+.IX Item "\(bu"
+-1 on error.
+.Sh "RIFFIOWriter"
+.IX Subsection "RIFFIOWriter"
+.PP
+.Vb 2
+\&     typedef 
+\&     long (*RIFFIOWriter)(void *vpUserFile, void *vpBuffer, long nBytes);
+.Ve
+A RIFFIOWriter is a function that writes <nBytes> from <vpBuffer>
+to a user-defined file <vpUserFile>.
+.PP
+\s-1RETURNS\s0
+.Ip "\(bu" 4
+.IX Item "\(bu"
+the number of bytes actually written, or
+.Ip "\(bu" 4
+.IX Item "\(bu"
+-1 on error.
+.Sh "RIFFIOSeeker"
+.IX Subsection "RIFFIOSeeker"
+.PP
+.Vb 13
+\&     
+\&     typedef enum
+\&     {
+\&       RIFFIO_SEEK_SET, /* Seek relative to file beginning    */
+\&       RIFFIO_SEEK_CUR, /* Seek relative to current file position */
+\&       RIFFIO_SEEK_END  /* Seek relative to file end          */ 
+\&     } RIFFIOSeekOrigin;
+\&     
+\&     typedef 
+\&     RIFFIOSuccess (*RIFFIOSeeker)(void *vpUserFile, 
+\&                                  RIFFIOOffset offset, 
+\&                                  RIFFIOSeekOrigin origin);
+\&     
+.Ve
+A RIFFIOSeeker sets the position of a user-defined file <vpUserFile>
+relative to <origin> by <offset> bytes.
+It returns 0 on failure.
+.Sh "RIFFIOTeller"
+.IX Subsection "RIFFIOTeller"
+.PP
+.Vb 1
+\&     typedef long  (*RIFFIOTeller)(void *vpUserFile);
+.Ve
+A RIFFIOTeller is a function that returns the current position of
+a user-defined file <vpUserFile>.  The file position is reported
+in bytes offset from the start of file.
+.SH "How are RIFF four-character codes supported?"
+.IX Header "How are RIFF four-character codes supported?"
+.Sh "\s-1RIFFIOFOURCC\s0"
+.IX Subsection "\s-1RIFFIOFOURCC\s0"
+\s-1RIFFIO\s0 stores a four-character code in a \s-1RIFFIOFOURCC\s0 type.
+.PP
+.Vb 2
+\&     typedef unsigned long RIFFIOFOURCC;
+\&     
+.Ve
+\s-1RIFFIO\s0 also provides a macro to construct a \s-1RIFFIOFOURCC\s0 out
+of four individual characters.
+.Sh "\s-1RIFFIOMAKEFOURCC\s0"
+.IX Subsection "\s-1RIFFIOMAKEFOURCC\s0"
+.PP
+.Vb 6
+\&     #define RIFFIOMAKEFOURCC(first, second, third, fourth)  \e
+\&      ( ((RIFFIOFOURCC) (unsigned char) (first)      )       \e
+\&      | ((RIFFIOFOURCC) (unsigned char) (second) << 8)       \e
+\&      | ((RIFFIOFOURCC) (unsigned char) (third)  << 16)      \e
+\&      | ((RIFFIOFOURCC) (unsigned char) (fourth) << 24))
+\&     
+.Ve
+Notice that the first character is stored in the least significant
+part of the \s-1RIFFIOFOURCC\s0, regardless of machine byte order.
+.PP
+Use \fIRIFFIOFOURCCToString()\fR to decompose a \s-1RIFFIOFOURCC\s0 into
+its constituent characters.
+.PP
+The memory used by \fIRIFFIOFOURCCToString()\fR must already be allocated
+hold at least \s-1RIFFIO_FOURCC_LIM\s0 characters.
+.PP
+\s-1TWB\s0 \- This value is bigger than 5 because I would ultimately like
+to allow strings formatted with escape codes. Microsoft implies that
+\s-1FOURCC\s0's can be formatted with escape codes in
+.PP
+.Vb 1
+\&          Win 3.1 SDK: Multimedia Prog. Reference
+.Ve
+We may allow 4 * 4 character escape codes + 1 \s-1NUL\s0
+.PP
+.Vb 2
+\&     #define RIFFIO_FOURCC_LIM 17
+\&     
+.Ve
+\s-1RIFFIO\s0 provides some commonly used four-character codes.
+.PP
+.Vb 4
+\&     #define RIFFIO_FOURCC_RIFF RIFFIOMAKEFOURCC('R','I','F','F')
+\&     #define RIFFIO_FOURCC_RIFX RIFFIOMAKEFOURCC('R','I','F','X')
+\&     #define RIFFIO_FOURCC_LIST RIFFIOMAKEFOURCC('L','I','S','T')
+\&     
+.Ve
+\s-1INFO\s0 List Chunks
+.PP
+.Vb 26
+\&     #define RIFFIO_FOURCC_INFO RIFFIOMAKEFOURCC('I','N','F','O')
+\&     
+\&     #define RIFFIO_FOURCC_IARL RIFFIOMAKEFOURCC('I','A','R','L')
+\&     #define RIFFIO_FOURCC_IART RIFFIOMAKEFOURCC('I','A','R','T')
+\&     #define RIFFIO_FOURCC_ICMS RIFFIOMAKEFOURCC('I','C','M','S')
+\&     #define RIFFIO_FOURCC_ICMT RIFFIOMAKEFOURCC('I','C','M','T')
+\&     #define RIFFIO_FOURCC_ICOP RIFFIOMAKEFOURCC('I','C','O','P')
+\&     #define RIFFIO_FOURCC_ICRD RIFFIOMAKEFOURCC('I','C','R','D')
+\&     #define RIFFIO_FOURCC_ICRP RIFFIOMAKEFOURCC('I','C','R','P')
+\&     #define RIFFIO_FOURCC_IDIM RIFFIOMAKEFOURCC('I','D','I','M')
+\&     #define RIFFIO_FOURCC_IDPI RIFFIOMAKEFOURCC('I','D','P','I')
+\&     #define RIFFIO_FOURCC_IENG RIFFIOMAKEFOURCC('I','E','N','G')
+\&     #define RIFFIO_FOURCC_IGNR RIFFIOMAKEFOURCC('I','G','N','R')
+\&     #define RIFFIO_FOURCC_IKEY RIFFIOMAKEFOURCC('I','K','E','Y')
+\&     #define RIFFIO_FOURCC_ILGT RIFFIOMAKEFOURCC('I','L','G','T')
+\&     #define RIFFIO_FOURCC_IMED RIFFIOMAKEFOURCC('I','M','E','D')
+\&     #define RIFFIO_FOURCC_INAM RIFFIOMAKEFOURCC('I','N','A','M')
+\&     #define RIFFIO_FOURCC_IPLT RIFFIOMAKEFOURCC('I','P','L','T')
+\&     #define RIFFIO_FOURCC_IPRD RIFFIOMAKEFOURCC('I','P','R','D')
+\&     #define RIFFIO_FOURCC_ISBJ RIFFIOMAKEFOURCC('I','S','B','J')
+\&     #define RIFFIO_FOURCC_ISFT RIFFIOMAKEFOURCC('I','S','F','T')
+\&     #define RIFFIO_FOURCC_ISHP RIFFIOMAKEFOURCC('I','S','H','P')
+\&     #define RIFFIO_FOURCC_ISRC RIFFIOMAKEFOURCC('I','S','R','C')
+\&     #define RIFFIO_FOURCC_ISRF RIFFIOMAKEFOURCC('I','S','R','F')
+\&     #define RIFFIO_FOURCC_ITCH RIFFIOMAKEFOURCC('I','T','C','H')
+\&     
+.Ve
+.SH "How are RIFF chunks represented?"
+.IX Header "How are RIFF chunks represented?"
+.Sh "RIFFIOChunk"
+.IX Subsection "RIFFIOChunk"
+A RIFFIOChunk structure contains type and location information
+about a chunk in a RIFFIOFile.
+.PP
+.Vb 6
+\&     typedef unsigned long RIFFIOSize;    /* Size of a RIFF chunk */
+\&     
+\&     typedef struct
+\&     {
+\&       /* Public 
+\&        * ------
+.Ve
+.Vb 16
+\&        * users need to set and read these members 
+\&        */
+\&     
+\&       RIFFIOFOURCC     fccId;      /* chunk identifier eg. LIST for Lists  */
+\&     
+\&       RIFFIOFOURCC     fccType;    /* Form or List type eg. NIFF           
+\&                                     * Ignored for chunks that aren't lists 
+\&                                     */      
+\&     
+\&       RIFFIOSize       sizeData;   /* size of data portion of chunk 
+\&                                     * INCLUDES 4 bytes for type field of 
+\&                                     * List and Form chunks
+\&                                     */
+\&     
+\&       /* Other private members 
+\&        * ---------------------
+.Ve
+.Vb 5
+\&        * not for RIFFIO users 
+\&        */
+\&     
+\&     } RIFFIOChunk;
+\&     
+.Ve
+.Sh "How are RIFFIOChunks Used?"
+.IX Subsection "How are RIFFIOChunks Used?"
+.Ip "\(bu" 4
+.IX Item "\(bu"
+RIFFIOChunks convey chunk information between the chunk
+creation and navigation routines.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Some RIFFIOChunk routines may use only a few of the RIFFIOChunk
+data members and ignore others.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Some \s-1RIFFIO\s0 routines, such as \fIRIFFIOChunkFinalize()\fR, will expect that a
+RIFFIOChunk has not been modified since a previous call to an
+associated function (eg. RIFFIOChunkCreate).
+
+.rn }` ''

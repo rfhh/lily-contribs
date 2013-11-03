@@ -1,0 +1,386 @@
+.rn '' }`
+''' $RCSfile$$Revision$$Date$
+'''
+''' $Log$
+'''
+.de Sh
+.br
+.if t .Sp
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.de Sp
+.if t .sp .5v
+.if n .sp
+..
+.de Ip
+.br
+.ie \\n(.$>=3 .ne \\$3
+.el .ne 3
+.IP "\\$1" \\$2
+..
+.de Vb
+.ft CW
+.nf
+.ne \\$1
+..
+.de Ve
+.ft R
+
+.fi
+..
+'''
+'''
+'''     Set up \*(-- to give an unbreakable dash;
+'''     string Tr holds user defined translation string.
+'''     Bell System Logo is used as a dummy character.
+'''
+.tr \(*W-|\(bv\*(Tr
+.ie n \{\
+.ds -- \(*W-
+.ds PI pi
+.if (\n(.H=4u)&(1m=24u) .ds -- \(*W\h'-12u'\(*W\h'-12u'-\" diablo 10 pitch
+.if (\n(.H=4u)&(1m=20u) .ds -- \(*W\h'-12u'\(*W\h'-8u'-\" diablo 12 pitch
+.ds L" ""
+.ds R" ""
+.ds L' '
+.ds R' '
+'br\}
+.el\{\
+.ds -- \(em\|
+.tr \*(Tr
+.ds L" ``
+.ds R" ''
+.ds L' `
+.ds R' '
+.ds PI \(*p
+'br\}
+.\"	If the F register is turned on, we'll generate
+.\"	index entries out stderr for the following things:
+.\"		TH	Title 
+.\"		SH	Header
+.\"		Sh	Subsection 
+.\"		Ip	Item
+.\"		X<>	Xref  (embedded
+.\"	Of course, you have to process the output yourself
+.\"	in some meaninful fashion.
+.if \nF \{
+.de IX
+.tm Index:\\$1\t\\n%\t"\\$2"
+..
+.nr % 0
+.rr F
+.\}
+.TH abcde 3 "riffio" "14/Jun/96" "RIFFIO Documentation"
+.IX Title "abcde 3"
+.UC
+.IX Name "abcde - create a simple demo RIFF file"
+.if n .hy 0
+.if n .na
+.ds C+ C\v'-.1v'\h'-1p'\s-2+\h'-1p'+\s0\v'.1v'\h'-1p'
+.de CQ          \" put $1 in typewriter font
+.ft CW
+'if n "\c
+'if t \\&\\$1\c
+'if n \\&\\$1\c
+'if n \&"
+\\&\\$2 \\$3 \\$4 \\$5 \\$6 \\$7
+'.ft R
+..
+.\" @(#)ms.acc 1.5 88/02/08 SMI; from UCB 4.2
+.	\" AM - accent mark definitions
+.bd B 3
+.	\" fudge factors for nroff and troff
+.if n \{\
+.	ds #H 0
+.	ds #V .8m
+.	ds #F .3m
+.	ds #[ \f1
+.	ds #] \fP
+.\}
+.if t \{\
+.	ds #H ((1u-(\\\\n(.fu%2u))*.13m)
+.	ds #V .6m
+.	ds #F 0
+.	ds #[ \&
+.	ds #] \&
+.\}
+.	\" simple accents for nroff and troff
+.if n \{\
+.	ds ' \&
+.	ds ` \&
+.	ds ^ \&
+.	ds , \&
+.	ds ~ ~
+.	ds ? ?
+.	ds ! !
+.	ds /
+.	ds q
+.\}
+.if t \{\
+.	ds ' \\k:\h'-(\\n(.wu*8/10-\*(#H)'\'\h"|\\n:u"
+.	ds ` \\k:\h'-(\\n(.wu*8/10-\*(#H)'\`\h'|\\n:u'
+.	ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'^\h'|\\n:u'
+.	ds , \\k:\h'-(\\n(.wu*8/10)',\h'|\\n:u'
+.	ds ~ \\k:\h'-(\\n(.wu-\*(#H-.1m)'~\h'|\\n:u'
+.	ds ? \s-2c\h'-\w'c'u*7/10'\u\h'\*(#H'\zi\d\s+2\h'\w'c'u*8/10'
+.	ds ! \s-2\(or\s+2\h'-\w'\(or'u'\v'-.8m'.\v'.8m'
+.	ds / \\k:\h'-(\\n(.wu*8/10-\*(#H)'\z\(sl\h'|\\n:u'
+.	ds q o\h'-\w'o'u*8/10'\s-4\v'.4m'\z\(*i\v'-.4m'\s+4\h'\w'o'u*8/10'
+.\}
+.	\" troff and (daisy-wheel) nroff accents
+.ds : \\k:\h'-(\\n(.wu*8/10-\*(#H+.1m+\*(#F)'\v'-\*(#V'\z.\h'.2m+\*(#F'.\h'|\\n:u'\v'\*(#V'
+.ds 8 \h'\*(#H'\(*b\h'-\*(#H'
+.ds v \\k:\h'-(\\n(.wu*9/10-\*(#H)'\v'-\*(#V'\*(#[\s-4v\s0\v'\*(#V'\h'|\\n:u'\*(#]
+.ds _ \\k:\h'-(\\n(.wu*9/10-\*(#H+(\*(#F*2/3))'\v'-.4m'\z\(hy\v'.4m'\h'|\\n:u'
+.ds . \\k:\h'-(\\n(.wu*8/10)'\v'\*(#V*4/10'\z.\v'-\*(#V*4/10'\h'|\\n:u'
+.ds 3 \*(#[\v'.2m'\s-2\&3\s0\v'-.2m'\*(#]
+.ds o \\k:\h'-(\\n(.wu+\w'\(de'u-\*(#H)/2u'\v'-.3n'\*(#[\z\(de\v'.3n'\h'|\\n:u'\*(#]
+.ds d- \h'\*(#H'\(pd\h'-\w'~'u'\v'-.25m'\f2\(hy\fP\v'.25m'\h'-\*(#H'
+.ds D- D\\k:\h'-\w'D'u'\v'-.11m'\z\(hy\v'.11m'\h'|\\n:u'
+.ds th \*(#[\v'.3m'\s+1I\s-1\v'-.3m'\h'-(\w'I'u*2/3)'\s-1o\s+1\*(#]
+.ds Th \*(#[\s+2I\s-2\h'-\w'I'u*3/5'\v'-.3m'o\v'.3m'\*(#]
+.ds ae a\h'-(\w'a'u*4/10)'e
+.ds Ae A\h'-(\w'A'u*4/10)'E
+.ds oe o\h'-(\w'o'u*4/10)'e
+.ds Oe O\h'-(\w'O'u*4/10)'E
+.	\" corrections for vroff
+.if v .ds ~ \\k:\h'-(\\n(.wu*9/10-\*(#H)'\s-2\u~\d\s+2\h'|\\n:u'
+.if v .ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'\v'-.4m'^\v'.4m'\h'|\\n:u'
+.	\" for low resolution devices (crt and lpr)
+.if \n(.H>23 .if \n(.V>19 \
+\{\
+.	ds : e
+.	ds 8 ss
+.	ds v \h'-1'\o'\(aa\(ga'
+.	ds _ \h'-1'^
+.	ds . \h'-1'.
+.	ds 3 3
+.	ds o a
+.	ds d- d\h'-1'\(ga
+.	ds D- D\h'-1'\(hy
+.	ds th \o'bp'
+.	ds Th \o'LP'
+.	ds ae ae
+.	ds Ae AE
+.	ds oe oe
+.	ds Oe OE
+.\}
+.rm #[ #] #H #V #F C
+.SH "NAME"
+.IX Header "NAME"
+abcde \- create a simple demo RIFF file
+.SH "SYNOPSIS"
+.IX Header "SYNOPSIS"
+abcde
+.SH "DESCRIPTION"
+.IX Header "DESCRIPTION"
+This program creates a RIFF file with the following
+structure. FRM1 is a form, CHKA is a single chunk, and LSTA is
+a list containing chunks CHKB and CHKC.
+.PP
+.Vb 3
+\&       FRMA --- CHKB
+\&                LSTC - CHKD
+\&                       CHKE
+.Ve
+.Vb 1
+\&     
+.Ve
+We will use routines from the Standard C library, RIFFIO and STDCRIFF.
+.PP
+.Vb 11
+\&     
+\&     #include <stdio.h>
+\&     #include "riffio.h"
+\&     #include "stdcriff.h"
+\&     
+\&     extern void doerror(const char *strMessage);
+\&     
+\&     int
+\&     main()
+\&     {
+\&     
+.Ve
+We need a Standard C FILE pointer to our new RIFF file.
+.PP
+.Vb 3
+\&     
+\&         FILE        *pFILEOut; /* The new RIFF file */  
+\&         
+.Ve
+We also need an associated RIFFIOFile for RIFFIO file operations.
+.PP
+.Vb 3
+\&     
+\&         RIFFIOFile  *prf;      /* Also the new RIFF file */
+\&     
+.Ve
+Chunk information is stored in RIFFIOChunk structures. There are
+no \fIRIFFIOChunkNew()\fR or \fIRIFFIOChunkDelete()\fR routines; we can simply
+define RIFFIOChunks.
+.PP
+We need three chunk variables because we have to keep
+chunk information around until the chunk contents are finalized.
+For example, LSTC cannot be finialized until CHKD and CHKE are written.
+.PP
+.Vb 5
+\&     
+\&         RIFFIOChunk chunkForm;  /* FRMA */
+\&         RIFFIOChunk chunkList;  /* LSTC */
+\&         RIFFIOChunk chunkChunk; /* CHKB, CHKD, CHKE */
+\&     
+.Ve
+Open the Standard C library RIFF file for writing and
+associate it with RIFFIOFile.
+Make sure the file is opened in binary mode.
+.PP
+.Vb 14
+\&     
+\&         pFILEOut = fopen("abcde.rif", "wb");
+\&         if (!pFILEOut)
+\&             doerror("Can't open abcde.rif for writing");
+\&         
+\&         prf = RIFFIOFileNew();
+\&         if (! prf)
+\&             doerror("RIFFIOFileNew failed");
+\&         
+\&         if (! RIFFIOFileInit(prf, pFILEOut,
+\&                              STDCRIFFRead, STDCRIFFWrite, 
+\&                              STDCRIFFSeek, STDCRIFFTell))
+\&             doerror("RIFFIOFileInit Failed");
+\&     
+.Ve
+First we must create the form chunk. We do so by filling in the
+form's chunk id (RIFF or RIFX),the form type (FRMA in our case),
+and optionally the form's data size.  Because this example is so
+simple, we could conceivably predict the size of the entire
+form. Ordinarily that would be too difficult so we will leave
+chunkForm.sizeData alone and let \fIRIFFIOChunkFinalize()\fR calculate it
+later. Once the chunkForm's members are initialized we call
+\fIRIFFIOChunkCreate()\fR to write the chunk's header.
+.PP
+.Vb 6
+\&         chunkForm.fccId = RIFFIO_FOURCC_RIFF;
+\&         chunkForm.fccType = RIFFIOMAKEFOURCC('F','R','M','A');
+\&     
+\&         if (! RIFFIOChunkCreate(prf, &chunkForm))
+\&             doerror("Couldn't create form chunk");
+\&     
+.Ve
+\fIRIFFIOChunkCreate()\fR fills in other, private, fields of <chunkForm> that
+are used later by \fIRIFFIOChunkFinalize()\fR.
+.PP
+\fIRIFFIOChunkCreate()\fR leaves the RIFF file positioned at the start of
+the new chunk's contents.  In this case we are poised to write the
+first chunk of the form, CHKB.
+.PP
+Because CHKB is neither a form or a list we can ignore the fccType
+member of the chunk. CHKB will be empty, so we can immediately call
+\fIRIFFIOChunkFinalize()\fR to complete the chunk.
+.PP
+.Vb 9
+\&         chunkChunk.fccId = RIFFIOMAKEFOURCC('C','H','K','B');
+\&         chunkChunk.sizeData = 0;
+\&         
+\&         if (! RIFFIOChunkCreate(prf, &chunkChunk))
+\&             doerror("Couldn't create chunk CHKB");
+\&         
+\&         if (! RIFFIOChunkFinalize(prf, &chunkChunk))
+\&             doerror("Couldn't finalize chunk CHKB");
+\&     
+.Ve
+\fIRIFFIOChunkFinalize()\fR updates CHKB's size in the RIFF file if necessary.
+It then writes an NUL pad byte of the chunk has an odd size and leaves
+the RIFF file positioned at the end of the chunk.
+.PP
+We can now start LSTC.
+.PP
+.Vb 6
+\&             chunkList.fccId = RIFFIO_FOURCC_LIST;
+\&             chunkList.fccType = RIFFIOMAKEFOURCC('L','S','T','C');
+\&         
+\&             if (! RIFFIOChunkCreate(prf, &chunkList))
+\&                     doerror("Couldn't create chunk LSTC");
+\&     
+.Ve
+We will reuse chunkChunk to write CHKD. CHKD will contain 18 bytes
+of data so we will demonstrate filling in the sizeData member
+(even though we really don't need to).
+.PP
+.Vb 11
+\&         chunkChunk.fccId = RIFFIOMAKEFOURCC('C','H','K','D');
+\&         chunkChunk.sizeData = 18; /* predict the chunk size */
+\&     
+\&         if (! RIFFIOChunkCreate(prf, &chunkChunk))
+\&             doerror("Couldn't create chunk <CHKD>");
+\&         
+\&         RIFFIOWrite(prf, "This is CHKD data.", 18); 
+\&         
+\&         if (! RIFFIOChunkFinalize(prf, &chunkChunk))
+\&             doerror("Couldn't finalize chunk <CHKD>");
+\&         
+.Ve
+When we write CHKE we will let \fIRIFFIOChunkFinalize()\fR calculate the
+correct size.
+.PP
+.Vb 11
+\&         chunkChunk.fccId = RIFFIOMAKEFOURCC('C','H','K','E');
+\&         chunkChunk.sizeData = 999; /* Wrong but will be fixed automatically */
+\&     
+\&         if (! RIFFIOChunkCreate(prf, &chunkChunk))
+\&             doerror("Couldn't create chunk <CHKD>");
+\&         
+\&         RIFFIOWrite(prf, "This is CHKE data.", 18); 
+\&         
+\&         if (! RIFFIOChunkFinalize(prf, &chunkChunk))
+\&             doerror("Couldn't finalize chunk <CHKD>");
+\&     
+.Ve
+Here is the end of LSTC.
+.PP
+.Vb 3
+\&         if (! RIFFIOChunkFinalize(prf, &chunkList))
+\&             doerror("Couldn't finalize list <LSTC>");
+\&     
+.Ve
+Here is the end of FRMA.
+.PP
+.Vb 3
+\&         if (! RIFFIOChunkFinalize(prf, &chunkForm))
+\&             doerror("Couldn't finalize form <FRMA>");
+\&         
+.Ve
+We are done writing chunks. It is time to clean up.
+.PP
+.Vb 3
+\&     
+\&         RIFFIOFileDelete(prf);
+\&     
+.Ve
+Even though we have deleted the RIFFIOFile we still haven't officially
+closed the Standard C Libarary representation.
+.PP
+.Vb 7
+\&     
+\&         fclose(pFILEOut);                
+\&     
+\&         return 0;
+\&     
+\&     }
+\&     
+.Ve
+Report an error and exit.
+.PP
+.Vb 6
+\&     void
+\&     doerror(const char *strMessage)
+\&     {
+\&             fprintf(stderr, "%s\en", strMessage);
+\&             exit(1);
+\&     }
+.Ve
+
+.rn }` ''

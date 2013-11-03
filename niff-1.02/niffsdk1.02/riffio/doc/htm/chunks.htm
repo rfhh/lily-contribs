@@ -1,0 +1,398 @@
+<!-- $Id$ -->
+<HTML><HEAD>
+<CENTER><TITLE>chunks</TITLE>
+</HEAD>
+<BODY></CENTER><p><hr>
+
+<H1> 
+<A NAME="chunks_name_0">
+NAME</A>
+</H1>
+chunks - create, navigate, and operate on chunks
+<p><p><hr>
+
+<H1> 
+<A NAME="chunks_synopsis_0">
+SYNOPSIS</A>
+</H1>
+<p>
+<H2> 
+<A NAME="chunks_chunk_0">
+Chunk Creation</A>
+</H2>
+<p>
+<UL>
+<LI>
+<A HREF="chunks.htm#chunks_riffiochunkcreate_0">RIFFIOChunkCreate()</A>
+
+<p>
+<LI>
+<A HREF="chunks.htm#chunks_riffiochunkfinalize_0">RIFFIOChunkFinalize()</A>
+
+<p>
+</UL>
+.
+<p>
+<H2> 
+<A NAME="chunks_chunk_1">
+Chunk Navigation</A>
+</H2>
+<p>
+<UL>
+<LI>
+<A HREF="chunks.htm#chunks_riffiochunkdescend_0">RIFFIOChunkDescend()</A>
+
+<p>
+<LI>
+<A HREF="chunks.htm#chunks_riffiochunkascend_0">RIFFIOChunkAscend()</A>
+
+<p>
+<LI>
+<A HREF="chunks.htm#chunks_riffiochunkdataend_0">RIFFIOChunkDataEnd()</A>
+
+<p>
+<LI>
+<A HREF="chunks.htm#chunks_riffiochunkend_0">RIFFIOChunkEnd()</A>
+
+<p>
+<LI>
+<A HREF="chunks.htm#chunks_riffiochunkdataoffset_0">RIFFIOChunkDataOffset()</A>
+
+<p>
+<LI>
+<A HREF="chunks.htm#chunks_riffiochunkseekdata_0">RIFFIOChunkSeekData()</A>
+
+<p>
+</UL>
+.
+<p>
+<H2> 
+<A NAME="chunks_chunk_2">
+Chunk Operations</A>
+</H2>
+<p>
+<UL>
+<LI>
+<A HREF="chunks.htm#chunks_riffiochunkislist_0">RIFFIOChunkIsList()</A>
+
+<p>
+</UL>
+.
+<p><p><hr>
+
+<H1> 
+<A NAME="chunks_description_0">
+DESCRIPTION</A>
+</H1>
+<p><p><hr>
+
+<H1> 
+<A NAME="chunks_riffiochunkcreate_0">
+RIFFIOChunkCreate</A>
+</H1>
+Start a new chunk in a RIFF file.
+<p>
+<XMP>
+     RIFFIOSuccess
+     RIFFIOChunkCreate(RIFFIOFile *prf, RIFFIOChunk *pchunk) 
+
+</XMP>
+<p>
+<H2> 
+<A NAME="chunks_entry_0">
+ENTRY</A>
+</H2>
+<p>
+<UL>
+<LI>pchunk-&gt;fccId provides the new chunk id.
+<p>
+<LI>pchunk-&gt;fccType must contain a type id for Lists and Forms and
+is ignored otherwise.
+<p>
+<LI>pchunk-&gt;sizeData does not need to be correct.
+<p>
+</UL>
+.
+<p>
+<H2> 
+<A NAME="chunks_exit_0">
+EXIT</A>
+</H2>
+<p>
+<UL>
+<LI>Writes a chunk header to *prf according to *pchunk.
+
+<A HREF="chunks.htm#chunks_riffiochunkcreate_0">RIFFIOChunkCreate()</A>
+ will write pchunk-&gt;sizeData to the file.
+<p>
+<LI>Leaves *prf positioned at the start of the new chunk's data,
+<p>
+<LI>If *pchunk is a form, then *prf is marked with the proper
+byte order.
+<p>
+</UL>
+.
+<p>
+<H2> 
+<A NAME="chunks_obligations_0">
+OBLIGATIONS</A>
+</H2>
+<p>
+<UL>
+<LI>After writing the chunk contents, *pchunk
+must be finished with 
+<A HREF="chunks.htm#chunks_riffiochunkfinalize_0">RIFFIOChunkFinalize()</A>
+.
+<p>
+<LI>Don't change the &lt;*pchunk&gt; data members before calling
+
+<A HREF="chunks.htm#chunks_riffiochunkfinalize_0">RIFFIOChunkFinalize()</A>
+.
+<p>
+<LI>If the pchunk-&gt;sizeData is correct when the chunk is finalized,
+then 
+<A HREF="chunks.htm#chunks_riffiochunkfinalize_0">RIFFIOChunkFinalize()</A>
+ will not update the chunk's size in
+the file.
+<p>
+</UL>
+.
+<p>
+<H2> 
+<A NAME="chunks_errors_0">
+ERRORS</A>
+</H2>
+On failure, the file position is undefined.
+<p><p><hr>
+
+<H1> 
+<A NAME="chunks_riffiochunkfinalize_0">
+RIFFIOChunkFinalize</A>
+</H1>
+Finish writing a new chunk in a RIFF file.
+<p>
+<XMP>
+     RIFFIOSuccess
+     RIFFIOChunkFinalize(RIFFIOFile *prf, RIFFIOChunk *pchunk)
+
+</XMP>
+<p>
+<H2> 
+<A NAME="chunks_entry_0">
+ENTRY</A>
+</H2>
+<*pchunk&gt; was returned by RIFFIOChunkCreate
+<p>
+<H2> 
+<A NAME="chunks_exit_0">
+EXIT</A>
+</H2>
+<p>
+<UL>
+<LI>Updates the chunk size in the file and in &lt;*pchunk&gt; (if necessary).
+<p>
+<LI>Writes a NUL pad byte (if necessary).
+<p>
+<LI>Leaves the file positioned after the chunk.
+<p>
+</UL>
+.
+<p>
+<H2> 
+<A NAME="chunks_errors_0">
+ERRORS</A>
+</H2>
+On failure, the file position is undefined.
+<p><p><hr>
+
+<H1> 
+<A NAME="chunks_riffiochunkdescend_0">
+RIFFIOChunkDescend</A>
+</H1>
+Read a chunk header from a RIFF file.
+<p>
+<XMP>
+     RIFFIOSuccess
+     RIFFIOChunkDescend(RIFFIOFile *prf, RIFFIOChunk *pchunk)
+
+</XMP>
+<p>
+<H2> 
+<A NAME="chunks_entry_0">
+ENTRY</A>
+</H2>
+<*prf&gt; must be positioned at the start of a chunk.
+<p>
+<H2> 
+<A NAME="chunks_exit_0">
+EXIT</A>
+</H2>
+<p>
+<UL>
+<LI>Leaves the file positioned at the start of the chunk's contents
+(either the first subchunk of a LIST or a normal chunk's data).
+<p>
+<LI>If the chunk is a RIFF or RIFX form, then
+marks the RIFFIOFile byte order accordingly.
+<p>
+<LI><*pchunk&gt; holds the id, size, and possibly the
+list type of the newly read chunk.
+<p>
+</UL>
+.
+<p>
+<H2> 
+<A NAME="chunks_errors_0">
+ERRORS</A>
+</H2>
+On failure the file position is undefined.
+<p><p><hr>
+
+<H1> 
+<A NAME="chunks_riffiochunkascend_0">
+RIFFIOChunkAscend</A>
+</H1>
+Advance a RIFF file past a chunk.
+<p>
+<XMP>
+     RIFFIOSuccess
+     RIFFIOChunkAscend(RIFFIOFile *prf, const RIFFIOChunk *pchunk)
+
+</XMP>
+<p>
+<H2> 
+<A NAME="chunks_entry_0">
+ENTRY</A>
+</H2>
+<*pchunk&gt; was returned by either RIFFIOChunkDescend or
+RIFFIOChunkFinalize.
+<p>
+<H2> 
+<A NAME="chunks_exit_0">
+EXIT</A>
+</H2>
+<*prf&gt; is positioned at the end of &lt;*pchunk&gt;
+<p>
+<H2> 
+<A NAME="chunks_errors_0">
+ERRORS</A>
+</H2>
+On failure, the file position is undefined.
+<p><p><hr>
+
+<H1> 
+<A NAME="chunks_riffiochunkdataoffset_0">
+RIFFIOChunkDataOffset</A>
+</H1>
+Return the file position of a chunk's data (or list's first subchunk)
+<p>
+<XMP>
+     RIFFIOOffset
+     RIFFIOChunkDataOffset(const RIFFIOChunk *pchunk)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="chunks_riffiochunkseekdata_0">
+RIFFIOChunkSeekData</A>
+</H1>
+Seek to the start of a chunk's data or a list's contents
+<p>
+<XMP>
+     RIFFIOSuccess
+     RIFFIOChunkSeekData(RIFFIOFile *prf, const RIFFIOChunk *pchunk)
+
+</XMP>
+<p>Note that this is different than 
+<A HREF="chunks.htm#chunks_riffiochunkdescend_0">RIFFIOChunkDescend()</A>
+ because
+
+<A HREF="chunks.htm#chunks_riffiochunkseekdata_0">RIFFIOChunkSeekData()</A>
+ can be called regardless of the current
+file postion.
+<p>
+<H2> 
+<A NAME="chunks_entry_0">
+ENTRY</A>
+</H2>
+<*prf&gt; may be positioned anywhere.
+<p>
+<H2> 
+<A NAME="chunks_exit_0">
+EXIT</A>
+</H2>
+<*prf&gt; is postioned at the start of a chunk's data or the first
+subchunk of a list.
+<p>
+<H2> 
+<A NAME="chunks_errors_0">
+ERRORS</A>
+</H2>
+On error, the file postion is undefined.
+<p><p><hr>
+
+<H1> 
+<A NAME="chunks_riffiochunkislist_0">
+RIFFIOChunkIsList</A>
+</H1>
+Return true if a chunk is a form or a list.
+<p>
+<XMP>
+     int
+     RIFFIOChunkIsList(const RIFFIOChunk *pchunk)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="chunks_riffiochunkdataend_0">
+RIFFIOChunkDataEnd</A>
+</H1>
+Return true if a file is positioned at the end of a chunk's data.
+<p>
+<XMP>
+     int
+     RIFFIOChunkDataEnd(RIFFIOFile *prf, const RIFFIOChunk *pchunk)
+
+</XMP>
+<p>The chunk data's end may be before any NUL pad byte.
+<p>
+<H2> 
+<A NAME="chunks_entry_0">
+ENTRY</A>
+</H2>
+<*pchunk&gt; must be a ``clean'' chunk, returned by either
+
+<A HREF="chunks.htm#chunks_riffiochunkdescend_0">RIFFIOChunkDescend()</A>
+ or 
+<A HREF="chunks.htm#chunks_riffiochunkfinalize_0">RIFFIOChunkFinalize()</A>
+.
+<p><p><hr>
+
+<H1> 
+<A NAME="chunks_riffiochunkend_0">
+RIFFIOChunkEnd</A>
+</H1>
+Return true if a RIFF file is positioned at the end of a chunk.
+<p>
+<XMP>
+     int
+     RIFFIOChunkEnd(RIFFIOFile *prf, const RIFFIOChunk *pchunk)
+
+</XMP>
+<p>The chunk end is after any NUL pad byte.
+<p>
+<H2> 
+<A NAME="chunks_entry_0">
+ENTRY</A>
+</H2>
+<*pchunk&gt; must be a ``clean'' chunk, returned by either
+
+<A HREF="chunks.htm#chunks_riffiochunkdescend_0">RIFFIOChunkDescend()</A>
+ or 
+<A HREF="chunks.htm#chunks_riffiochunkfinalize_0">RIFFIOChunkFinalize()</A>
+.
+<p>
+</BODY>
+</HTML>

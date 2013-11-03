@@ -1,0 +1,104 @@
+<!-- $Id$ -->
+<HTML><HEAD>
+<CENTER><TITLE>fcc</TITLE>
+</HEAD>
+<BODY></CENTER><p><hr>
+
+<H1> 
+<A NAME="fcc_name_0">
+NAME</A>
+</H1>
+fcc - Four-character code operations
+<p><p><hr>
+
+<H1> 
+<A NAME="fcc_synopsis_0">
+SYNOPSIS</A>
+</H1>
+<p>
+<UL>
+<LI>
+<A HREF="fcc.htm#fcc_riffiofourccisvalid_0">RIFFIOFOURCCIsValid()</A>
+
+<p>
+<LI>
+<A HREF="fcc.htm#fcc_riffiofourcctostring_0">RIFFIOFOURCCToString()</A>
+
+<p>
+</UL>
+.
+<p><p><hr>
+
+<H1> 
+<A NAME="fcc_riffiofourccisvalid_0">
+RIFFIOFOURCCIsValid</A>
+</H1>
+Check the validity of a four-character code.
+<p>
+<XMP>
+     int
+     RIFFIOFOURCCIsValid(RIFFIOFOURCC fcc)
+
+</XMP>
+<p>Check &lt;fcc&gt; according to the rules
+<p>
+<UL>
+<LI>alphanumeric ASCII characters only [A-Z],[0-9],[a-z]
+<p>
+<LI>padded on the right with spaces
+<p>
+<LI>no embedded spaces
+<p>
+</UL>
+.
+<p>
+<H2> 
+<A NAME="fcc_return_0">
+RETURN</A>
+</H2>
+1 - if fcc is valid,
+<p>0 - otherwise
+<p>
+<H2> 
+<A NAME="fcc_bugs_0">
+BUGS</A>
+</H2>
+This does not work on FOURCC's that require escape codes to
+represent them in string form.
+<p><p><hr>
+
+<H1> 
+<A NAME="fcc_riffiofourcctostring_0">
+RIFFIOFOURCCToString</A>
+</H1>
+Write a four-character code into a string.
+<p>
+<XMP>
+     void
+     RIFFIOFOURCCToString(const RIFFIOFOURCC fcc, char *str)
+
+</XMP>
+<p>
+<H2> 
+<A NAME="fcc_entry_0">
+ENTRY</A>
+</H2>
+T &lt;*str&gt; must already be allocated to hold at
+least RIFFIO_FOURCC_MIN characters.
+<p>
+<H2> 
+<A NAME="fcc_exit_0">
+EXIT</A>
+</H2>
+Writes the four characters (possibly using escape sequences)
+of &lt;fcc&gt; and a terminating NUL into &lt;*str&gt;.
+<p>
+<H2> 
+<A NAME="fcc_bugs_0">
+BUGS</A>
+</H2>
+This does not work for FOURCC's that require escape codes to
+represent them as a string.
+<p>
+</BODY>
+</HTML>

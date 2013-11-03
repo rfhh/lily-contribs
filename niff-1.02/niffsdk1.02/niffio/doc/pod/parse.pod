@@ -1,0 +1,127 @@
+
+=head1 NAME
+
+parse - Functions to create a new parser and parse a NIFF file.
+
+=head1 SYNOPSIS
+
+=over 4
+
+=item *
+
+NIFFIOParserNew()
+
+=item *
+
+NIFFIOParserDelete()
+
+=item *
+
+NIFFIOParserSetTracing()
+
+=item *
+
+NIFFIOParserGetTracing()
+
+=item *
+
+NIFFIOParseFile()
+
+=back
+
+=head1 NIFFIOParserNew
+
+Return a pointer to a new parser, or null on failure
+
+     NIFFIOParser *
+     NIFFIOParserNew(void)
+
+
+=head1 NIFFIOParserDelete
+
+Free the memory allocated to a parser.
+
+     void
+     NIFFIOParserDelete(NIFFIOParser *pparser)
+
+
+=head1 NIFFIOParserSetTracing
+
+Enable (or disable) built-in parser tracing
+
+     void
+     NIFFIOParserSetTracing(NIFFIOParser *pparser, int isTracing)
+
+
+Parser tracing will be enabled according to the boolean value
+of <isTracing>.
+
+=head1 NIFFIOParserGetTracing
+
+Return true if a parser has tracing enabled.
+
+     int
+     NIFFIOParserGetTracing(NIFFIOParser *pparser)
+
+
+=head1 NIFFIOParseFile
+
+Parse a NIFF file.
+
+     RIFFIOSuccess
+     NIFFIOParseFile(NIFFIOParser *pparser, 
+                     NIFFIOFile *pnf, 
+                     NIFFIOUserContext userctxIn,
+                     NIFFIOUserContext *puserctxOut)
+
+
+Performs a recursive descent scan of all the chunks and tags in a
+NIFF file. Each chunk and tag that matches a registered parser callback
+generates a callback as it is scanned.  Chunks and tags are processed
+in the order they appear in the NIFF file.
+
+=head2 ENTRY
+
+=over 4
+
+=item *
+
+T <*pnf> must be positioned at the start of the NIFF Form.
+
+=item *
+
+T <usercntxIn> describes the top level "context".  It will be the
+parent context of the Form chunk. It may be null.
+
+=back
+
+=head2 EXIT
+
+T <*puserctxOut> will be filled in with the context returned by
+the form callbacks.
+If <puserctxOut> is null then it is ignored and won't be dereferenced.
+
+=head2 RETURN
+
+=over 4
+
+=item *RIFFIO_OK
+
+if the file parses without error,
+
+=item *RIFFIO_FAIL
+
+otherwise
+
+=back
+
+=head2 ERRORS
+
+If any callback generates an error, then the NIFF object that corresponds
+to that callback is skipped.  That means if a list's start callback fails,
+none of the subchunks in the list will be scanned.  If a list's end callback
+fails, NIFFIOParseFile will eventually return an error, but it is a
+little late to do much else.
+
+      
+

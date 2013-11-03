@@ -1,0 +1,115 @@
+
+=head1 NAME
+
+rwbytes - Read and write FOURCCs and unsigned 8, 16, and 32-bit integers
+
+=head1 SYNOPSIS
+
+=over 4
+
+=item *
+
+RIFFIORead8()
+
+=item *
+
+RIFFIORead16()
+
+=item *
+
+RIFFIORead32()
+
+=item *
+
+RIFFIOReadFOURCC()
+
+=item *
+
+RIFFIOWrite8()
+
+=item *
+
+RIFFIOWrite16()
+
+=item *
+
+RIFFIOWrite32()
+
+=item *
+
+RIFFIOWriteFOURCC()
+
+=back
+
+=head1 RETURN
+
+All of these routines return a zero RIFFIOSuccess on failure.
+
+=head1 ERRORS
+
+On failure, the RIFFIOFile position is undefined.
+None of these functions call RIFFIOError.
+
+=head1 RIFFIORead8
+
+Read an unsigned 8-bit integer from a RIFF file.
+
+     RIFFIOSuccess
+     RIFFIORead8(RIFFIOFile *prf, unsigned char *ucp)
+
+
+=head1 RIFFIORead16
+
+Read an unsigned 16-bit integer from a RIFF file.
+
+     RIFFIOSuccess
+     RIFFIORead16(RIFFIOFile *prf, unsigned short *usp)
+
+
+=head1 RIFFIORead32
+
+Read an unsigned 32-bit integer from a RIFF file.
+
+     RIFFIOSuccess
+     RIFFIORead32(RIFFIOFile *prf, unsigned long *ulp)
+
+
+=head1 RIFFIOReadFOURCC
+
+Read a four-character code from a RIFF file.
+
+     RIFFIOSuccess
+     RIFFIOReadFOURCC(RIFFIOFile *prf, RIFFIOFOURCC *fccp)
+
+
+=head1 RIFFIOWrite8
+
+Write an unsigned 8-bit integer to a RIFF file.
+
+     RIFFIOSuccess
+     RIFFIOWrite8(RIFFIOFile *prf, unsigned char uc)
+
+
+=head1 RIFFIOWrite16
+
+Write an unsigned 16-bit integer to a RIFF file.
+
+     RIFFIOSuccess
+     RIFFIOWrite16(RIFFIOFile *prf, unsigned short us)
+
+
+=head1 RIFFIOWrite32
+
+Write an unsigned 32-bit integer to a RIFF file.
+
+     RIFFIOSuccess
+     RIFFIOWrite32(RIFFIOFile *prf, unsigned long ul)
+
+
+=head1 RIFFIOWriteFOURCC
+
+Write a four-character code to a RIFF file.
+
+     RIFFIOSuccess
+     RIFFIOWriteFOURCC(RIFFIOFile *prf, RIFFIOFOURCC fcc)
+

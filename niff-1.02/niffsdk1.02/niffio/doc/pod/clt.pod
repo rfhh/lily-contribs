@@ -1,0 +1,161 @@
+
+=head1 NAME
+
+NIFFIO chunk length table routines.
+
+=over 4
+
+=item *
+
+NIFFIOCLTNew()
+
+=item *
+
+NIFFIOCLTDelete()
+
+=item *
+
+NIFFIOCLTMakeEntry()
+
+=item *
+
+NIFFIOCLTMakeDefaultEntries()
+
+=item *
+
+NIFFIOCLTLookup()
+
+=item *
+
+NIFFIOCLTCount()
+
+=item *
+
+NIFFIOCompareFOURCC()
+
+=back
+
+=head1 NIFFIOCLTNew
+
+Return a new, empty NIFFIOChunkLengthTable, or null on failure.
+
+     NIFFIOChunkLengthTable *
+     NIFFIOCLTNew()
+
+
+=head1 NIFFIOCLTDelete
+
+Free the memory allocated to a chunk length table.
+
+     void
+     NIFFIOCLTDelete(NIFFIOChunkLengthTable *pclt)
+
+
+=head1 NIFFIOCLTMakeEntry
+
+Make an entry into a chunk length table.
+
+     RIFFIOSuccess
+     NIFFIOCLTMakeEntry(NIFFIOChunkLengthTable *pclt, 
+                        niffChklentabEntry cltEntry)
+
+
+=head2 ENTRY
+
+T <cltEntry> is filled with the values for the new entry
+
+=head2 EXIT
+
+=over 4
+
+=item *
+
+T <cltEntry> is added to <*pclt>
+
+=item *
+
+If an existing entry in <*pclt> matches <cltEntry> then
+the entry's value is replaced.
+
+=back
+
+=head1 NIFFIOCLTMakeDefaultEntries
+
+Fill a chunk length table with "canned" entries.
+
+     RIFFIOSuccess
+     NIFFIOCLTMakeDefaultEntries(NIFFIOChunkLengthTable *pclt)
+
+
+This routine is useful if you don't need a custom chunk length
+table.  It fills an existing chunk length table with a complete set
+of chunk length entries for each chunk in the NIFF specification.
+
+TWB - Should this include INFO chunks? probably.
+
+=head1 NIFFIOCLTLookup
+
+Lookup a chunk length given an FOURCC.
+
+     RIFFIOSuccess
+     NIFFIOCLTLookup(NIFFIOChunkLengthTable *pclt, niffChklentabEntry *cltEntryp)
+
+
+=head2 ENTRY
+
+T <cltEntryp->chunkName> contains the FOURCC to look up in <*pclt>.
+
+=head2 EXIT
+
+Fills in <cltEntryp->offsetOfFirstTag> according to <*pclt>.
+
+=head2 RETURN
+
+=over 4
+
+=item *RIFFIO_OK
+
+if <cltEntryp->chunkName> was found.
+
+=item *RIFFIO_FAIL
+
+otherwise
+
+=back
+
+=head1 NIFFIOCLTCount
+
+Return the number of entries in a chunk length table
+
+     unsigned
+     NIFFIOCLTCount(NIFFIOChunkLengthTable *pclt)
+
+
+=head1 NIFFIOCompareFOURCC
+
+Compare FOURCCs alphabetically.
+
+     int
+     NIFFIOCompareFOURCC(FOURCC fccA, FOURCC fccB)
+
+
+=head2 RETURN
+
+=over 4
+
+=item *
+
+<0 if a comes before b
+
+=item *
+
+0 if a is the same as b
+
+=item *
+
+>0 if a comes after b
+
+=back
+
+The return results are compatible with bsearch()
+and strcmp() in the Standard C library.

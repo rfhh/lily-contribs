@@ -1,0 +1,21 @@
+pkg_topdir=.
+
+include $(pkg_topdir)/mk/top.mk
+
+INSTALLDIRS= $(includedir) $(libdir) $(bindir)
+
+MAKEDIRS = \
+include          \
+src/lib/niffio   \
+src/cmd/niffdump \
+src/example/nif001 \
+test             \
+doc/txt
+
+include $(pkg_mkdir)/pkg.mk
+
+check :: all
+	cd test; make check
+
+distclean maintainer-clean::
+	rm -f local.mk

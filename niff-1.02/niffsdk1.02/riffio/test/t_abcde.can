@@ -1,0 +1,17 @@
+-------
+id: <RIFF>
+size: <76>
+type: <FRMA>
+	-------
+	id: <CHKB>
+	size: <0>
+	-------
+	id: <LIST>
+	size: <56>
+	type: <LSTC>
+		-------
+		id: <CHKD>
+		size: <18>
+		-------
+		id: <CHKE>
+		size: <18>

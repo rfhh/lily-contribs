@@ -1,0 +1,5 @@
+
+t_nif001.o: ../../../include/niffio.h
+t_nif001.o: ../../../../riffio/include/riffio.h
+t_nif001.o: ../../../../niff/include/niff.h
+t_nif001.o: ../../../../riffio/include/stdcriff.h

@@ -1,0 +1,6 @@
+#!/bin/sh
+#
+@MAKEDEPEND@ -f- $* | \
+	sed -e 's|@prefix@/include|$(includedir)|g' \
+	    -e 's|[ ]/[^ ]*||g' \
+	    -e '/:[ ]*$/d'

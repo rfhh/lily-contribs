@@ -1,0 +1,35 @@
+
+=head1 NAME
+
+changes - log of changes to RIFFIO
+
+=head1 SYNOPSIS
+
+=head1 DESCRIPTION
+
+=head1 RIFFIO 1.0
+
+=over 4
+
+=item *
+
+RIFFIOChunkStackPush()
+used
+
+    	(pstack->size == pstack->top ) to check for a full stack
+
+
+instead of
+
+           (pstack->size == pstatck->top + 1)
+
+
+=item *
+
+stdcriff.c
+STDCRIFFRead() had if statements without parenthesis.
+
+=item *
+
+fcc.c
+Created MACRO RIFFIO_FOURCC_MIN

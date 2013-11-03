@@ -1,0 +1,212 @@
+
+=head1 NAME
+
+register - parser callback registration routines
+
+=head1 SYNOPSIS
+
+=over 4
+
+=item *
+
+NIFFIORegisterDefaultList()
+
+=item *
+
+NIFFIORegisterDefaultChunk()
+
+=item *
+
+NIFFIORegisterDefaultAtomicChunk()
+
+=item *
+
+NIFFIORegisterDefaultTag()
+
+=item *
+
+NIFFIORegisterForm()
+
+=item *
+
+NIFFIORegisterList()
+
+=item *
+
+NIFFIORegisterAtomicChunk()
+
+=item *
+
+NIFFIORegisterListXXX()
+
+=item *
+
+NIFFIORegisterChunkXXX()
+
+=item *
+
+NIFFIORegisterTagXXX()
+
+=back
+
+=head1 NIFFIORegisterDefaultList
+
+Register default list callbacks
+
+     RIFFIOSuccess
+     NIFFIORegisterDefaultList(NIFFIOParser *pparser,
+                               NIFFIOChunkCallback cbStart,
+                               NIFFIOChunkCallback cbEnd)
+
+
+=head1 NIFFIORegisterDefaultTaggedChunk
+
+Register default chunk callbacks
+
+     RIFFIOSuccess
+     NIFFIORegisterDefaultTaggedChunk(NIFFIOParser *pparser,
+                                      NIFFIOChunkCallback cbStart,
+                                      NIFFIOChunkCallback cbEnd)
+
+
+=head1 NIFFIORegisterDefaultAtomicChunk
+
+Register a default callback for Atomic chunks
+
+     RIFFIOSuccess
+     NIFFIORegisterDefaultAtomicChunk(NIFFIOParser *pparser,
+                                      NIFFIOChunkCallback cb)
+
+
+=head1 NIFFIORegisterDefaultTag
+
+Register a default callback for tags
+
+     RIFFIOSuccess
+     NIFFIORegisterDefaultTag(NIFFIOParser *pparser,
+                              NIFFIOTagCallback cbTag)
+
+
+=head1 NIFFIORegisterForm
+
+Register callbacks for a Niff form
+
+     RIFFIOSuccess
+     NIFFIORegisterForm(NIFFIOParser *pparser,
+                        NIFFIOChunkCallback cbStart,
+                        NIFFIOChunkCallback cbEnd)
+
+
+=head1 NIFFIORegisterList
+
+Register callbacks for specific lists
+
+     RIFFIOSuccess
+     NIFFIORegisterList(NIFFIOParser *pparser,
+                        FOURCC fccType,
+                        NIFFIOChunkCallback cbStart,
+                        NIFFIOChunkCallback cbEnd)
+
+
+=head1 NIFFIORegisterAtomicChunk
+
+Register a callback for specific Atomic chunks
+
+     RIFFIOSuccess
+     NIFFIORegisterAtomicChunk(NIFFIOParser *pparser,
+                               FOURCC fccId,
+                               NIFFIOChunkCallback cb)
+
+
+Registration functions for Lists
+
+     #define REG_LIST(nifftype)                                                   \
+     RIFFIOSuccess                                                                \
+     NIFFIORegisterList##nifftype(NIFFIOParser *pparser,                          \
+                                  NIFFIOChunkCallback cbStart,                    \
+                                  NIFFIOChunkCallback cbEnd)                      \
+     {                                                                            \
+          return NIFFIORegisterList(pparser, nifflist##nifftype, cbStart, cbEnd); \
+     }
+
+
+Registration functions for atomic, raw chunks
+
+     #define REG_ATOMIC(nifftype)                                            \
+     RIFFIOSuccess                                                           \
+     NIFFIORegisterChunk##nifftype(                                          \
+                                   NIFFIOParser *pparser,                    \
+                                   NIFFIOChunkCallback cb)                   \
+     {                                                                       \
+          return NIFFIORegisterAtomicChunk(pparser, niffckid##nifftype, cb); \
+     }
+     
+
+
+Registration functions for tagable, raw Chunks
+
+     
+     #define REG_TAGRAW(nifftype)                                    \
+     RIFFIOSuccess                                                   \
+     NIFFIORegisterChunk##nifftype(                                  \
+                                   NIFFIOParser *pparser,            \
+                                   NIFFIOChunkCallback cbStart,      \
+                                   NIFFIOChunkCallback cbEnd)        \
+     {                                                               \
+          return NIFFIOPRegisterTaggedRawChunk(pparser,              \
+                                               niffckid##nifftype,   \
+                                               cbStart,              \
+                                               cbEnd);               \
+     }
+
+
+Registration functions for tagable, cooked Chunks
+
+     #define REG_TAGCOOK(nifftype)                                           \
+     RIFFIOSuccess                                                           \
+     NIFFIORegisterChunk##nifftype(                                          \
+        NIFFIOParser *pparser,                                               \
+        RIFFIOSuccess (*cbStart)(NIFFIOChunkContext *, niff##nifftype *),    \
+        RIFFIOSuccess (*cbEnd)(NIFFIOChunkContext *, niff##nifftype *))      \
+     {                                                                       \
+        return NIFFIOPRegisterTaggedCookedChunk(                             \
+             pparser,                                                        \
+             niffckid##nifftype,                                             \
+             (NIFFIOPReader) NIFFIOReadniff##nifftype,                       \
+             (NIFFIOCookedChunkCallback) cbStart,                            \
+             (NIFFIOCookedChunkCallback) cbEnd);                             \
+     }
+
+
+Registration functions for raw Tags
+
+     #define REG_TAGRAW(nifftype)                                            \
+     RIFFIOSuccess                                                           \
+     NIFFIORegisterTag##nifftype(                                            \
+                                 NIFFIOParser *pparser,                      \
+                                 FOURCC fcc,                                 \
+                                 NIFFIOTagCallback cb)                       \
+     {                                                                       \
+          return NIFFIOPRegisterRawTag(pparser, nifftag##nifftype, fcc, cb); \
+     }
+     
+
+
+Registration functions for cooked Tags
+
+     #define REG_TAGCOOK(nifftype)                                           \
+     RIFFIOSuccess                                                           \
+     NIFFIORegisterTag##nifftype(                                            \
+           NIFFIOParser *pparser,                                            \
+           FOURCC fcc,                                                       \
+           RIFFIOSuccess (*cb)(NIFFIOTagContext *, niff##nifftype *))        \
+     {                                                                       \
+          return NIFFIOPRegisterCookedTag(                                   \
+                     pparser,                                                \
+                     nifftag##nifftype,                                      \
+                     fcc,                                                    \
+                     (NIFFIOPReader) NIFFIOReadniff##nifftype,               \
+                     (NIFFIOCookedTagCallback) cb);                          \
+     }
+     
+

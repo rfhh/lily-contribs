@@ -1,0 +1,113 @@
+<!-- $Id$ -->
+<HTML><HEAD>
+<CENTER><TITLE>stdcriff</TITLE>
+</HEAD>
+<BODY></CENTER><p><hr>
+
+<H1> 
+<A NAME="stdcriff_name_0">
+NAME</A>
+</H1>
+stdcriff - routines to map the Standard C library to the RIFFIOFile
+interface
+<p><p><hr>
+
+<H1> 
+<A NAME="stdcriff_synopsis_0">
+SYNOPSIS</A>
+</H1>
+<p>
+<UL>
+<LI>
+<A HREF="stdcriff.htm#stdcriff_stdcriffread_0">STDCRIFFRead()</A>
+
+<p>
+<LI>
+<A HREF="stdcriff.htm#stdcriff_stdcriffwrite_0">STDCRIFFWrite()</A>
+
+<p>
+<LI>
+<A HREF="stdcriff.htm#stdcriff_stdcriffseek_0">STDCRIFFSeek()</A>
+
+<p>
+<LI>
+<A HREF="stdcriff.htm#stdcriff_stdcrifftell_0">STDCRIFFTell()</A>
+
+<p>
+</UL>
+.
+<p><p><hr>
+
+<H1> 
+<A NAME="stdcriff_description_0">
+DESCRIPTION</A>
+</H1>
+You can provide these routines to 
+<A HREF="rfile.htm#rfile_riffiofileinit_0">RIFFIOFileInit()</A>
+ along with an
+open Standard C Library (FILE *).
+<p><p><hr>
+
+<H1> 
+<A NAME="stdcriff_examples_0">
+EXAMPLES</A>
+</H1>
+See the 
+<A HREF="hello.htm">
+the <EM>hello</EM> manpage</A>
+ example.
+<p><p><hr>
+
+<H1> 
+<A NAME="stdcriff_stdcriffread_0">
+STDCRIFFRead</A>
+</H1>
+Read bytes from a Standard C library file
+<p>
+<XMP>
+     long
+     STDCRIFFRead(void *pvUserFile, void *pvBuffer, long nBytes)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="stdcriff_stdcriffwrite_0">
+STDCRIFFWrite</A>
+</H1>
+Write bytes to a Standard C library file
+<p>
+<XMP>
+     long
+     STDCRIFFWrite(void *pvUserFile, void *pvBuffer, long nBytes)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="stdcriff_stdcriffseek_0">
+STDCRIFFSeek</A>
+</H1>
+Seek to a specific position in a Standard C library file
+<p>
+<XMP>
+     RIFFIOSuccess
+     STDCRIFFSeek(void *pvUserFile, RIFFIOOffset offset, RIFFIOSeekOrigin origin)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="stdcriff_stdcrifftell_0">
+STDCRIFFTell</A>
+</H1>
+Return the file position in a Standard C library file
+<p>
+<XMP>
+     long
+     STDCRIFFTell(void *pvUserFile)
+
+</XMP>
+<p>
+</BODY>
+</HTML>

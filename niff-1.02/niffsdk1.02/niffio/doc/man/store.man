@@ -1,0 +1,544 @@
+.rn '' }`
+''' $RCSfile$$Revision$$Date$
+'''
+''' $Log$
+'''
+.de Sh
+.br
+.if t .Sp
+.ne 5
+.PP
+\fB\\$1\fR
+.PP
+..
+.de Sp
+.if t .sp .5v
+.if n .sp
+..
+.de Ip
+.br
+.ie \\n(.$>=3 .ne \\$3
+.el .ne 3
+.IP "\\$1" \\$2
+..
+.de Vb
+.ft CW
+.nf
+.ne \\$1
+..
+.de Ve
+.ft R
+
+.fi
+..
+'''
+'''
+'''     Set up \*(-- to give an unbreakable dash;
+'''     string Tr holds user defined translation string.
+'''     Bell System Logo is used as a dummy character.
+'''
+.tr \(*W-|\(bv\*(Tr
+.ie n \{\
+.ds -- \(*W-
+.ds PI pi
+.if (\n(.H=4u)&(1m=24u) .ds -- \(*W\h'-12u'\(*W\h'-12u'-\" diablo 10 pitch
+.if (\n(.H=4u)&(1m=20u) .ds -- \(*W\h'-12u'\(*W\h'-8u'-\" diablo 12 pitch
+.ds L" ""
+.ds R" ""
+.ds L' '
+.ds R' '
+'br\}
+.el\{\
+.ds -- \(em\|
+.tr \*(Tr
+.ds L" ``
+.ds R" ''
+.ds L' `
+.ds R' '
+.ds PI \(*p
+'br\}
+.\"	If the F register is turned on, we'll generate
+.\"	index entries out stderr for the following things:
+.\"		TH	Title 
+.\"		SH	Header
+.\"		Sh	Subsection 
+.\"		Ip	Item
+.\"		X<>	Xref  (embedded
+.\"	Of course, you have to process the output yourself
+.\"	in some meaninful fashion.
+.if \nF \{
+.de IX
+.tm Index:\\$1\t\\n%\t"\\$2"
+..
+.nr % 0
+.rr F
+.\}
+.TH store 3 "niffio" "14/Jun/96" "NIFFIO Documentation"
+.IX Title "store 3"
+.UC
+.IX Name "store - Handy routines for creating NIFF lists, chunks, and tags."
+.if n .hy 0
+.if n .na
+.ds C+ C\v'-.1v'\h'-1p'\s-2+\h'-1p'+\s0\v'.1v'\h'-1p'
+.de CQ          \" put $1 in typewriter font
+.ft CW
+'if n "\c
+'if t \\&\\$1\c
+'if n \\&\\$1\c
+'if n \&"
+\\&\\$2 \\$3 \\$4 \\$5 \\$6 \\$7
+'.ft R
+..
+.\" @(#)ms.acc 1.5 88/02/08 SMI; from UCB 4.2
+.	\" AM - accent mark definitions
+.bd B 3
+.	\" fudge factors for nroff and troff
+.if n \{\
+.	ds #H 0
+.	ds #V .8m
+.	ds #F .3m
+.	ds #[ \f1
+.	ds #] \fP
+.\}
+.if t \{\
+.	ds #H ((1u-(\\\\n(.fu%2u))*.13m)
+.	ds #V .6m
+.	ds #F 0
+.	ds #[ \&
+.	ds #] \&
+.\}
+.	\" simple accents for nroff and troff
+.if n \{\
+.	ds ' \&
+.	ds ` \&
+.	ds ^ \&
+.	ds , \&
+.	ds ~ ~
+.	ds ? ?
+.	ds ! !
+.	ds /
+.	ds q
+.\}
+.if t \{\
+.	ds ' \\k:\h'-(\\n(.wu*8/10-\*(#H)'\'\h"|\\n:u"
+.	ds ` \\k:\h'-(\\n(.wu*8/10-\*(#H)'\`\h'|\\n:u'
+.	ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'^\h'|\\n:u'
+.	ds , \\k:\h'-(\\n(.wu*8/10)',\h'|\\n:u'
+.	ds ~ \\k:\h'-(\\n(.wu-\*(#H-.1m)'~\h'|\\n:u'
+.	ds ? \s-2c\h'-\w'c'u*7/10'\u\h'\*(#H'\zi\d\s+2\h'\w'c'u*8/10'
+.	ds ! \s-2\(or\s+2\h'-\w'\(or'u'\v'-.8m'.\v'.8m'
+.	ds / \\k:\h'-(\\n(.wu*8/10-\*(#H)'\z\(sl\h'|\\n:u'
+.	ds q o\h'-\w'o'u*8/10'\s-4\v'.4m'\z\(*i\v'-.4m'\s+4\h'\w'o'u*8/10'
+.\}
+.	\" troff and (daisy-wheel) nroff accents
+.ds : \\k:\h'-(\\n(.wu*8/10-\*(#H+.1m+\*(#F)'\v'-\*(#V'\z.\h'.2m+\*(#F'.\h'|\\n:u'\v'\*(#V'
+.ds 8 \h'\*(#H'\(*b\h'-\*(#H'
+.ds v \\k:\h'-(\\n(.wu*9/10-\*(#H)'\v'-\*(#V'\*(#[\s-4v\s0\v'\*(#V'\h'|\\n:u'\*(#]
+.ds _ \\k:\h'-(\\n(.wu*9/10-\*(#H+(\*(#F*2/3))'\v'-.4m'\z\(hy\v'.4m'\h'|\\n:u'
+.ds . \\k:\h'-(\\n(.wu*8/10)'\v'\*(#V*4/10'\z.\v'-\*(#V*4/10'\h'|\\n:u'
+.ds 3 \*(#[\v'.2m'\s-2\&3\s0\v'-.2m'\*(#]
+.ds o \\k:\h'-(\\n(.wu+\w'\(de'u-\*(#H)/2u'\v'-.3n'\*(#[\z\(de\v'.3n'\h'|\\n:u'\*(#]
+.ds d- \h'\*(#H'\(pd\h'-\w'~'u'\v'-.25m'\f2\(hy\fP\v'.25m'\h'-\*(#H'
+.ds D- D\\k:\h'-\w'D'u'\v'-.11m'\z\(hy\v'.11m'\h'|\\n:u'
+.ds th \*(#[\v'.3m'\s+1I\s-1\v'-.3m'\h'-(\w'I'u*2/3)'\s-1o\s+1\*(#]
+.ds Th \*(#[\s+2I\s-2\h'-\w'I'u*3/5'\v'-.3m'o\v'.3m'\*(#]
+.ds ae a\h'-(\w'a'u*4/10)'e
+.ds Ae A\h'-(\w'A'u*4/10)'E
+.ds oe o\h'-(\w'o'u*4/10)'e
+.ds Oe O\h'-(\w'O'u*4/10)'E
+.	\" corrections for vroff
+.if v .ds ~ \\k:\h'-(\\n(.wu*9/10-\*(#H)'\s-2\u~\d\s+2\h'|\\n:u'
+.if v .ds ^ \\k:\h'-(\\n(.wu*10/11-\*(#H)'\v'-.4m'^\v'.4m'\h'|\\n:u'
+.	\" for low resolution devices (crt and lpr)
+.if \n(.H>23 .if \n(.V>19 \
+\{\
+.	ds : e
+.	ds 8 ss
+.	ds v \h'-1'\o'\(aa\(ga'
+.	ds _ \h'-1'^
+.	ds . \h'-1'.
+.	ds 3 3
+.	ds o a
+.	ds d- d\h'-1'\(ga
+.	ds D- D\h'-1'\(hy
+.	ds th \o'bp'
+.	ds Th \o'LP'
+.	ds ae ae
+.	ds Ae AE
+.	ds oe oe
+.	ds Oe OE
+.\}
+.rm #[ #] #H #V #F C
+.SH "NAME"
+.IX Header "NAME"
+store \- Handy routines for creating NIFF lists, chunks, and tags.
+.SH "SYNOPSIS"
+.IX Header "SYNOPSIS"
+.Sh "Creation and Deletion"
+.IX Subsection "Creation and Deletion"
+.Ip "\(bu" 4
+.IX Item "\(bu"
+\fINIFFIOStorageNew()\fR
+.Ip "\(bu" 4
+.IX Item "\(bu"
+\fINIFFIOStorageInit()\fR
+.Ip "\(bu" 4
+.IX Item "\(bu"
+\fINIFFIOStorageNewSTDC()\fR
+.Ip "\(bu" 4
+.IX Item "\(bu"
+\fINIFFIOStorageDelete()\fR
+.Sh "Selection"
+.IX Subsection "Selection"
+.Ip "\(bu" 4
+.IX Item "\(bu"
+\fINIFFIOStorageGetCurrent()\fR
+.Ip "\(bu" 4
+.IX Item "\(bu"
+\fINIFFIOStorageSetCurrent()\fR
+.Sh "Property Access"
+.IX Subsection "Property Access"
+.Ip "\(bu" 4
+.IX Item "\(bu"
+\fINIFFIOStorageGetFile()\fR
+.Ip "\(bu" 4
+.IX Item "\(bu"
+\fINIFFIOStorageIsListPending()\fR
+.Ip "\(bu" 4
+.IX Item "\(bu"
+\fINIFFIOStorageIsChunkPending()\fR
+.Ip "\(bu" 4
+.IX Item "\(bu"
+\fINIFFIOStorageIsTagPending()\fR
+.Ip "\(bu" 4
+.IX Item "\(bu"
+\fINIFFIOStoragePendingList()\fR
+.Ip "\(bu" 4
+.IX Item "\(bu"
+\fINIFFIOStoragePendingChunk()\fR
+.Ip "\(bu" 4
+.IX Item "\(bu"
+\fINIFFIOStoragePendingTag()\fR
+.Sh "Operations"
+.IX Subsection "Operations"
+.Ip "\(bu" 4
+.IX Item "\(bu"
+\fINIFFIOStorageListStart()\fR
+.Ip "\(bu" 4
+.IX Item "\(bu"
+\fINIFFIOStorageListEnd()\fR
+.Ip "\(bu" 4
+.IX Item "\(bu"
+\fINIFFIOStorageChunkStart()\fR
+.Ip "\(bu" 4
+.IX Item "\(bu"
+\fINIFFIOStorageChunkEnd()\fR
+.Ip "\(bu" 4
+.IX Item "\(bu"
+\fINIFFIOStorageTagStart()\fR
+.Ip "\(bu" 4
+.IX Item "\(bu"
+\fINIFFIOStorageTagEnd()\fR
+.Sh "Special Objects"
+.IX Subsection "Special Objects"
+.Ip "\(bu" 4
+.IX Item "\(bu"
+\fINIFFIOStoreStbl()\fR
+.Ip "\(bu" 4
+.IX Item "\(bu"
+\fINIFFIOStoreCLT()\fR
+.Ip "\(bu" 4
+.IX Item "\(bu"
+\fINIFFIOStoreDefaultCLT()\fR
+.SH "NIFFIOStorageNew"
+.IX Header "NIFFIOStorageNew"
+Create a new NIFFIOStorage, return null on failure.
+.PP
+.Vb 2
+\&     NIFFIOStorage *
+\&     NIFFIOStorageNew(void)
+.Ve
+.Sh "\s-1OBLIGATIONS\s0"
+.IX Subsection "\s-1OBLIGATIONS\s0"
+.Ip "\(bu" 4
+.IX Item "\(bu"
+You should call \fINIFFIOStorageInit()\fR immediately.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Don't forget to free the NIFFIOStorage with \fINIFFIOStorageDelete()\fR.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+You must eventually call \fINIFFIOStorageSetCurrent()\fR to use the
+new NIFFIOStorage object.
+.SH "NIFFIOStorageNewSTDC"
+.IX Header "NIFFIOStorageNewSTDC"
+Create a new NIFFIOStorage given a Standard C File pointer.
+Make it the current NIFFIOStorage.
+.PP
+.Vb 2
+\&     NIFFIOStorage *
+\&     NIFFIOStorageNewSTDC(FILE *fp)
+.Ve
+.Sh "\s-1OBLIGATIONS\s0"
+.IX Subsection "\s-1OBLIGATIONS\s0"
+The new NIFFIOStorage object will own a newly created NIFFIOFile.
+That file is available through \fINIFFIOStorageGetFile()\fR \s-1BUT\s0 \s-1YOU\s0 \s-1MUST\s0
+\s-1NEVER\s0 \s-1FREE\s0 \s-1IT\s0. \fINIFFIOStorageDelete()\fR will delete the NIFFIOFile.
+This is different than \fINIFFIOStorageNew()\fR followed by
+\fINIFFIOStorageInit()\fR.
+.PP
+You must however, close <*fp> yourself.
+.Sh "\s-1ENTRY\s0"
+.IX Subsection "\s-1ENTRY\s0"
+<fp> is a Standard C Library \s-1FILE\s0 pointer that has been opened for
+binary writing.
+.Sh "\s-1EXIT\s0"
+.IX Subsection "\s-1EXIT\s0"
+The returned NIFFIOStorage is the current one.
+.Sh "\s-1RETURN\s0"
+.IX Subsection "\s-1RETURN\s0"
+Return null on failure.
+.Sh "\s-1EXAMPLE\s0"
+.IX Subsection "\s-1EXAMPLE\s0"
+.PP
+.Vb 7
+\&    
+\&        FILE *fp;
+\&        NIFFIOStorage *pstore;
+\&    
+\&        fp = fopen("filename.nif", "rw");
+\&        pstore = NIFFIOStorageNewSTDC(fp);
+\&     
+.Ve
+.SH "NIFFIOStorageInit"
+.IX Header "NIFFIOStorageInit"
+Associate a NIFFIOFile with a NIFFIOStorage.
+.PP
+.Vb 2
+\&     RIFFIOSuccess
+\&     NIFFIOStorageInit(NIFFIOStorage *pstore, NIFFIOFile *pnf)
+.Ve
+.Sh "\s-1ENTRY\s0"
+.IX Subsection "\s-1ENTRY\s0"
+T <*pnf> must exist and be open for writing.
+.Sh "\s-1OBLIGATIONS\s0"
+.IX Subsection "\s-1OBLIGATIONS\s0"
+You are responsible for deleting <*pnf> after \fINIFFIOStorageDelete()\fR.
+This is different than calling \fINIFFIOStorageNewSTDC()\fR.
+.SH "NIFFIOStorageDelete"
+.IX Header "NIFFIOStorageDelete"
+Free the memory allocated to a NIFFIOStorage.
+.PP
+.Vb 2
+\&     void
+\&     NIFFIOStorageDelete(NIFFIOStorage *pstore)
+.Ve
+.SH "NIFFIOStorageSetCurrent"
+.IX Header "NIFFIOStorageSetCurrent"
+Set the NIFFIOStorage that will be operated on by all
+the NIFFIOStorage routines.
+.PP
+.Vb 2
+\&     void
+\&     NIFFIOStorageSetCurrent(NIFFIOStorage *pstore)
+.Ve
+.SH "NIFFIOStorageGetCurrent"
+.IX Header "NIFFIOStorageGetCurrent"
+Return a pointer to the current NIFFIOStorage.
+.PP
+.Vb 2
+\&     NIFFIOStorage *
+\&     NIFFIOStorageGetCurrent(void)
+.Ve
+.SH "NIFFIOStorageGetFile"
+.IX Header "NIFFIOStorageGetFile"
+Return a pointer to the NIFFIOFile of the current NIFFIOStorage
+.PP
+.Vb 2
+\&     NIFFIOFile *
+\&     NIFFIOStorageGetFile(void)
+.Ve
+.SH "NIFFIOStorageIsTagPending"
+.IX Header "NIFFIOStorageIsTagPending"
+Return true if a tag is pending.
+.PP
+.Vb 2
+\&     int
+\&     NIFFIOStorageIsTagPending()
+.Ve
+.SH "NIFFIOStorageIsChunkPending"
+.IX Header "NIFFIOStorageIsChunkPending"
+Return true if a chunk is pending.
+.PP
+.Vb 2
+\&     int 
+\&     NIFFIOStorageIsChunkPending(void)
+.Ve
+.SH "NIFFIOStorageIsListPending"
+.IX Header "NIFFIOStorageIsListPending"
+Return true if a list is pending.
+.PP
+.Vb 2
+\&     int
+\&     NIFFIOStorageIsListPending(void)
+.Ve
+.SH "NIFFIOStoragePendingTag"
+.IX Header "NIFFIOStoragePendingTag"
+Return a pointer to the current pending tag.
+.PP
+.Vb 2
+\&     NIFFIOTag *
+\&     NIFFIOStoragePendingTag(void)
+.Ve
+It is an error if there is no current pending tag.
+.SH "NIFFIOStoragePendingChunk"
+.IX Header "NIFFIOStoragePendingChunk"
+Return a pointer to the current pending chunk.
+.PP
+.Vb 2
+\&     RIFFIOChunk *
+\&     NIFFIOStoragePendingChunk(void)
+.Ve
+It is an error if there is no current pending chunk.
+.SH "NIFFIOStoragePendingList"
+.IX Header "NIFFIOStoragePendingList"
+Return a pointer to the current pending list.
+.PP
+.Vb 2
+\&     RIFFIOChunk *
+\&     NIFFIOStoragePendingList(void)
+.Ve
+It is an error if there is not current pending list.
+.SH "NIFFIOStorageTagEnd"
+.IX Header "NIFFIOStorageTagEnd"
+Finalize the current pending tag.
+.PP
+.Vb 2
+\&     RIFFIOSuccess
+\&     NIFFIOStorageTagEnd(void)
+.Ve
+This is a no-op if there is no tag pending.
+.SH "NIFFIOStorageChunkEnd"
+.IX Header "NIFFIOStorageChunkEnd"
+Finalize the current pending chunk, including any pending tag.
+.PP
+.Vb 2
+\&     RIFFIOSuccess
+\&     NIFFIOStorageChunkEnd(void)\e
+.Ve
+This is a no-op if there is no pending chunk or tag.
+.SH "NIFFIOStorageListEnd"
+.IX Header "NIFFIOStorageListEnd"
+Finalize the current pending list, including any pending chunk or tag.
+.PP
+.Vb 2
+\&     RIFFIOSuccess
+\&     NIFFIOStorageListEnd(void)
+.Ve
+.Sh "\s-1EXIT\s0"
+.IX Subsection "\s-1EXIT\s0"
+Any pending list is uncovered and made the current pending list.
+.PP
+This is a no-op if there is no pending tag, chunk, or list.
+.SH "NIFFIOStorageTagStart"
+.IX Header "NIFFIOStorageTagStart"
+Write a tag header in a NIFFIOFile and remember the tag as pending.
+.PP
+.Vb 2
+\&     RIFFIOSuccess
+\&     NIFFIOStorageTagStart(NIFFIOTag *ptag)
+.Ve
+.Sh "\s-1ENTRY\s0"
+.IX Subsection "\s-1ENTRY\s0"
+There must be a pending chunk.
+.Sh "\s-1OBLIGATIONS\s0"
+.IX Subsection "\s-1OBLIGATIONS\s0"
+You must finalize the chunk with a call to either \fINIFFIOStorageTagEnd()\fR,
+\fINIFFIOStorageChunkEnd()\fR, or \fINIFFIOStorageListEnd()\fR.
+.SH "NIFFIOStorageChunkStart"
+.IX Header "NIFFIOStorageChunkStart"
+Write a chunk header to the current NIFFIOFile and remember the chunk as
+pending. Any current pending chunk (and/or tag) is finalized.
+.PP
+.Vb 2
+\&     RIFFIOSuccess
+\&     NIFFIOStorageChunkStart(RIFFIOChunk *pchunk)
+.Ve
+.Sh "\s-1OBLIGATIONS\s0"
+.IX Subsection "\s-1OBLIGATIONS\s0"
+You must finalize the chunk with a call to either \fINIFFIOStorageChunkEnd()\fR
+or \fINIFFIOStorageListEnd()\fR.
+.SH "NIFFIOStorageListStart"
+.IX Header "NIFFIOStorageListStart"
+Write a list chunk header to a NIFFIOFile and remember the list as pending.
+.PP
+.Vb 2
+\&     RIFFIOSuccess
+\&     NIFFIOStorageListStart(RIFFIOChunk *pchunk)
+.Ve
+The new list will be nested within any pending list.
+Any pending chunk (not list) is finalized (along with its last tag).
+.Sh "\s-1OBLIGATIONS\s0"
+.IX Subsection "\s-1OBLIGATIONS\s0"
+You must finalize the list chunk with a call to \fINIFFIOStorageListEnd()\fR.
+.SH "NIFFIOStoreStbl"
+.IX Header "NIFFIOStoreStbl"
+Write a string table array using a NIFFIOStorage.
+.PP
+.Vb 2
+\&     int
+\&     NIFFIOStoreStbl(NIFFIOStbl *pstbl, int nEntries)
+.Ve
+Writes <nEntries> of *pstbl to the current NIFFIOStorage.
+Each time you call \fINIFFIOStoreStbl()\fR in sequence, the string table
+entries are appended to the string table chunk.
+.Sh "\s-1ENTRY\s0"
+.IX Subsection "\s-1ENTRY\s0"
+.Ip "\(bu" 4
+.IX Item "\(bu"
+T <*pstbl> points to an array of <nEntries> NIFFIOStbl's
+.Ip "\(bu" 4
+.IX Item "\(bu"
+The current pending chunk must be a String Table.
+.Sh "\s-1EXIT\s0"
+.IX Subsection "\s-1EXIT\s0"
+.Ip "\(bu" 4
+.IX Item "\(bu"
+Each string table offset is filled in with the correct value.
+.Ip "\(bu" 4
+.IX Item "\(bu"
+The current String Table chunk will still be pending.
+.Sh "\s-1RETURN\s0"
+.IX Subsection "\s-1RETURN\s0"
+Returns the number of string table entries written.
+.Sh "\s-1ERRORS\s0"
+.IX Subsection "\s-1ERRORS\s0"
+On error the current NIFFIOStorage's file position is undefined.
+.SH "NIFFIOStoreCLT"
+.IX Header "NIFFIOStoreCLT"
+Write chunk length table data to the current NIFFIOStorage.
+Doesn't write the chunk header; use \fINIFFIOchunkCLT()\fR for that.
+.PP
+.Vb 2
+\&     RIFFIOSuccess
+\&     NIFFIOStoreCLT(NIFFIOChunkLengthTable *pclt)
+.Ve
+.SH "NIFFIOStoreDefaultCLT"
+.IX Header "NIFFIOStoreDefaultCLT"
+Write the default chunk length table data to the current NIFFIOStorage.
+Writes the chunk header.
+.PP
+.Vb 2
+\&     RIFFIOSuccess
+\&     NIFFIOStoreDefaultCLT(void)
+.Ve
+.SH "NIFFIOStoreINFO"
+.IX Header "NIFFIOStoreINFO"
+Write a chunk to the INFO list
+.PP
+.Vb 2
+\&     RIFFIOSuccess
+\&     NIFFIOStoreINFO(RIFFIOFOURCC fccId, const char *str)
+.Ve
+
+.rn }` ''

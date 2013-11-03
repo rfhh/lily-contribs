@@ -1,0 +1,11 @@
+
+ NAME
+ ====
+ nif001 - Write a simple niff file
+
+ SYNOPSIS
+ ========
+
+ nif001
+
+ 

@@ -1,0 +1,18 @@
+
+ NAME
+ ====
+ storenif - Handy routines for creating NIFF lists, chunks, and tags.
+
+ SYNOPSIS
+ ========
+ 
+ - NIFFIOStartXXX()
+ - NIFFIOEndXXX()
+
+ - NIFFIOchunkXXX()
+ - NIFFIOtagXXX()
+ 
+ DESCRIPTION
+ ===========
+ Need a description here. 
+

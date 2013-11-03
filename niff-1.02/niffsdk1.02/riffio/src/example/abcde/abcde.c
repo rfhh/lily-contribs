@@ -1,0 +1,213 @@
+#ifndef lint
+static char rcsid[] =
+"$Id";
+#endif
+/*
+ * Public Domain 1995,1996 Timothy Butler
+ *
+ * THIS DOCUMENT IS PROVIDED "AS IS" AND WITHOUT ANY EXPRESS OR
+ * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ */
+/***************************************************************************/
+/*
+ * NAME
+ * ====
+ * abcde - create a simple demo RIFF file
+ *
+ * SYNOPSIS
+ * ========
+ *
+ *  abcde
+ *
+ * DESCRIPTION
+ * ===========
+ * This program creates a RIFF file with the following 
+ * structure. FRM1 is a form, CHKA is a single chunk, and LSTA is
+ * a list containing chunks CHKB and CHKC.
+ *
+ *|   FRMA --- CHKB
+ *|            LSTC - CHKD
+ *|                   CHKE
+ */
+
+/*
+ * We will use routines from the Standard C library, RIFFIO and STDCRIFF.
+ */
+
+#include <stdio.h>
+#include "riffio.h"
+#include "stdcriff.h"
+
+extern void doerror(const char *strMessage);
+
+int
+main()
+{
+
+/*
+ * We need a Standard C FILE pointer to our new RIFF file.
+ */
+
+    FILE        *pFILEOut; /* The new RIFF file */  
+    
+/*
+ * We also need an associated RIFFIOFile for RIFFIO file operations.
+ */
+
+    RIFFIOFile  *prf;      /* Also the new RIFF file */
+
+/*    
+ * Chunk information is stored in RIFFIOChunk structures. There are 
+ * no RIFFIOChunkNew() or RIFFIOChunkDelete() routines; we can simply 
+ * define RIFFIOChunks.
+ *
+ * We need three chunk variables because we have to keep 
+ * chunk information around until the chunk contents are finalized.
+ * For example, LSTC cannot be finialized until CHKD and CHKE are written. 
+ */
+
+    RIFFIOChunk chunkForm;  /* FRMA */
+    RIFFIOChunk chunkList;  /* LSTC */
+    RIFFIOChunk chunkChunk; /* CHKB, CHKD, CHKE */
+
+/*
+ * Open the Standard C library RIFF file for writing and 
+ * associate it with RIFFIOFile. 
+ * Make sure the file is opened in binary mode.
+ */
+
+    pFILEOut = fopen("abcde.rif", "wb");
+    if (!pFILEOut)
+        doerror("Can't open abcde.rif for writing");
+    
+    prf = RIFFIOFileNew();
+    if (! prf)
+        doerror("RIFFIOFileNew failed");
+    
+    if (! RIFFIOFileInit(prf, pFILEOut,
+                         STDCRIFFRead, STDCRIFFWrite, 
+                         STDCRIFFSeek, STDCRIFFTell))
+        doerror("RIFFIOFileInit Failed");
+
+/*
+ * First we must create the form chunk. We do so by filling in the
+ * form's chunk id (RIFF or RIFX),the form type (FRMA in our case),
+ * and optionally the form's data size.  Because this example is so
+ * simple, we could conceivably predict the size of the entire
+ * form. Ordinarily that would be too difficult so we will leave
+ * chunkForm.sizeData alone and let RIFFIOChunkFinalize() calculate it
+ * later. Once the chunkForm's members are initialized we call
+ * RIFFIOChunkCreate() to write the chunk's header.  
+ */
+    chunkForm.fccId = RIFFIO_FOURCC_RIFF;
+    chunkForm.fccType = RIFFIOMAKEFOURCC('F','R','M','A');
+
+    if (! RIFFIOChunkCreate(prf, &chunkForm))
+        doerror("Couldn't create form chunk");
+
+/*
+ * RIFFIOChunkCreate() fills in other, private, fields of <chunkForm> that 
+ * are used later by RIFFIOChunkFinalize().
+ *
+ * RIFFIOChunkCreate() leaves the RIFF file positioned at the start of
+ * the new chunk's contents.  In this case we are poised to write the
+ * first chunk of the form, CHKB.
+ *
+ * Because CHKB is neither a form or a list we can ignore the fccType
+ * member of the chunk. CHKB will be empty, so we can immediately call
+ * RIFFIOChunkFinalize() to complete the chunk.  
+ */
+    chunkChunk.fccId = RIFFIOMAKEFOURCC('C','H','K','B');
+    chunkChunk.sizeData = 0;
+    
+    if (! RIFFIOChunkCreate(prf, &chunkChunk))
+        doerror("Couldn't create chunk CHKB");
+    
+    if (! RIFFIOChunkFinalize(prf, &chunkChunk))
+        doerror("Couldn't finalize chunk CHKB");
+
+/*
+ * RIFFIOChunkFinalize() updates CHKB's size in the RIFF file if necessary.
+ * It then writes an NUL pad byte of the chunk has an odd size and leaves
+ * the RIFF file positioned at the end of the chunk.
+ *
+ * We can now start LSTC.
+ */
+        chunkList.fccId = RIFFIO_FOURCC_LIST;
+        chunkList.fccType = RIFFIOMAKEFOURCC('L','S','T','C');
+    
+        if (! RIFFIOChunkCreate(prf, &chunkList))
+                doerror("Couldn't create chunk LSTC");
+
+/*
+ * We will reuse chunkChunk to write CHKD. CHKD will contain 18 bytes
+ * of data so we will demonstrate filling in the sizeData member 
+ * (even though we really don't need to).
+ */
+    chunkChunk.fccId = RIFFIOMAKEFOURCC('C','H','K','D');
+    chunkChunk.sizeData = 18; /* predict the chunk size */
+
+    if (! RIFFIOChunkCreate(prf, &chunkChunk))
+        doerror("Couldn't create chunk <CHKD>");
+    
+    RIFFIOWrite(prf, "This is CHKD data.", 18); 
+    
+    if (! RIFFIOChunkFinalize(prf, &chunkChunk))
+        doerror("Couldn't finalize chunk <CHKD>");
+    
+/*
+ * When we write CHKE we will let RIFFIOChunkFinalize() calculate the
+ * correct size.
+ */    
+    chunkChunk.fccId = RIFFIOMAKEFOURCC('C','H','K','E');
+    chunkChunk.sizeData = 999; /* Wrong but will be fixed automatically */
+
+    if (! RIFFIOChunkCreate(prf, &chunkChunk))
+        doerror("Couldn't create chunk <CHKD>");
+    
+    RIFFIOWrite(prf, "This is CHKE data.", 18); 
+    
+    if (! RIFFIOChunkFinalize(prf, &chunkChunk))
+        doerror("Couldn't finalize chunk <CHKD>");
+
+/*
+ * Here is the end of LSTC.
+ */
+    if (! RIFFIOChunkFinalize(prf, &chunkList))
+        doerror("Couldn't finalize list <LSTC>");
+
+/*
+ * Here is the end of FRMA.
+ */
+    if (! RIFFIOChunkFinalize(prf, &chunkForm))
+        doerror("Couldn't finalize form <FRMA>");
+    
+/*
+ * We are done writing chunks. It is time to clean up. 
+ */
+
+    RIFFIOFileDelete(prf);
+
+/*
+ * Even though we have deleted the RIFFIOFile we still haven't officially
+ * closed the Standard C Libarary representation. 
+ */
+
+    fclose(pFILEOut);                
+
+    return 0;
+
+}
+
+/*
+ * Report an error and exit.
+ */
+void
+doerror(const char *strMessage)
+{
+        fprintf(stderr, "%s\n", strMessage);
+        exit(1);
+}
+/***************************************************************************/

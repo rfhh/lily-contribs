@@ -1,0 +1,15 @@
+
+=head1 NAME
+
+niffdump - display the contents of a niff file
+
+=head1 SYNOPSIS
+
+niffdump <file.nif>
+
+=head1 DESCRIPTION
+
+The program is still under construction.
+Right now it is just barely useful for viewing a niff file.
+It will eventually print the niff file in a format that is compatible with
+a future niff compiler.

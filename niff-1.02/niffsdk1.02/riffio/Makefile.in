@@ -1,0 +1,22 @@
+pkg_topdir=.
+
+include $(pkg_topdir)/mk/top.mk
+
+INSTALLDIRS= $(includedir) $(libdir) $(bindir) $(datadir)/riffio
+
+MAKEDIRS =        \
+include           \
+src/lib/riffio    \
+src/lib/stdcriff  \
+src/cmd/riffdump  \
+src/example/hello \
+src/example/abcde \
+src/test/t_fcc    \
+src/test/t_stack  \
+test		  \
+doc/txt
+
+include $(pkg_mkdir)/pkg.mk
+
+check:: all
+	cd test; make check

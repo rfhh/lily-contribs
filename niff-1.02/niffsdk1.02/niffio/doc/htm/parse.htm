@@ -1,0 +1,176 @@
+<!-- $Id$ -->
+<HTML><HEAD>
+<CENTER><TITLE>parse</TITLE>
+</HEAD>
+<BODY></CENTER><p><hr>
+
+<H1> 
+<A NAME="parse_name_0">
+NAME</A>
+</H1>
+parse - Functions to create a new parser and parse a NIFF file.
+<p><p><hr>
+
+<H1> 
+<A NAME="parse_synopsis_0">
+SYNOPSIS</A>
+</H1>
+<p>
+<UL>
+<LI>
+<A HREF="parse.htm#parse_niffioparsernew_0">NIFFIOParserNew()</A>
+
+<p>
+<LI>
+<A HREF="parse.htm#parse_niffioparserdelete_0">NIFFIOParserDelete()</A>
+
+<p>
+<LI>
+<A HREF="parse.htm#parse_niffioparsersettracing_0">NIFFIOParserSetTracing()</A>
+
+<p>
+<LI>
+<A HREF="parse.htm#parse_niffioparsergettracing_0">NIFFIOParserGetTracing()</A>
+
+<p>
+<LI>
+<A HREF="parse.htm#parse_niffioparsefile_0">NIFFIOParseFile()</A>
+
+<p>
+</UL>
+.
+<p><p><hr>
+
+<H1> 
+<A NAME="parse_niffioparsernew_0">
+NIFFIOParserNew</A>
+</H1>
+Return a pointer to a new parser, or null on failure
+<p>
+<XMP>
+     NIFFIOParser *
+     NIFFIOParserNew(void)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="parse_niffioparserdelete_0">
+NIFFIOParserDelete</A>
+</H1>
+Free the memory allocated to a parser.
+<p>
+<XMP>
+     void
+     NIFFIOParserDelete(NIFFIOParser *pparser)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="parse_niffioparsersettracing_0">
+NIFFIOParserSetTracing</A>
+</H1>
+Enable (or disable) built-in parser tracing
+<p>
+<XMP>
+     void
+     NIFFIOParserSetTracing(NIFFIOParser *pparser, int isTracing)
+
+</XMP>
+<p>Parser tracing will be enabled according to the boolean value
+of &lt;isTracing&gt;.
+<p><p><hr>
+
+<H1> 
+<A NAME="parse_niffioparsergettracing_0">
+NIFFIOParserGetTracing</A>
+</H1>
+Return true if a parser has tracing enabled.
+<p>
+<XMP>
+     int
+     NIFFIOParserGetTracing(NIFFIOParser *pparser)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="parse_niffioparsefile_0">
+NIFFIOParseFile</A>
+</H1>
+Parse a NIFF file.
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOParseFile(NIFFIOParser *pparser, 
+                     NIFFIOFile *pnf, 
+                     NIFFIOUserContext userctxIn,
+                     NIFFIOUserContext *puserctxOut)
+
+</XMP>
+<p>Performs a recursive descent scan of all the chunks and tags in a
+NIFF file. Each chunk and tag that matches a registered parser callback
+generates a callback as it is scanned.  Chunks and tags are processed
+in the order they appear in the NIFF file.
+<p>
+<H2> 
+<A NAME="parse_entry_0">
+ENTRY</A>
+</H2>
+<p>
+<UL>
+<LI>T &lt;*pnf&gt; must be positioned at the start of the NIFF Form.
+<p>
+<LI>T &lt;usercntxIn&gt; describes the top level ``context''.  It will be the
+parent context of the Form chunk. It may be null.
+<p>
+</UL>
+.
+<p>
+<H2> 
+<A NAME="parse_exit_0">
+EXIT</A>
+</H2>
+T &lt;*puserctxOut&gt; will be filled in with the context returned by
+the form callbacks.
+If &lt;puserctxOut&gt; is null then it is ignored and won't be dereferenced.
+<p>
+<H2> 
+<A NAME="parse_return_0">
+RETURN</A>
+</H2>
+<p>
+<DL COMPACT>
+<DT><STRONG>
+<EM>*RIFFIO_OK</EM>
+</STRONG>
+<DD>
+if the file parses without error,
+<p>
+<DT><STRONG>
+<EM>*RIFFIO_FAIL</EM>
+</STRONG>
+<DD>
+otherwise
+<p>
+</DL>
+.
+<p>
+<H2> 
+<A NAME="parse_errors_0">
+ERRORS</A>
+</H2>
+If any callback generates an error, then the NIFF object that corresponds
+to that callback is skipped.  That means if a list's start callback fails,
+none of the subchunks in the list will be scanned.  If a list's end callback
+fails, NIFFIOParseFile will eventually return an error, but it is a
+little late to do much else.
+<p>
+<XMP>
+      
+
+</XMP>
+<p>
+</BODY>
+</HTML>

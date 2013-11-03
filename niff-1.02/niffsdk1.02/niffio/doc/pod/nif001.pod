@@ -1,0 +1,8 @@
+
+=head1 NAME
+
+nif001 - Write a simple niff file
+
+=head1 SYNOPSIS
+
+nif001

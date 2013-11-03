@@ -1,0 +1,46 @@
+#!/bin/sh
+
+tests=`cat tests` 
+
+# Remove any core file from a previous test
+rm -f core
+
+cantest=test.can
+outtest=test.out
+
+rm -f *.dif
+rm -f *.out
+
+for test in $tests; do
+
+ testname=`basename $test`
+
+ # File to hold stdout and stderr 
+ outfile=$testname.out
+
+ # File that holds the canonical output 
+ canfile=$testname.can 
+
+ $test > $outfile 2>&1  
+
+ test_status=$?
+
+ if diff $outfile $canfile > $testname.dif 2>&1 ; then 
+ 	echo "PASS: " $testname >> $outtest 
+ else
+	echo "FAIL: " $testname >> $outtest 
+ fi
+
+done
+
+if diff $outtest $cantest > test.dif; then
+
+	echo "PASS: check"
+	exit 0
+else
+	echo "FAIL: check"
+	exit 1
+fi
+
+
+

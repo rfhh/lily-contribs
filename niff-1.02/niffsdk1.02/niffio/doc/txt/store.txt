@@ -1,0 +1,338 @@
+ 
+ NAME
+ ====
+ store - Handy routines for creating NIFF lists, chunks, and tags.
+
+ SYNOPSIS
+ ========
+ 
+ Creation and Deletion
+ ---------------------
+ - NIFFIOStorageNew()
+ - NIFFIOStorageInit()
+ - NIFFIOStorageNewSTDC()
+ - NIFFIOStorageDelete()
+
+ Selection
+ ---------
+ - NIFFIOStorageGetCurrent()
+ - NIFFIOStorageSetCurrent()
+
+ Property Access 
+ ---------------
+ - NIFFIOStorageGetFile()
+
+ - NIFFIOStorageIsListPending()
+ - NIFFIOStorageIsChunkPending()
+ - NIFFIOStorageIsTagPending()
+
+ - NIFFIOStoragePendingList()
+ - NIFFIOStoragePendingChunk()
+ - NIFFIOStoragePendingTag()
+
+ Operations
+ ----------
+ - NIFFIOStorageListStart()
+ - NIFFIOStorageListEnd()
+ - NIFFIOStorageChunkStart()
+ - NIFFIOStorageChunkEnd()
+ - NIFFIOStorageTagStart()
+ - NIFFIOStorageTagEnd()
+
+ Special Objects
+ ---------------
+ - NIFFIOStoreStbl()
+ - NIFFIOStoreCLT()
+ - NIFFIOStoreDefaultCLT()
+
+
+
+ NIFFIOStorageNew
+ ================
+ Create a new NIFFIOStorage, return null on failure.
+
+| NIFFIOStorage *
+| NIFFIOStorageNew(void)
+
+ OBLIGATIONS
+ -----------
+ - You should call NIFFIOStorageInit() immediately.
+ - Don't forget to free the NIFFIOStorage with NIFFIOStorageDelete().
+ - You must eventually call NIFFIOStorageSetCurrent() to use the
+   new NIFFIOStorage object.
+
+
+ NIFFIOStorageNewSTDC
+ ====================
+ Create a new NIFFIOStorage given a Standard C File pointer.
+ Make it the current NIFFIOStorage.
+
+| NIFFIOStorage *
+| NIFFIOStorageNewSTDC(FILE *fp)
+
+ OBLIGATIONS 
+ ------------ 
+ The new NIFFIOStorage object will own a newly created NIFFIOFile.
+ That file is available through NIFFIOStorageGetFile() BUT YOU MUST
+ NEVER FREE IT. NIFFIOStorageDelete() will delete the NIFFIOFile.
+ This is different than NIFFIOStorageNew() followed by
+ NIFFIOStorageInit().
+ 
+ You must however, close <*fp> yourself. 
+
+ ENTRY
+ -----
+ <fp> is a Standard C Library FILE pointer that has been opened for
+ binary writing.
+
+ EXIT
+ ----
+ The returned NIFFIOStorage is the current one.
+
+ RETURN
+ ------
+ Return null on failure.
+
+ EXAMPLE
+ -------
+|
+|    FILE *fp;
+|    NIFFIOStorage *pstore;
+|
+|    fp = fopen("filename.nif", "rw");
+|    pstore = NIFFIOStorageNewSTDC(fp);
+| 
+
+
+ NIFFIOStorageInit
+ =================
+ Associate a NIFFIOFile with a NIFFIOStorage.
+
+| RIFFIOSuccess
+| NIFFIOStorageInit(NIFFIOStorage *pstore, NIFFIOFile *pnf)
+
+ ENTRY
+ -----
+ T <*pnf> must exist and be open for writing.
+
+ OBLIGATIONS
+ -----------
+ You are responsible for deleting <*pnf> after NIFFIOStorageDelete().
+ This is different than calling NIFFIOStorageNewSTDC().
+ 
+
+ NIFFIOStorageDelete
+ ===================
+ Free the memory allocated to a NIFFIOStorage.
+
+| void
+| NIFFIOStorageDelete(NIFFIOStorage *pstore)
+
+ NIFFIOStorageSetCurrent
+ =======================
+ Set the NIFFIOStorage that will be operated on by all
+ the NIFFIOStorage routines.
+
+| void
+| NIFFIOStorageSetCurrent(NIFFIOStorage *pstore)
+
+ NIFFIOStorageGetCurrent
+ =======================
+ Return a pointer to the current NIFFIOStorage.
+
+| NIFFIOStorage *
+| NIFFIOStorageGetCurrent(void)
+
+ NIFFIOStorageGetFile
+ ====================
+ Return a pointer to the NIFFIOFile of the current NIFFIOStorage
+
+| NIFFIOFile *
+| NIFFIOStorageGetFile(void)
+
+ NIFFIOStorageIsTagPending
+ =========================
+ Return true if a tag is pending.
+
+| int
+| NIFFIOStorageIsTagPending()
+
+ NIFFIOStorageIsChunkPending
+ ===========================
+ Return true if a chunk is pending.
+
+| int 
+| NIFFIOStorageIsChunkPending(void)
+
+ NIFFIOStorageIsListPending
+ ==========================
+ Return true if a list is pending.
+
+| int
+| NIFFIOStorageIsListPending(void)
+
+ NIFFIOStoragePendingTag
+ =======================
+ Return a pointer to the current pending tag.
+
+| NIFFIOTag *
+| NIFFIOStoragePendingTag(void)
+
+ It is an error if there is no current pending tag.
+
+
+ NIFFIOStoragePendingChunk
+ =========================
+ Return a pointer to the current pending chunk.
+
+| RIFFIOChunk *
+| NIFFIOStoragePendingChunk(void)
+ 
+ It is an error if there is no current pending chunk.
+
+
+ NIFFIOStoragePendingList
+ ========================
+ Return a pointer to the current pending list.
+
+| RIFFIOChunk *
+| NIFFIOStoragePendingList(void)
+ 
+ It is an error if there is not current pending list.
+
+
+ NIFFIOStorageTagEnd
+ ====================
+ Finalize the current pending tag.
+
+| RIFFIOSuccess
+| NIFFIOStorageTagEnd(void)
+
+ This is a no-op if there is no tag pending.
+ 
+
+ NIFFIOStorageChunkEnd
+ =====================
+ Finalize the current pending chunk, including any pending tag.
+
+| RIFFIOSuccess
+| NIFFIOStorageChunkEnd(void)\
+
+ This is a no-op if there is no pending chunk or tag.
+
+
+ NIFFIOStorageListEnd
+ ====================
+ Finalize the current pending list, including any pending chunk or tag.
+
+| RIFFIOSuccess
+| NIFFIOStorageListEnd(void)
+ 
+ EXIT
+ ----
+ Any pending list is uncovered and made the current pending list.
+ 
+ This is a no-op if there is no pending tag, chunk, or list.
+
+
+ NIFFIOStorageTagStart
+ =====================
+ Write a tag header in a NIFFIOFile and remember the tag as pending.
+
+| RIFFIOSuccess
+| NIFFIOStorageTagStart(NIFFIOTag *ptag)
+
+ ENTRY
+ -----
+ There must be a pending chunk.
+
+ OBLIGATIONS
+ -----------
+ You must finalize the chunk with a call to either NIFFIOStorageTagEnd(),
+ NIFFIOStorageChunkEnd(), or NIFFIOStorageListEnd().
+
+
+ NIFFIOStorageChunkStart
+ =======================
+ Write a chunk header to the current NIFFIOFile and remember the chunk as 
+ pending. Any current pending chunk (and/or tag) is finalized.
+
+| RIFFIOSuccess
+| NIFFIOStorageChunkStart(RIFFIOChunk *pchunk)
+
+ OBLIGATIONS
+ -----------
+ You must finalize the chunk with a call to either NIFFIOStorageChunkEnd()
+ or NIFFIOStorageListEnd().
+ 
+
+ NIFFIOStorageListStart
+ ======================
+ Write a list chunk header to a NIFFIOFile and remember the list as pending.
+
+| RIFFIOSuccess
+| NIFFIOStorageListStart(RIFFIOChunk *pchunk)
+
+ The new list will be nested within any pending list.
+ Any pending chunk (not list) is finalized (along with its last tag).
+ 
+ OBLIGATIONS
+ -----------
+ You must finalize the list chunk with a call to NIFFIOStorageListEnd().
+
+
+ NIFFIOStoreStbl
+ ===============
+ Write a string table array using a NIFFIOStorage.
+
+| int
+| NIFFIOStoreStbl(NIFFIOStbl *pstbl, int nEntries)
+
+ Writes <nEntries> of *pstbl to the current NIFFIOStorage.
+ Each time you call NIFFIOStoreStbl() in sequence, the string table
+ entries are appended to the string table chunk.
+ 
+ ENTRY
+ -----
+ - T <*pstbl> points to an array of <nEntries> NIFFIOStbl's
+ 
+ - The current pending chunk must be a String Table.
+
+ EXIT
+ ----
+ - Each string table offset is filled in with the correct value.
+
+ - The current String Table chunk will still be pending.
+
+ RETURN
+ ------
+ Returns the number of string table entries written.
+
+ ERRORS
+ ------
+ On error the current NIFFIOStorage's file position is undefined.
+
+ NIFFIOStoreCLT
+ ==============
+ Write chunk length table data to the current NIFFIOStorage.
+ Doesn't write the chunk header; use NIFFIOchunkCLT() for that.
+
+
+| RIFFIOSuccess
+| NIFFIOStoreCLT(NIFFIOChunkLengthTable *pclt)
+
+ NIFFIOStoreDefaultCLT
+ =====================
+ Write the default chunk length table data to the current NIFFIOStorage.
+ Writes the chunk header.
+
+
+| RIFFIOSuccess
+| NIFFIOStoreDefaultCLT(void)
+
+ NIFFIOStoreINFO
+ ===============
+ Write a chunk to the INFO list
+
+| RIFFIOSuccess
+| NIFFIOStoreINFO(RIFFIOFOURCC fccId, const char *str)

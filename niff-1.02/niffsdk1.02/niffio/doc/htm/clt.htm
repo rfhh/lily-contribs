@@ -1,0 +1,210 @@
+<!-- $Id$ -->
+<HTML><HEAD>
+<CENTER><TITLE>clt</TITLE>
+</HEAD>
+<BODY></CENTER><p><hr>
+
+<H1> 
+<A NAME="clt_name_0">
+NAME</A>
+</H1>
+NIFFIO chunk length table routines.
+<p>
+<UL>
+<LI>
+<A HREF="clt.htm#clt_niffiocltnew_0">NIFFIOCLTNew()</A>
+
+<p>
+<LI>
+<A HREF="clt.htm#clt_niffiocltdelete_0">NIFFIOCLTDelete()</A>
+
+<p>
+<LI>
+<A HREF="clt.htm#clt_niffiocltmakeentry_0">NIFFIOCLTMakeEntry()</A>
+
+<p>
+<LI>
+<A HREF="clt.htm#clt_niffiocltmakedefaultentries_0">NIFFIOCLTMakeDefaultEntries()</A>
+
+<p>
+<LI>
+<A HREF="clt.htm#clt_niffiocltlookup_0">NIFFIOCLTLookup()</A>
+
+<p>
+<LI>
+<A HREF="clt.htm#clt_niffiocltcount_0">NIFFIOCLTCount()</A>
+
+<p>
+<LI>
+<A HREF="clt.htm#clt_niffiocomparefourcc_0">NIFFIOCompareFOURCC()</A>
+
+<p>
+</UL>
+.
+<p><p><hr>
+
+<H1> 
+<A NAME="clt_niffiocltnew_0">
+NIFFIOCLTNew</A>
+</H1>
+Return a new, empty NIFFIOChunkLengthTable, or null on failure.
+<p>
+<XMP>
+     NIFFIOChunkLengthTable *
+     NIFFIOCLTNew()
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="clt_niffiocltdelete_0">
+NIFFIOCLTDelete</A>
+</H1>
+Free the memory allocated to a chunk length table.
+<p>
+<XMP>
+     void
+     NIFFIOCLTDelete(NIFFIOChunkLengthTable *pclt)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="clt_niffiocltmakeentry_0">
+NIFFIOCLTMakeEntry</A>
+</H1>
+Make an entry into a chunk length table.
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOCLTMakeEntry(NIFFIOChunkLengthTable *pclt, 
+                        niffChklentabEntry cltEntry)
+
+</XMP>
+<p>
+<H2> 
+<A NAME="clt_entry_0">
+ENTRY</A>
+</H2>
+T &lt;cltEntry&gt; is filled with the values for the new entry
+<p>
+<H2> 
+<A NAME="clt_exit_0">
+EXIT</A>
+</H2>
+<p>
+<UL>
+<LI>T &lt;cltEntry&gt; is added to &lt;*pclt&gt;
+<p>
+<LI>If an existing entry in &lt;*pclt&gt; matches &lt;cltEntry&gt; then
+the entry's value is replaced.
+<p>
+</UL>
+.
+<p><p><hr>
+
+<H1> 
+<A NAME="clt_niffiocltmakedefaultentries_0">
+NIFFIOCLTMakeDefaultEntries</A>
+</H1>
+Fill a chunk length table with ``canned'' entries.
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOCLTMakeDefaultEntries(NIFFIOChunkLengthTable *pclt)
+
+</XMP>
+<p>This routine is useful if you don't need a custom chunk length
+table.  It fills an existing chunk length table with a complete set
+of chunk length entries for each chunk in the NIFF specification.
+<p>TWB - Should this include INFO chunks? probably.
+<p><p><hr>
+
+<H1> 
+<A NAME="clt_niffiocltlookup_0">
+NIFFIOCLTLookup</A>
+</H1>
+Lookup a chunk length given an FOURCC.
+<p>
+<XMP>
+     RIFFIOSuccess
+     NIFFIOCLTLookup(NIFFIOChunkLengthTable *pclt, niffChklentabEntry *cltEntryp)
+
+</XMP>
+<p>
+<H2> 
+<A NAME="clt_entry_0">
+ENTRY</A>
+</H2>
+T &lt;cltEntryp-&gt;chunkName&gt; contains the FOURCC to look up in &lt;*pclt&gt;.
+<p>
+<H2> 
+<A NAME="clt_exit_0">
+EXIT</A>
+</H2>
+Fills in &lt;cltEntryp-&gt;offsetOfFirstTag&gt; according to &lt;*pclt&gt;.
+<p>
+<H2> 
+<A NAME="clt_return_0">
+RETURN</A>
+</H2>
+<p>
+<DL COMPACT>
+<DT><STRONG>
+<EM>*RIFFIO_OK</EM>
+</STRONG>
+<DD>
+if &lt;cltEntryp-&gt;chunkName&gt; was found.
+<p>
+<DT><STRONG>
+<EM>*RIFFIO_FAIL</EM>
+</STRONG>
+<DD>
+otherwise
+<p>
+</DL>
+.
+<p><p><hr>
+
+<H1> 
+<A NAME="clt_niffiocltcount_0">
+NIFFIOCLTCount</A>
+</H1>
+Return the number of entries in a chunk length table
+<p>
+<XMP>
+     unsigned
+     NIFFIOCLTCount(NIFFIOChunkLengthTable *pclt)
+
+</XMP>
+<p><p><hr>
+
+<H1> 
+<A NAME="clt_niffiocomparefourcc_0">
+NIFFIOCompareFOURCC</A>
+</H1>
+Compare FOURCCs alphabetically.
+<p>
+<XMP>
+     int
+     NIFFIOCompareFOURCC(FOURCC fccA, FOURCC fccB)
+
+</XMP>
+<p>
+<H2> 
+<A NAME="clt_return_0">
+RETURN</A>
+</H2>
+<p>
+<UL>
+<LI><0 if a comes before b
+<p>
+<LI>0 if a is the same as b
+<p>
+<LI>>0 if a comes after b
+<p>
+</UL>
+The return results are compatible with <EM>bsearch()</EM>.and <EM>strcmp()</EM> in the Standard C library.
+<p>
+</BODY>
+</HTML>

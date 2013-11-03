@@ -1,0 +1,9 @@
+
+chunks.o: ../../../include/riffio.h
+error.o: ../../../include/riffio.h
+fcc.o: ../../../include/riffio.h
+rfile.o: ../../../include/riffio.h
+rwbytes.o: ../../../include/riffio.h
+stack.o: ../../../include/riffio.h
+table.o: ../../../include/riffio.h
+table.o: riffiop.h
