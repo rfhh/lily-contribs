@@ -30,7 +30,8 @@ fi
 
 if [ x$NIFF_ROOT = x ]
 then
-	NIFF_ROOT=/usr/local/VU/niff
+	# NIFF_ROOT=/usr/share/niff
+	NIFF_ROOT=`cd ../niff-1.02/niffsdk1.02; pwd`
 fi
 
 if [ x$INSTALL = x ]
