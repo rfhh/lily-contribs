@@ -1,0 +1,92 @@
+
+------
+ TODO:
+------
+
+- multibar rests across meter change: e.g. incomplete final bars
+- grace octavation
+- use Lyrics and lyricsto for lyrics, not addlyrics
+- add command-line option to define TeX functions: -Dhello 2 '\\write{#1 #2}' or -Uhello 2 for ignore
+- add command-line option to prefix generated names?
+- merge voices when one of them is silent, so it can be a \oneVoice; only for full bars?
+- tuplets upper number must be uprounded by multiplying by power of 2: 4/6 iso 2/6 etc
+- accidentals must work through grace time. This requires some refactoring: add grace time...
+- afterGrace
+- segno
+- fermata on multimeasure rest (Sinfonia 209, flute, bar 112)
+- movement breaks
+- forced accidentals
+- handle end of inline tex calls correctly: a '\' on its own
+- fix indentation (maintain indent variable? insert Indent objects into the stream?)
+- variable number of beams [[ ][ ]]
+- keep line/column counts into input
+
+- lyrics: implement some M-Tx macros
+
+- write little validation suite for:
+   - multi-voice
+   - multi-voice accidentals
+   - grace notes, incl multinote graces
+   - forced accidentals
+   - titles
+   - movements
+   - (final) bar line(s)
+   - every feature and all combinations of features
+
+------
+ DONE:
+------
+
+- partials shorter than the beat (1/8 in 4/4)
+- '.' duration shortcut
+- enclose \command stuff in "quotes" in markup
+  ** also replace \ with \\
+  ** problem goes away anyway w/ correct [hw]<x>m? header/footer parsing
+- note length within graces: it has forgotten its multiplier.
+- '.' duration shorthand
+- fix slurs that turn out to be ties: ( <note> st
+- pickup for timeline
+- line breaks
+  ** command-line option -- no support for numbered line breaks
+- page breaks
+  ** command-line option
+- compact multi-measure rests (and skips?) in live voices
+- refactor the figured bass so it actually makes a \FiguredBass{ \figuremode{ }}
+  ** this is too much work. Keep it as is, with markup, but corrected
+- check accidental above note: does it still work after the accidental refactor?
+  ** add an Alteration anyway for each oe[snl]
+- work-around for continuing ties from M-Tx (weird mix of slurs and non-toggling ties)
+- expand \def... sections using tme http://www.astro.indiana.edu/~jthorn/software.html#tme
+- expand --- --- sections
+- add options:
+   - accidental for all octaves or only for explicitly set octaves? This
+     is a well-known musical issue
+- skips
+- bar markups (h and l)
+- (final) bar line(s)
+- repeats
+  Are the manual repeat bars and voltas transformed into lilypond \repeat
+  \volta sections, or do we just, easily, retain the manual repeat bars and
+  volta indications?
+- multibar rests in one voice should give skips in empty other voices
+  ** For efficiency, and for ease of programming, this requires refactoring
+  so each voice maintains its global time, not bar + time-in-bar.
+  * No, I walk the timeline in reverse directory, so it's no longer (so)
+  quadratic
+- accidentals work for the *staff*, not for just a single voice in the staff.
+  ** This requires refactoring the accidental implementation: it must
+  live in the staff, not in the voice, and is handled at calculate-time.
+- slur start broken again(!)
+  * make difference between (a b) and a S b S
+- noBeam
+- 'relative' accidentals ( :-( )
+- titles
+
+-------
+ HOWTO:
+-------
+
+Create expanded file from mtx-generated pmx file:
+$ egrep '^\\\\*def' 02Recit.pmx > 02Recit-defs.pmx
+$ egrep -v '^\\\\*def' 02Recit.pmx > 02Recit-nodefs.pmx
+$ ~/ftp/generic/tex/tme.perl 02Recit-defs.pmx pg_a4hoch.tex < 02Recit-nodefs.pmx > 02Recit-expanded.pmx
