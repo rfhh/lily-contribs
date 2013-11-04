@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # PMX is a Musixtex preprocessor written by Don Simons, see
-# http://www.gmd.de/Misc/Music/musixtex/software/pmx/
+# http://icking-music-archive.org/software/htdocs/htdocs.html.
 
 # TODO:
 #  * block openings aren't parsed.
@@ -29,7 +29,7 @@ import argparse
 from functools import partial
 
 program_name = 'pmx2ly'
-version = '@TOPLEVEL_VERSION@'
+version = "2.18.0"
 if version == '@' + 'TOPLEVEL_VERSION' + '@':
 	version = '(unknown version)'	   # uGUHGUHGHGUGH
 
@@ -3100,9 +3100,9 @@ argDescription = """Convert PMX to LilyPond.
 """
 argEpilog = """
 PMX is a Musixtex preprocessor written by Don Simons, see
-http://www.gmd.de/Misc/Music/musixtex/software/pmx/.
+http://icking-music-archive.org/software/htdocs/htdocs.html.
 
-Report bugs to bug-lilypond@gnu.org.
+Report bugs to bug-lilypond@gnu.org or lily@rutgerhofman.nl.
 
 Written by Han-Wen Nienhuys <hanwen@cs.uu.nl>.
 Updated by Rutger Hofman <lily@rutgerhofman.nl>.
@@ -3113,10 +3113,27 @@ versionText = """%s (GNU LilyPond) %s
 
 This is free software.  It is covered by the GNU General Public License,
 and you are welcome to change it and/or distribute copies of it under
-certain conditions.  Invoke as `midi2ly --warranty' for more information.
+certain conditions.  Invoke as `pmx2ly --warranty' for more information.
 
 Copyright (c) 2000--2004 by Han-Wen Nienhuys <hanwen@cs.uu.nl>
 Copyright (c) 2013 by Rutger Hofman <lily@rutgerhofman.nl>
+""" % (program_name, version)
+
+
+warrantyText = """%s (GNU Lilypond) %s
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """ % (program_name, version)
 
 
@@ -3126,7 +3143,8 @@ def identify():
 
 argParser = argparse.ArgumentParser(description=argDescription, epilog=argEpilog);
 # argParser.add_argument('--help', '-h', action="help")
-argParser.add_argument('--version', '-v', action="version", version='%(prog) ' + versionText)
+argParser.add_argument('--version', '-v', action="version", version='' + versionText)
+argParser.add_argument('--warranty', '-w', action="version", version='' + warrantyText)
 argParser.add_argument('--output', '-o', nargs=1)
 argParser.add_argument('--line-breaks', '-l', action='store_true', help='retain pmx line breaks')
 argParser.add_argument('--page-breaks', '-p', action='store_true', help='retain pmx page breaks')
