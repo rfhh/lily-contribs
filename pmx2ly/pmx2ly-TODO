@@ -86,6 +86,7 @@
  HOWTO:
 -------
 
+-------OBSOLETE-------
 Create expanded file from mtx-generated pmx file:
 $ egrep '^\\\\*def' 02Recit.pmx > 02Recit-defs.pmx
 $ egrep -v '^\\\\*def' 02Recit.pmx > 02Recit-nodefs.pmx
