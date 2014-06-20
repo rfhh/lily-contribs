@@ -3,6 +3,7 @@
  TODO:
 ------
 
+- recognize (t and )t as tie start and end
 - multibar rests across meter change: e.g. incomplete final bars
 - grace octavation
 - use Lyrics and lyricsto for lyrics, not addlyrics
@@ -37,6 +38,8 @@
  DONE:
 ------
 
+- handle '&' in markup correctly (don't \&)
+- allow rp0 as synonym for rp
 - partials shorter than the beat (1/8 in 4/4)
 - '.' duration shortcut
 - enclose \command stuff in "quotes" in markup

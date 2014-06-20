@@ -134,7 +134,7 @@ main(int argc, char **argv)
             lily_file = argv[++i];
         } else if (strcmp(argv[i], "--no-chords") == 0) {
             do_chording = 0;
-        } else if (option == 0) {
+        } else if (argv[i][0] != '-' && option == 0) {
             strNiffFile = argv[i];
             option++;
         } else {

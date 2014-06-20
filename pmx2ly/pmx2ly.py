@@ -760,6 +760,7 @@ class Staff:
 		self.accidental_mode = mode
 
 	def set_clef(self, letter):
+		sys.stderr.write("\nNow clef %s" % letter)
 		if clef_table.has_key(letter):
 			clstr = clef_table[letter]
 			self.voices[0].add_nonchord(Clef(clstr))
@@ -1291,6 +1292,10 @@ Huh? expected number of grace notes, found %s Left was `%s'""" % (c, left[:20]))
 				if left[0] == 'o':
 					# ignore off-center attribute
 					left = left[1:]
+				elif left[0] == '0':
+					# don't know what this means -- ignore
+					sys.stderr.write("See 0 after rp -- ignore");
+					left = left[1:]
 
 		return (left, multibar)
 
@@ -1766,6 +1771,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			'\\hsize':		('=', self.tex_ignore),
 			'\\vsize':		('=', self.tex_ignore),
 			'\\zcharnote':		('ap', self.tex_add_markup),
+			'\\zmidstaff':		('p', self.tex_add_upmarkup),
 			'\\lcharnote':		('ap', self.tex_require),
 			'\\ccharnote':		('ap', self.tex_require),
 			'\\zchar':		('ap', self.tex_require),
@@ -1818,14 +1824,22 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 
 			# Plain TeX
 			'\\ref':		('', self.tex_ignore),
-			'\\sixrm':		('', self.tex_require),
-			'\\sevenrm':		('', self.tex_require),
-			'\\eightrm':		('', self.tex_require),
-			'\\ninerm':		('', self.tex_require),
-			'\\tenrm':		('', self.tex_require),
-			'\\elevenrm':		('', self.tex_require),
-			'\\twelverm':		('', self.tex_require),
-			'\\fourteenrm':		('', self.tex_require),
+			'\\sixrm':		('p', self.tex_fontfs),
+			'\\sevenrm':		('p', self.tex_fontfs),
+			'\\eightrm':		('p', self.tex_fontfs),
+			'\\ninerm':		('p', self.tex_fontfs),
+			'\\tenrm':		('p', self.tex_fontfs),
+			'\\elevenrm':		('p', self.tex_fontfs),
+			'\\twelverm':		('p', self.tex_fontfs),
+			'\\fourteenrm':		('p', self.tex_fontfs),
+			'\\sixit':		('p', self.tex_fontfs),
+			'\\sevenit':		('p', self.tex_fontfs),
+			'\\eightit':		('p', self.tex_fontfs),
+			'\\nineit':		('p', self.tex_fontfs),
+			'\\tenit':		('p', self.tex_fontfs),
+			'\\elevenit':		('p', self.tex_fontfs),
+			'\\twelveit':		('p', self.tex_fontfs),
+			'\\fourteenit':		('p', self.tex_fontfs),
 			'\\vbox':		('*', self.tex_vbox),
 			'\\centerline':		('p', self.tex_centerline),
 			'\\global':		('', self.tex_require),
@@ -1953,6 +1967,32 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		return self.tex_add_dir_markup(name, 1, params[0])
 
 
+	def tex_fontfs(self, name, params):
+		text = name[1:]
+		if text[-2:] == 'it':
+			family = "\\italic"
+		elif text[-2:] == 'rm':
+			family = "\\upright"
+		if text[:-2] == 'six':
+			size = '\\fontsize #-4'
+		elif text[:-2] == 'seven':
+			size = '\\fontsize #-3'
+		elif text[:-2] == 'eight':
+			size = '\\fontsize #-2'
+		elif text[:-2] == 'nine':
+			size = '\\fontsize #-1'
+		elif text[:-2] == 'ten':
+			size = '\\fontsize #0'
+		elif text[:-2] == 'eleven':
+			size = '\\fontsize #1'
+		elif text[:-2] == 'twelve':
+			size = '\\fontsize #+2'
+		elif text[:-2] == 'fourteen':
+			size = '\\fontsize #+4'
+		# sys.stderr.write("\nfont family '%s' size '%s'" % (family, size))
+		return (family + size + ' {' + params[0] + '}', '')
+
+
 	def tex_set_barno(self, name, params):
 		warn("\nFIXME: set barno to %s" % params[0])
 		return ('', '')
@@ -2071,6 +2111,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		'\\\~N': 'Ñ',
 
 		'~': ' ',
+		'\\&': '&',
 	}
 
 
@@ -2459,15 +2500,21 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 
 		staff = 0
 		for s in staves:
-			if ls[0][0] == '\\':
+			sys.stderr.write("\nNow consider instrument %s" % ls[0])
+			if ls[0][0] == '{':
+				ls[0] = ls[0].strip(SPACE)
+				ls[0] = ls[0][1:-1]
+			if ls[0][0] == '\\' or ls[0][0:1] == '{\\':
 				ls[0] = self.parse_tex(ls[0])[1]
 			line = ls[0].strip(SPACE)
+			sys.stderr.write("\n = %s" % ls[0])
 			ls = ls[1:]
 			for i in range(s):
-				self.staffs[staff].instrument_name = line
-				self.staffs[staff].instrument = i
-				self.staffs[staff].num_instruments = s
-				staff = staff + 1
+				if line == '' or line[0] != '%':
+					self.staffs[staff].instrument_name = line
+					self.staffs[staff].instrument = i
+					self.staffs[staff].num_instruments = s
+					staff = staff + 1
 
 		line = ls[0]
 		ls = ls[1:]
@@ -2570,9 +2617,8 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				slur_direction = DIRECTION_DOWN
 			elif p == 't':
 				if c == ')':
-					c = 'T'
+					c = '}'
 				elif c == '(':
-					# c = '{'
 					pass
 				elif c == 's':
 					if v.current_slurs:
@@ -3021,11 +3067,11 @@ Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))
 	def dump(self):
 		out = "\\header {\n"
 		if self.title:
-			out = out + "    title = " + self.quote_string(self.title) + "\n"
+			out = out + "    title = \markup{" + self.quote_string(self.title) + "}\n"
 		if self.composer:
-			out = out + "    composer = " + self.quote_string(self.composer) + "\n"
+			out = out + "    composer = \markup{" + self.quote_string(self.composer) + "}\n"
 		if self.instrument:
-			out = out + "    instrument = " + self.quote_string(self.instrument) + "\n"
+			out = out + "    instrument = \markup{" + self.quote_string(self.instrument) + "}\n"
 		out = out + "}\n\n"
 		out = out + '#(set-global-staff-size %d)\n\n' % self.musicsize
 
@@ -3058,9 +3104,14 @@ Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))
 
 	def parse(self, fn):
 		ls = open(fn).readlines()
+		def newline(s):
+			return re.sub('\r\n', '\n', s)
+		ls = map(newline, ls)
+
+		ls = [ x for x in ls if not re.match('^%.*$', x) ]
+
 		def subst(s):
 			return re.sub('%.*$', '', s)
-
 		ls = map(subst, ls)
 
 #		print left
@@ -3068,9 +3119,6 @@ Huh? Unknown directive `%s', before `%s'""" % (c, left[:20] ))
 			left = string.join(ls, ' ')
 			return self.parse_tex(left)
 
-		def newline(s):
-			return re.sub('\r\n', '\n', s)
-		ls = map(newline, ls)
 		# ls = filter(lambda x: x != '\r', ls)
 		ls = self.parse_preamble(ls)
 
