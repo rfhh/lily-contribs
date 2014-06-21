@@ -2619,7 +2619,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 				if c == ')':
 					c = '}'
 				elif c == '(':
-					pass
+					c = '{'
 				elif c == 's':
 					if v.current_slurs:
 						c = 'T'
