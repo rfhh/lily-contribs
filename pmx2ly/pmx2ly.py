@@ -405,7 +405,8 @@ class Voice:
 
 	def start_tie(self, id):
 		if self.pending_tie != None:
-			raise Exception("Already have a pending tie", "")
+			sys.stderr.write("Already have a pending tie\n")
+			# raise Exception("Already have a pending tie", "")
 		self.pending_tie = Tie(id)
 
 	def replace_tie(self, slur):
@@ -1840,6 +1841,14 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			'\\elevenit':		('p', self.tex_fontfs),
 			'\\twelveit':		('p', self.tex_fontfs),
 			'\\fourteenit':		('p', self.tex_fontfs),
+			'\\sixbf':		('p', self.tex_fontfs),
+			'\\sevenbf':		('p', self.tex_fontfs),
+			'\\eightbf':		('p', self.tex_fontfs),
+			'\\ninebf':		('p', self.tex_fontfs),
+			'\\tenbf':		('p', self.tex_fontfs),
+			'\\elevenbf':		('p', self.tex_fontfs),
+			'\\twelvebf':		('p', self.tex_fontfs),
+			'\\fourteenbf':		('p', self.tex_fontfs),
 			'\\vbox':		('*', self.tex_vbox),
 			'\\centerline':		('p', self.tex_centerline),
 			'\\global':		('', self.tex_require),
@@ -1973,6 +1982,8 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 			family = "\\italic"
 		elif text[-2:] == 'rm':
 			family = "\\upright"
+		elif text[-2:] == 'bf':
+			family = "\\bold"
 		if text[:-2] == 'six':
 			size = '\\fontsize #-4'
 		elif text[:-2] == 'seven':
@@ -2224,7 +2235,7 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 		#  - ' ' <string>
 		#  - \<function>...
 
-		dimension = r'(pt|\\noteskip|\\internote|cm|truemm|mm|in)'
+		dimension = r'(pt|\\noteskip|\\internote|cm|truemm|mm|in|\\Interligne)'
 		out = []
 		i = 0
 		finished = len(params) == 0
