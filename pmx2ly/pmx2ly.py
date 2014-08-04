@@ -1913,9 +1913,12 @@ Huh? expected duration, found %d Left was `%s'""" % (durdigit, left[:20]))
 
 	def tex_assign_lyrics(self, name, params):
 		(staff, label) = params
-		warn("\nAssign lyrics{%s} to staff[%s]" % (label, staff))
-		s = self.staffs[int(staff) - 1]
-		s.voices[s.lyrics_voice].lyrics_label = label
+		if label:
+			warn("\nAssign lyrics{%s} to staff[%s]" % (label, staff))
+			s = self.staffs[int(staff) - 1]
+			s.voices[s.lyrics_voice].lyrics_label = label
+		else:
+			warn("\nDon't assign lyrics{%s} to staff[%s]" % (label, staff))
 		return ('', '')
 
 
