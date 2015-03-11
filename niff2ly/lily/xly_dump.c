@@ -1007,7 +1007,7 @@ dumpBarStart(mpq_t *t, symbol_p s)
         if ((mpq_zero(remain) || last_dumped_symbol->type != SYM_REPEAT) &&
                 ! isEmptyMultibar(last_dumped_note)) {
             fprintf(lily_out, " |");
-            fprintf(lily_out, " %% bar %d", num);
+            fprintf(lily_out, " %%%d", num);
             last_dumped_symbol = s;
             newline();
         }
