@@ -230,7 +230,7 @@ keyName(int s)
 static void
 dumpLayout(void)
 {
-    fprintf(lily_out, "\\version \"1.8.0\"\n\n");
+    fprintf(lily_out, "\\version \"2.18.0\"\n\n");
 }
 
 
@@ -449,7 +449,7 @@ dumpArticulation(symbol_p s)
 
 
 static void
-dumpNote(mpq_t *t, symbol_p scan, voice_p voice)
+dumpNote(mpq_t *t, symbol_p scan, voice_p voice, int do_beams)
 {
     static int          initialized = 0;
     static mpq_t        dt;
@@ -531,10 +531,6 @@ dumpNote(mpq_t *t, symbol_p scan, voice_p voice)
             fprintf(lily_out, " <");
         }
 
-        if (note->stem->slur_end != NO_ID) {
-            fprintf(lily_out, ")");
-        }
-
         dump_noteval(note, voice);
     }
 
@@ -601,6 +597,10 @@ dumpNote(mpq_t *t, symbol_p scan, voice_p voice)
             dumpArticulation(a);
         }
 
+        if (note->stem->slur_end != NO_ID) {
+            fprintf(lily_out, ")");
+        }
+
         if (note->stem->slur_start != NO_ID) {
             fprintf(lily_out, "(");
         }
@@ -611,6 +611,14 @@ dumpNote(mpq_t *t, symbol_p scan, voice_p voice)
 
         if (note->tie_start != NO_ID) {
             fprintf(lily_out, "~");
+        }
+
+        if (do_beams) {
+            if (note->stem->beam_left == 0 && note->stem->beam_right > 0) {
+                fprintf(lily_out, "[");
+            } else if (note->stem->beam_left > 0 && note->stem->beam_right == 0) {
+                fprintf(lily_out, "]");
+            }
         }
     }
 
@@ -1016,7 +1024,7 @@ dumpBarLine(mpq_t *t, symbol_p s)
 
 
 static void
-dumpVoice(voice_p voice)
+dumpVoice(voice_p voice, int do_beams)
 {
     symbol_p    scan;
     mpq_t       t;
@@ -1026,6 +1034,10 @@ dumpVoice(voice_p voice)
 
     time_line_clear();
 
+    if (do_beams) {
+        fprintf(lily_out, " \\autoBeamOff");
+        newline();
+    }
     if (! mpq_zero(xly_t_partial)) {
         int     nu;
         int     de;
@@ -1084,7 +1096,7 @@ dumpVoice(voice_p voice)
             break;
 
         case SYM_NOTE:
-            dumpNote(&t, scan, voice);
+            dumpNote(&t, scan, voice, do_beams);
             debugMeAt(t);
             break;
 
@@ -1213,7 +1225,7 @@ voice_reset(void)
 
 
 static void
-dump_notes(void)
+dump_notes(int do_beams)
 {
     int         f;
     int         p;
@@ -1232,9 +1244,9 @@ dump_notes(void)
                 fprintf(stderr, "voice %d ", v);
                 VPRINTF("Now dump part %d staff %d voice %d", p, f, v);
                 voice_reset();
-                fprintf(lily_out, "%s = \\notes {", part_name(p, f, v));
+                fprintf(lily_out, "%s = {", part_name(p, f, v));
                 indup();
-                dumpVoice(&part[p].staff[f].voice[v]);
+                dumpVoice(&part[p].staff[f].voice[v], do_beams);
                 indown();
                 fprintf(lily_out, "}");
                 newline();
@@ -1257,7 +1269,7 @@ dump_score(void)
     newline();
     fprintf(lily_out, "\\score {");
     indup();
-    fprintf(lily_out, "<");
+    fprintf(lily_out, "<<");
     indup();
 
     staff = 0;
@@ -1267,30 +1279,30 @@ dump_score(void)
             fprintf(stderr, "Skip staff %d, do only staff %d\n", p, ONLY);
         }
         for (f = 0; f < part[p].n_staff; f++) {
-            fprintf(lily_out, " \\context Staff = staff%c <", 'A' + staff);
+            fprintf(lily_out, " \\new Staff = staff%c <<", 'A' + staff);
             staff++;
             indup();
             if (part[p].staff[f].n_voice == 1) {
-                fprintf(lily_out, "\\%s", part_name(p, f, 0));
+                fprintf(lily_out, " \\%s", part_name(p, f, 0));
             } else {
                 for (v = 0; v < part[p].staff[f].n_voice; v++) {
                     char *count = i2count(v);
-                    fprintf(lily_out, " \\context Voice=%s {", count);
+                    fprintf(lily_out, " \\new Voice=%s {", count);
                     indup();
-                    fprintf(lily_out, "\\voice%s \\%s", count, part_name(p, f, v));
+                    fprintf(lily_out, " \\voice%s \\%s", count, part_name(p, f, v));
                     indown();
                     fprintf(lily_out, "}");
                     newline();
                 }
             }
             indown();
-            fprintf(lily_out, " >");
+            fprintf(lily_out, " >>");
             newline();
         }
     }
 
     indown();
-    fprintf(lily_out, ">");
+    fprintf(lily_out, ">>");
     indown();
     fprintf(lily_out, "}");
     newline();
@@ -1304,12 +1316,12 @@ dumpFinish(void)
 
 
 void
-xly_dump_file(FILE *f)
+xly_dump_file(FILE *f, int do_beams)
 {
     lily_out = f;
 
     dumpLayout();
-    dump_notes();
+    dump_notes(do_beams);
     dump_score();
 
     dumpFinish();

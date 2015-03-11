@@ -117,6 +117,7 @@ main(int argc, char **argv)
     int         i;
     int         option;
     int         do_chording = 1;
+    int         do_beams = 0;
 
     Progname = argv[0];
 
@@ -134,6 +135,8 @@ main(int argc, char **argv)
             lily_file = argv[++i];
         } else if (strcmp(argv[i], "--no-chords") == 0) {
             do_chording = 0;
+        } else if (strcmp(argv[i], "--beam") == 0) {
+            do_beams = 1;
         } else if (argv[i][0] != '-' && option == 0) {
             strNiffFile = argv[i];
             option++;
@@ -145,6 +148,7 @@ main(int argc, char **argv)
 #endif
 			fprintf(stderr, "\t-o <file>\toutput file name\n");
 			fprintf(stderr, "\t--no-chords\tvoices i.s.o. chords\n");
+			fprintf(stderr, "\t--beam\tretain beaming\n");
 		}
     }
 
@@ -217,7 +221,7 @@ main(int argc, char **argv)
     }
 
     fprintf(stderr, "Now generate lily output... \n");
-    xly_dump(lily_out, do_chording);
+    xly_dump(lily_out, do_chording, do_beams);
 
     /*
      * Check for any extra bytes past the Form

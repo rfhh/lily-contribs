@@ -44,14 +44,14 @@
 
 
 void
-xly_dump(FILE *f, int do_chording)
+xly_dump(FILE *f, int do_chording, int do_beams)
 {
     xly_partial();
     xly_chord(do_chording);
     xly_repeat();
     xly_voice();
 
-    xly_dump_file(f);
+    xly_dump_file(f, do_beams);
 }
 
 

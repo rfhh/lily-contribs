@@ -32,7 +32,7 @@
 #include <stdio.h>
 
 
-void xly_dump_file(FILE *f);
+void xly_dump_file(FILE *f, int do_beams);
 
 void xly_dump_init(void);
 void xly_dump_end(void);
