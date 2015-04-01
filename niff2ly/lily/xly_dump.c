@@ -532,6 +532,16 @@ dumpNote(mpq_t *t, symbol_p scan, voice_p voice, int do_beams)
         }
 
         dump_noteval(note, voice);
+
+        while (chord != NULL) {
+            dump_noteval(chord, voice);
+
+            chord = chord->chord;
+        }
+
+        if (note->chord != NULL) {
+            fprintf(lily_out, ">");
+        }
     }
 
     if (! skip_dump) {
@@ -587,12 +597,6 @@ dumpNote(mpq_t *t, symbol_p scan, voice_p voice, int do_beams)
             }
         }
 
-        while (chord != NULL) {
-            dump_noteval(chord, voice);
-
-            chord = chord->chord;
-        }
-
         for (a = note->stem->articulations; a != NULL; a = a->next) {
             dumpArticulation(a);
         }
@@ -603,10 +607,6 @@ dumpNote(mpq_t *t, symbol_p scan, voice_p voice, int do_beams)
 
         if (note->stem->slur_start != NO_ID) {
             fprintf(lily_out, "(");
-        }
-
-        if (note->chord != NULL && ! (note->flags & FLAG_REST)) {
-            fprintf(lily_out, "> ");
         }
 
         if (note->tie_start != NO_ID) {
