@@ -351,6 +351,7 @@ typedef struct voice {
     int         key_previous_current;
     int         n_slur;
     int         slur[MAX_CONCURRENT_SLURS];
+	note_flags_t	stem_flags;
 } voice_t, *voice_p;
 
 

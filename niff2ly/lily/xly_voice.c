@@ -82,6 +82,7 @@ voice_increase(staff_p f)
     mpq_set_ui(v->t_finish, 0, 1);
     v->key_current = 0;
     v->key_previous_current = KEY_RESET;        /* previous key */
+	v->stem_flags = FLAG_REST;					/* no previous stem direction */
 
     for (scan = f->replicated.front; scan != NULL; scan = scan->next) {
         report_symbol(scan, 1);
@@ -296,6 +297,9 @@ append_note(staff_p s, int voice, symbol_p scan)
     }
 
     q_append(&v->q, scan);
+    if (! (note->flags & FLAG_REST)) {
+		v->stem_flags = note->stem->flags;
+	}
     v->tail = note;
 
     mpq_set(t, note->duration);
@@ -643,13 +647,10 @@ notes_simultaneous_unconstrained(staff_p f,
 			voice_p v = &f->voice[i];
 
 			if (mpq_equal(scan->start, v->t_finish)) {
-				note_p tail = v->tail;
-
 				VPRINTF("Voice %d matches\n", i);
-				if (tail != NULL &&
-						! (tail->flags & FLAG_REST) &&
+				if (! (v->stem_flags & FLAG_REST) &&
 						(scan->symbol.note.stem->flags & FLAG_STEM_UP) ==
-							(tail->stem->flags & FLAG_STEM_UP)) {
+							(v->stem_flags & FLAG_STEM_UP)) {
 					report_note(scan);
 					VPRINTF("Append note with matching stem contiguously to voice %d\n", i);
 					break;
@@ -693,13 +694,10 @@ notes_simultaneous_unconstrained(staff_p f,
 			voice_p v = &f->voice[i];
 
 			if (mpq_equal(scan->start, v->t_finish)) {
-				note_p tail = v->tail;
-
 				VPRINTF("Voice %d matches\n", i);
-				if (tail != NULL &&
-						! (tail->flags & FLAG_REST) &&
+				if (! (v->stem_flags & FLAG_REST) &&
 						(scan->symbol.note.stem->flags & FLAG_STEM_UP) ==
-							(tail->stem->flags & FLAG_STEM_UP)) {
+							(v->stem_flags & FLAG_STEM_UP)) {
 					report_note(scan);
 					VPRINTF("Append note with stem UP contiguously to voice %d\n", i);
 					break;
@@ -753,13 +751,10 @@ notes_simultaneous_unconstrained(staff_p f,
 			voice_p v = &f->voice[i];
 
 			if (mpq_equal(scan->start, v->t_finish)) {
-				note_p tail = v->tail;
-
 				VPRINTF("Voice %d matches\n", i);
-				if (tail != NULL &&
-						! (tail->flags & FLAG_REST) &&
+				if (! (v->stem_flags & FLAG_REST) &&
 						(scan->symbol.note.stem->flags & FLAG_STEM_UP) ==
-							(tail->stem->flags & FLAG_STEM_UP)) {
+							(v->stem_flags & FLAG_STEM_UP)) {
 					report_note(scan);
 					VPRINTF("Append note with stem UP contiguously to voice %d\n", i);
 					break;
