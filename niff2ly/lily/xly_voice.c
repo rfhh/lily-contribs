@@ -58,7 +58,7 @@ void debugMeAt(mpq_t t)
 
     if (! initialized) {
         mpq_init(t_debug);
-        mpq_set_ui(t_debug, 0, 4);
+        mpq_set_ui(t_debug, 9, 8);
         initialized = 1;
     }
 
@@ -462,7 +462,8 @@ stem_match(staff_p f,
 
 		if (mpq_equal(scan->start, v->t_finish)) {
 			VPRINTF("Voice %d matches\n", i);
-			if (! (v->stem_flags & FLAG_REST) &&
+			if (! (v->stem_flags & FLAG_REST) &&	// test for uninitialized
+				! (scan->symbol.note.flags & FLAG_REST) &&
 				(scan->symbol.note.stem->flags & FLAG_STEM_UP) ==
 					(v->stem_flags & FLAG_STEM_UP)) {
 				report_note(scan);
@@ -597,6 +598,8 @@ notes_simultaneous_unconstrained(staff_p f,
 
 	mpq_init(t_whole);
 	mpq_set_ui(t_whole, 1, 1);
+
+	debugMeAt((*c_scan)->start);
 
 	notes_from_chord(f, now, c_scan, c_next);
 
