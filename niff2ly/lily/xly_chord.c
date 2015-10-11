@@ -131,18 +131,23 @@ do_staff_chording(staff_p f, int do_chording)
 
                     // We need to check both scan and chord if there
                     // are slurs or ties to duplicate
-                    if (stem->slur_start != -1) {
-                        int dupl_slur = slur_dupl_create(stem->slur_start);
-                        VPRINTF("Duplicate its slur %d -> %d\n",
-                                 stem->slur_start, dupl_slur);
-                        stem->slur_start = dupl_slur;
-                    }
-                    if (stem->slur_end != -1) {
-                        int dupl_slur = slur_dupl_lookup(stem->slur_end);
-                        VPRINTF("Finish its duplicate slur %d -> %d\n",
-                                 stem->slur_start, dupl_slur);
-                        stem->slur_end = dupl_slur;
-                    }
+					if (note->flags & FLAG_REST) {
+						stem->slur_start = -1;
+						stem->slur_end = -1;
+					} else {
+						if (stem->slur_start != -1) {
+							int dupl_slur = slur_dupl_create(stem->slur_start);
+							VPRINTF("Duplicate its slur %d -> %d\n",
+									stem->slur_start, dupl_slur);
+							stem->slur_start = dupl_slur;
+						}
+						if (stem->slur_end != -1) {
+							int dupl_slur = slur_dupl_lookup(stem->slur_end);
+							VPRINTF("Finish its duplicate slur %d -> %d\n",
+									stem->slur_start, dupl_slur);
+							stem->slur_end = dupl_slur;
+						}
+					}
 
                     if (0) {
                         if (note->tie_start != -1) {

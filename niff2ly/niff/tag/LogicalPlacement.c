@@ -45,6 +45,9 @@
 static RIFFIOSuccess
 cbLogicalPlacement(NIFFIOTagContext *pctxTag, niffLogicalPlacement *p)
 {
+	extern void debugMeAt(mpq_t t);
+	debugMeAt(t_current);
+
     if (cbTagStart(pctxTag, p, cbLogicalPlacement)) {
         assert(pctxTag != 0);
         assert(pctxTag->pnf != 0);

@@ -50,6 +50,7 @@ void debugMe(void)
     fprintf(stderr, "Now hit %s\n", __func__);
 }
 
+static int global_part = -1;
 
 void debugMeAt(mpq_t t)
 {
@@ -58,7 +59,7 @@ void debugMeAt(mpq_t t)
 
     if (! initialized) {
         mpq_init(t_debug);
-        mpq_set_ui(t_debug, 9, 8);
+        mpq_set_ui(t_debug, 231, 1);
         initialized = 1;
     }
 
@@ -138,7 +139,7 @@ tie_match(note_p tail, note_p note)
 static int
 beam_match(note_p tail, note_p note)
 {
-    if (note->flags & FLAG_REST) {
+    if (0 && note->flags & FLAG_REST) {
         return 1;
     }
 
@@ -150,7 +151,7 @@ beam_match(note_p tail, note_p note)
         return note->stem->beam_left == 0;
     }
 
-    if (tail->flags & FLAG_REST) {
+    if (0 && tail->flags & FLAG_REST) {
         return 1;
     }
 
@@ -179,7 +180,12 @@ slur_match(voice_p v, note_p note)
 
 
 static void
-append_note(staff_p s, int voice, symbol_p scan, symbol_p *c_scan, symbol_p *c_next)
+append_note(staff_p s,
+			int voice,
+		   	symbol_p scan,
+		   	symbol_p *c_scan,
+		   	symbol_p *c_next,
+		   	note_flags_t flags)
 {
     voice_p     v = &s->voice[voice];
     note_p      note = &scan->symbol.note;
@@ -201,9 +207,7 @@ append_note(staff_p s, int voice, symbol_p scan, symbol_p *c_scan, symbol_p *c_n
     }
 
     q_append(&v->q, scan);
-    if (! (note->flags & FLAG_REST)) {
-		v->stem_flags = note->stem->flags;
-	}
+	v->stem_flags = flags;
     v->tail = note;
 
     mpq_set(t, note->duration);
@@ -250,15 +254,16 @@ is_constrained(const note_t *note)
 
 
 static void
-report_note(const symbol_p scan)
+report_note(const symbol_p scan, const char *label)
 {
     const note_p note = &scan->symbol.note;
     int         u;
 
-    VPRINTF("Test %p for contiguous append: t = ", scan);
+    VPRINTF("Test %p for %s append: t = ", scan, label);
     VPRINT_MPQ(scan->start);
     if (note->flags & FLAG_REST) {
         VPRINTF(" rest");
+        VPRINTF(" step %d", note->value);
     } else if (note->chord != NULL) {
         note_p  chord;
         VPRINTF(" step <");
@@ -314,7 +319,7 @@ void
 report_symbol(const symbol_p scan, int verbos)
 {
     if (verbos && scan->type == SYM_NOTE) {
-        report_note(scan);
+        report_note(scan, "contiguous");
     } else {
         VPRINTF("At t = ");
         VPRINT_MPQ(scan->start);
@@ -361,6 +366,8 @@ notes_simultaneous_constrained(staff_p f,
     symbol_p    next;
     int         r = 1;
 
+	debugMeAt((*c_scan)->start);
+
     next = *c_next;
     for (scan = *c_scan;
              scan != NULL && mpq_equal(now, scan->start);
@@ -377,7 +384,7 @@ notes_simultaneous_constrained(staff_p f,
             continue;
         }
 
-        report_note(scan);
+        report_note(scan, "constrained");
 
         for (i = 0; i < f->n_voice; i++) {
             voice_p v = &f->voice[i];
@@ -439,7 +446,13 @@ notes_simultaneous_constrained(staff_p f,
         }
 
         if (i != f->n_voice) {
-            append_note(f, i, scan, c_scan, c_next);
+			note_flags_t flags;
+			if (scan->symbol.note.flags & FLAG_REST) {
+				flags = f->voice[i].stem_flags;
+			} else {
+				flags = scan->symbol.note.stem->flags;
+			}
+            append_note(f, i, scan, c_scan, c_next, flags);
         }
     }
 
@@ -466,9 +479,9 @@ stem_match(staff_p f,
 				! (scan->symbol.note.flags & FLAG_REST) &&
 				(scan->symbol.note.stem->flags & FLAG_STEM_UP) ==
 					(v->stem_flags & FLAG_STEM_UP)) {
-				report_note(scan);
+				report_note(scan, "stem-match");
 				VPRINTF("Append note with %s contiguously to voice %d\n", label, i);
-				append_note(f, i, scan, c_scan, c_next);
+				append_note(f, i, scan, c_scan, c_next, scan->symbol.note.stem->flags);
 
 				return 1;
 			}
@@ -480,11 +493,60 @@ stem_match(staff_p f,
 
 
 static int
-cmp_note_value(const void *vn1, const void *vn2) {
-    const note_t *n1 = vn1;
-    const note_t *n2 = vn2;
+cmp_note_value(const void *vs1, const void *vs2) {
+    const symbol_t *s1 = *(const symbol_t **)vs1;
+    const symbol_t *s2 = *(const symbol_t **)vs2;
+    const note_t *n1 = &s1->symbol.note;
+    const note_t *n2 = &s2->symbol.note;
 
-	return n1->value - n2->value;
+	return n2->value - n1->value;
+}
+
+
+/**
+ * @return must be free()'s
+ */
+static const symbol_t **
+sort_simultaneous(mpq_t now, const symbol_t *scan, int *n, note_flags_t flags)
+{
+	*n = 0;
+	for (const symbol_t *s = scan;
+			 s != NULL && mpq_equal(now, s->start);
+			 s = s->next) {
+		if (s->type != SYM_NOTE) {
+			continue;
+		}
+		if (! (flags & FLAG_STEM_EXPLICIT) ||
+			(s->symbol.note.stem->flags & FLAG_STEM_UP) ==
+				(flags & FLAG_STEM_UP)) {
+			(*n)++;
+		}
+	}
+
+	if (*n == 0) {
+		return NULL;
+	}
+
+	const symbol_t **sorted = malloc(*n * sizeof *sorted);
+
+	int i = 0;
+	for (const symbol_t *s = scan;
+			 s != NULL && mpq_equal(now, s->start);
+			 s = s->next) {
+		if (s->type != SYM_NOTE) {
+			continue;
+		}
+		if (! (flags & FLAG_STEM_EXPLICIT) ||
+			(s->symbol.note.stem->flags & FLAG_STEM_UP) ==
+				(flags & FLAG_STEM_UP)) {
+			sorted[i] = s;
+			i++;
+		}
+	}
+
+	qsort(sorted, *n, sizeof *sorted, cmp_note_value);
+
+	return sorted;
 }
 
 
@@ -492,53 +554,30 @@ static int
 notes_from_chord_directed(staff_p f,
 						  mpq_t now,
 						  symbol_p *c_scan, symbol_p *c_next,
-						  int n,
 						  note_flags_t direction)
 {
-	const note_t **sorted = malloc(n * sizeof *sorted);
+	int n;
+	const symbol_t **sorted = sort_simultaneous(now, *c_scan, &n,
+											   	direction | FLAG_STEM_EXPLICIT);
 
-	int i = 0;
-	for (symbol_p scan = *c_scan;
-			 scan != NULL && mpq_equal(now, scan->start);
-			 scan = scan->next) {
-		if (scan->type != SYM_NOTE) {
-			continue;
-		}
-		sorted[i] = &scan->symbol.note;
-		i++;
+	while (f->n_voice < n) {
+		voice_increase(f);
 	}
+	for (int j = 0; j < n; j++) {
+		for (symbol_p scan = *c_scan;
+				 scan != NULL && mpq_equal(now, scan->start);
+				 scan = scan->next) {
+			if (scan == sorted[j]) {
+				report_note(scan, "'chorded'");
+				VPRINTF("Append 'chorded' note contiguously to voice %d\n", j);
+				note_flags_t flags = 0;
+				if ((j % 2) == 0) {
+					flags |= FLAG_STEM_UP;
+				}
+				append_note(f, j, scan, c_scan, c_next, flags);
 
-	qsort(sorted, n, sizeof *sorted, cmp_note_value);
-
-	for (symbol_p scan = *c_scan;
-			 scan != NULL && mpq_equal(now, scan->start);
-			 scan = scan->next) {
-		if (scan->type != SYM_NOTE) {
-			continue;
-		}
-
-		note_p note = &scan->symbol.note;
-		int i;
-		for (i = 0; i < n; i++) {
-			if (note == sorted[i]) {
 				break;
 			}
-		}
-		if (i == n) {
-			fprintf(stderr, "OOOOPPPPSSSSS note not found in sorted\n");
-			continue;
-		}
-
-        while (i >= f->n_voice) {          /* Could not append */
-            VPRINTF("Create new voice to append ex-chorded note\n");
-            voice_increase(f);
-		}
-		VPRINTF("Append 'chorded' note contiguously to voice %d\n", i);
-		append_note(f, i, scan, c_scan, c_next);
-		if ((i % 2) == 0) {
-			f->voice[i].stem_flags |= FLAG_STEM_UP;
-		} else {
-			f->voice[i].stem_flags &= ~FLAG_STEM_UP;
 		}
 	}
 
@@ -573,12 +612,12 @@ notes_from_chord(staff_p f, mpq_t now, symbol_p *c_scan, symbol_p *c_next)
 
 	if (n > 1 && up == n) {
 		// All upstems
-		notes_from_chord_directed(f, now, c_scan, c_next, up, FLAG_STEM_UP);
+		notes_from_chord_directed(f, now, c_scan, c_next, FLAG_STEM_UP);
 	}
 
 	if (n > 1 && up == 0) {
 		// All downstems
-		notes_from_chord_directed(f, now, c_scan, c_next, n - up, 0);
+		notes_from_chord_directed(f, now, c_scan, c_next, 0);
 	}
 	
 	return n;
@@ -661,63 +700,72 @@ notes_simultaneous_unconstrained(staff_p f,
 		stem_match(f, 1, 2, scan, next, c_scan, c_next, "stem DOWN");
 	}
 
-    next = *c_next;
-    for (scan = *c_scan;
-             scan != NULL && mpq_equal(now, scan->start);
-             scan = next) {
-        int     i;
+	int n;
+	const symbol_t **sorted = sort_simultaneous(now, *c_scan, &n, 0);
 
-        next = scan->next;
-        if (scan->type != SYM_NOTE) {
-            continue;
-        }
+	for (int j = 0; j < n; j++) {
+		for (scan = *c_scan;
+				 scan != NULL && mpq_equal(now, scan->start);
+				 scan = scan->next) {
+			int     i;
 
-        report_note(scan);
+			if (scan == sorted[j]) {
+				report_note(scan, "contiguous unconstrained");
 
-		for (i = 0; i < f->n_voice; i++) {
-			voice_p v = &f->voice[i];
+				for (i = 0; i < f->n_voice; i++) {
+					voice_p v = &f->voice[i];
 
-			report_voice_tail(f, i);
+					report_voice_tail(f, i);
 
-			if (mpq_equal(scan->start, v->t_finish)) {
-				VPRINTF("Append note contiguously to voice %d\n", i);
+					if (mpq_equal(scan->start, v->t_finish)) {
+						VPRINTF("Append note contiguously to voice %d\n", i);
+						break;
+					}
+				}
+
+				if (i >= f->n_voice) {          /* Could not append */
+					for (i = 0; i < f->n_voice; i++) {
+						if (mpq_cmp(scan->start, f->voice[i].t_finish) > 0) {
+							VPRINTF("Append note non-contiguously, t = ");
+							VPRINT_MPQ(scan->start);
+							VPRINTF(" voice[%d].t_finish = ", i);
+							VPRINT_MPQ(f->voice[i].t_finish);
+							VPRINTF(" to voice %d\n", i);
+							break;
+						}
+					}
+				}
+
+				if (i >= f->n_voice) {          /* Could not append */
+					VPRINTF("Append note to new voice[%d]\n", f->n_voice);
+#if VERBOSE
+					{
+						int v;
+
+						for (v = 0; v < f->n_voice; v++) {
+							VPRINTF("voice[%d] finish ", v);
+							VPRINT_MPQ(f->voice[v].t_finish);
+							VPRINTF("\n");
+						}
+					}
+#endif
+					voice_increase(f);
+				}
+
+				if (i < f->n_voice) {
+					note_flags_t flags = 0;
+					if ((j % 2) == 0) {
+						flags |= FLAG_STEM_UP;
+					}
+					append_note(f, i, scan, c_scan, c_next, flags);
+				}
+
 				break;
 			}
 		}
+	}
 
-        if (i >= f->n_voice) {          /* Could not append */
-            for (i = 0; i < f->n_voice; i++) {
-                if (mpq_cmp(scan->start, f->voice[i].t_finish) > 0) {
-                    VPRINTF("Append note non-contiguously, t = ");
-                    VPRINT_MPQ(scan->start);
-                    VPRINTF(" voice[%d].t_finish = ", i);
-                    VPRINT_MPQ(f->voice[i].t_finish);
-                    VPRINTF(" to voice %d\n", i);
-                    break;
-                }
-            }
-        }
-
-        if (i >= f->n_voice) {          /* Could not append */
-            VPRINTF("Append note to new voice[%d]\n", f->n_voice);
-#if VERBOSE
-            {
-                int v;
-
-                for (v = 0; v < f->n_voice; v++) {
-                    VPRINTF("voice[%d] finish ", v);
-                    VPRINT_MPQ(f->voice[v].t_finish);
-                    VPRINTF("\n");
-                }
-            }
-#endif
-            voice_increase(f);
-        }
-
-        if (i < f->n_voice) {
-            append_note(f, i, scan, c_scan, c_next);
-        }
-    }
+	free(sorted);
 
     // update it now, at the end...
     *c_next = *c_scan;
@@ -852,6 +900,7 @@ xly_voice(void)
 
     fprintf(stderr, "Voice analysis...\n");
     for (p = 0; p < n_part; p++) {
+global_part = p;
         for (f = 0; f < part[p].n_staff; f++) {
             fprintf(stderr, "      ........ part %d, staff %d\n", p, f);
             do_staff_voicing(&part[p].staff[f], part[p].staff[f].unvoiced.front);
