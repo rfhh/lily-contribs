@@ -897,9 +897,9 @@ dumpTimeSig(mpq_t *now, symbol_p s)
              time_sig_current->top, time_sig_current->bottom);
 
     if (time_sig_current->top == -1) {
-        fprintf(lily_out, " \\property Staff.TimeSignature \\override #'style = #'C \\time 4/4 ");
+        fprintf(lily_out, " \\override Staff.TimeSignature.style = #'C \\time 4/4 ");
     } else if (time_sig_current->top == -2) {
-        fprintf(lily_out, " \\property Staff.TimeSignature \\override #'style = #'C \\time 2/2 ");
+        fprintf(lily_out, " \\override Staff.TimeSignature.style = #'C \\time 2/2 ");
     } else {
         fprintf(lily_out, " \\time %d/%d ", time_sig_current->top, time_sig_current->bottom);
     }
