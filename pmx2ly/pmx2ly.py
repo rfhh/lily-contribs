@@ -3044,7 +3044,7 @@ Huh? Unknown T parameter `%s', before `%s'""" % (left[1], left[:20] ))
 						dyn = dyn + left[0]
 						left = left[1:]
 					dyn = dyn + '}'
-					self.current_voice().last_chord().scripts.append(scr)
+					self.current_voice().last_chord().scripts.append(dyn)
 				elif left[0] == '>':
 					if self.current_voice().pending_decr:
 						self.current_voice().last_chord().scripts.append('\\!')
